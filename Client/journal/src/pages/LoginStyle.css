@@ -1,0 +1,95 @@
+.container__login {
+    display: flex;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    height: 100vh;
+}
+body
+{
+    margin: 0;
+}
+.info-message {
+    width: 60%;
+    background-color: #808080;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background-image: url(../images/bru.png);
+    align-items: center;
+    background-size: cover;
+}
+
+.login {
+    flex: 1;
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.login h2 {
+    margin-bottom: 20px;
+}
+
+.login form {
+    display: flex;
+    width: 376px;
+    flex-direction: column;
+}
+
+.login form div {
+    margin-bottom: 10px;
+}
+
+.login form input[type="text"],
+.login form input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    box-sizing: border-box;
+}
+
+.login form input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.login form button {
+    padding: 10px;
+    background-color: #6a5acd;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.login form button:hover {
+    background-color: #5a4abd;
+}
+
+.login-green {
+    background-color: green;
+    color: white;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    cursor: pointer;
+    width: 376px;
+}
+
+.login-red {
+    background-color: red;
+    color: white;
+    padding: 10px;
+    margin-top: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+.login div p {
+    color: red;
+}
+
+.login a {
+    color: blue;
+}
