@@ -12,13 +12,24 @@ function Login() {
                 <div>
                     <input type="password" placeholder="Пароль"/>
                 </div>
-                <button type="submit">Вход</button>
+            <div className="remember__login">
+                <input type="checkbox" id="remember"/>
+                <label htmlFor="remember"> Запомнить логин</label>
+            </div>
+                <button type="submit">
+                    <div className="img__login"></div>
+                    <div className="login__text">Вход</div>
+                </button>
             </form>
             <div>
-            <button className="login-green">Вход по единой записи СПбПУ</button>
+            <button className="login-green">
+                <div className="login__parent__img"></div>
+                <div className="text__parent__button">Регистрация</div>
+            </button>
             </div>
-            <div>
-                <a href="/register">Еще не регистрировались? Создать учетную запись</a>
+            <div className="footer__login">
+                <h3>Для работы с приложение нужен аккаунт</h3>
+                <h3>Пожалуйста, создайте или войдите в аккаунт</h3>
             </div>
         </div>
     );

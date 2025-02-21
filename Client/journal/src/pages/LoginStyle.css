@@ -22,6 +22,7 @@ body
 }
 
 .login {
+    position: relative;
     flex: 1;
     align-items: center;
     display: flex;
@@ -31,6 +32,11 @@ body
 
 .login h2 {
     margin-bottom: 20px;
+    font-family: "Open Sans";
+    font-weight: 400;
+    line-height: 1.3;
+    color: #37474f;
+    font-size: 1.715rem;
 }
 
 .login form {
@@ -56,19 +62,128 @@ body
 }
 
 .login form button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0;
+    position: relative;
     padding: 10px;
-    background-color: #6a5acd;
+    background-color: rgb(71, 133, 255);
     color: white;
     border: none;
     cursor: pointer;
 }
+.remember__login {
+    display: flex;
+    align-items: center;
+    margin-bottom: 25px !important;
+}
+
+/* Скрываем стандартный чекбокс */
+.remember__login input[type="checkbox"] {
+    display: none;
+}
+
+/* Стилизация кастомного чекбокса */
+.remember__login label {
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    font-size: 16px;
+    user-select: none;
+}
+
+/* Псевдоэлемент для кастомного чекбокса */
+.remember__login label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: transparent;
+    transition: border-color 0.3s ease;
+}
+
+.remember__login input[type="checkbox"]:checked + label::before {
+    border-color: #007bff;
+    animation: fillBackground 0.5s ease forwards;
+}
+
+.remember__login label::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 5px;
+    transform: translateY(-50%) scale(0);
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform-origin: bottom left;
+    transition: transform 0.3s ease;
+    z-index: 1; /* Галочка поверх фона */
+}
+
+.remember__login input[type="checkbox"]:checked + label::after {
+    transform: translateY(-50%) rotate(45deg) scale(1);
+}
+
+@keyframes fillBackground {
+    0% {
+        clip-path: inset(50% 50% 50% 50%);
+        background-color: #007bff;
+    }
+    100% {
+        clip-path: inset(0% 0% 0% 0%);
+        background-color: #007bff;
+    }
+}
+.img__login
+{
+    position: absolute;
+    left: 0;
+    margin-bottom: 0 !important;
+    width: 36px;
+    height: 36px;
+    background-image: url(../images/logoBru.jpeg);
+    background-repeat: no-repeat;
+    background-size: 50%;
+    background-position: center center;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+.login__parent__img
+{
+    position: absolute;
+    left: 0;
+    margin-bottom: 0 !important;
+    width: 36px;
+    height: 36px;
+    background-image: url(../images/icons8-пользователь-32.png);
+    background-repeat: no-repeat;
+    background-size: 50%;
+    background-position: center center;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+.login__text
+{
+    margin-bottom: 0 !important;
+}
 
 .login form button:hover {
-    background-color: #5a4abd;
+    background-color: #63bc7d;
+    transition: background-color 0.4s ease;
 }
 
 .login-green {
-    background-color: green;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background-color: #8c75a5;
     color: white;
     padding: 10px;
     margin-top: 10px;
@@ -76,20 +191,45 @@ body
     cursor: pointer;
     width: 376px;
 }
-
-.login-red {
-    background-color: red;
-    color: white;
-    padding: 10px;
-    margin-top: 10px;
-    border: none;
-    cursor: pointer;
+.login-green:hover {
+    background-color: #63bc7d;
+    transition: background-color 0.4s ease;
 }
-
-.login div p {
-    color: red;
+.footer__login {
+    background: #404040;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
 }
+.footer__login h3
+{
+    font-family: "Open Sans", sans-serif;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.57143;
+    color: #ffffff;
+    text-align: center;
 
-.login a {
-    color: blue;
+}
+@media (max-width: 650px){
+.container__login {
+    flex-wrap: wrap;
+}
+    .info-message {
+        width: 100%;
+    }
+    .login
+    {
+        padding: 0;
+    }
+}
+@media (max-width: 386px){
+    .login form
+    {
+        width: 310px;
+    }
+    .login-green {
+        width: 310px;
+    }
 }
