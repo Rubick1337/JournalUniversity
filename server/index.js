@@ -9,7 +9,7 @@ const port = process.env.PORT || 5002;
 */
     
 const sequelize = require('./db')
-const models = require('./models/models')
+const models = require('./models/index')
 
 /*
 *========== Express ==========
