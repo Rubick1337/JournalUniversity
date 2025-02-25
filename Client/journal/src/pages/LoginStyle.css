@@ -205,7 +205,7 @@ body
 .footer__login h3
 {
     font-family: "Open Sans", sans-serif;
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 400;
     line-height: 1.57143;
     color: #ffffff;
@@ -232,4 +232,8 @@ body
     .login-green {
         width: 310px;
     }
+}
+.App
+{
+    overflow: hidden;
 }
