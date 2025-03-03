@@ -1,6 +1,8 @@
 const { 
   initModels,
-  Person, 
+  Person,
+  TeachingPosition, 
+ 
 //   Absenteeism, 
 //   AcademicPerformance, 
 //   AcademicSpecialty, 
@@ -18,7 +20,6 @@ const {
 //   SubgroupStudent, 
 //   Subject, 
 //   Teacher, 
-  TeachingPosition, 
 //   Topic, 
 //   AssessmentType, 
 //   SubjectType, 
@@ -186,6 +187,9 @@ const {
 
 module.exports = {
   initModels,
+  Person,
+  TeachingPosition,
+
 //   Absenteeism,
 //   AcademicPerformance,
 //   AcademicSpecialty,
@@ -196,7 +200,6 @@ module.exports = {
 //   GradeTopic,
 //   Group,
 //   Lesson,
-  Person,
 //   PlannedTask,
 //   PlannedTaskTopic,
 //   Student,
@@ -204,7 +207,6 @@ module.exports = {
 //   SubgroupStudent,
 //   Subject,
 //   Teacher,
-  TeachingPosition,
 //   Topic,
 //   AssessmentType,
 //   SubjectType,
