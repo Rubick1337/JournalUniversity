@@ -1,0 +1,9 @@
+{
+  "1": [
+    { "id": 1, "name": "Frontend Development" },
+    { "id": 3, "name": "Data Science" }
+  ],
+  "2": [
+    { "id": 2, "name": "Backend Development" }
+  ]
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "firstName": "Nikolay",
+    "lastName": "Kisluk",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "icons8-тестовый-аккаунт-32.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "firstName": "Anna",
+    "lastName": "Ivanova",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo2.png",
+    "subgroup": "Подгруппа 2"
+  },
+  {
+    "firstName": "Petr",
+    "lastName": "Petrov",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo3.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "firstName": "Maria",
+    "lastName": "Sidorova",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo4.png",
+    "subgroup": "Подгруппа 2"
+  },
+  {
+    "firstName": "Ivan",
+    "lastName": "Ivanov",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo5.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "firstName": "Olga",
+    "lastName": "Smirnova",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "icons8-тестовый-аккаунт-32.png",
+    "subgroup": "Подгруппа 2"
+  },
+  {
+    "firstName": "Sergey",
+    "lastName": "Kuznetsov",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo7.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "firstName": "Elena",
+    "lastName": "Popova",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo8.png",
+    "subgroup": "Подгруппа 2"
+  },
+  {
+    "firstName": "Dmitry",
+    "lastName": "Sokolov",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo9.png",
+    "subgroup": "Подгруппа 1"
+  }
+]
