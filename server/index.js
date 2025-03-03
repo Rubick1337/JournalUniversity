@@ -46,6 +46,7 @@ app.use(errorHandlingMiddleware)
 const start = async () => {
     try{
         await sequelize.authenticate();
+        await initModels();
         await sequelize.sync();
 
 
