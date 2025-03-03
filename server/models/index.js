@@ -2,13 +2,13 @@ const {
   initModels,
   Person,
   TeachingPosition, 
- 
+  Faculty, 
+
 //   Absenteeism, 
 //   AcademicPerformance, 
 //   AcademicSpecialty, 
 //   Curriculum, 
 //   Department, 
-//   Faculty, 
 //   Grade, 
 //   GradeTopic, 
 //   Group, 
@@ -63,8 +63,8 @@ const {
 // Faculty.hasMany(Department, { foreignKey: "faculty_id" });
 // Department.belongsTo(Faculty, { foreignKey: "faculty_id" });
 
-// Person.hasOne(Faculty, { foreignKey: "dean_person_id" });
-// Faculty.belongsTo(Person, { foreignKey: "dean_person_id" });
+Person.hasOne(Faculty, { foreignKey: "dean_person_id" });
+Faculty.belongsTo(Person, { foreignKey: "dean_person_id" });
 
 // Topic.hasMany(Grade, { foreignKey: "topic_id" });
 // Grade.belongsTo(Topic, { foreignKey: "topic_id" });
@@ -189,13 +189,13 @@ module.exports = {
   initModels,
   Person,
   TeachingPosition,
+  Faculty,
 
 //   Absenteeism,
 //   AcademicPerformance,
 //   AcademicSpecialty,
 //   Curriculum,
 //   Department,
-//   Faculty,
 //   Grade,
 //   GradeTopic,
 //   Group,

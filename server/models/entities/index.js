@@ -1,12 +1,12 @@
 const { Person } = require("./Person");
 const { TeachingPosition, initializeTeachingPositions } = require("./TeachingPosition");
+const { Faculty } = require("./Faculty");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
 // const { AcademicSpecialty } = require("./AcademicSpecialty");
 // const { Curriculum } = require("./Curriculum");
 // const { Department } = require("./Department");
-// const { Faculty } = require("./Faculty");
 // const { Grade } = require("./Grade");
 // const { Group } = require("./Group");
 // const { Lesson } = require("./Lesson");
@@ -28,13 +28,13 @@ module.exports = {
   initModels,
   Person,
   TeachingPosition,
+  Faculty,
 
   // Absenteeism,
   // AcademicPerformance,
   // AcademicSpecialty,
   // Curriculum,
   // Department,
-  // Faculty,
   // Grade,
   // Group,
   // Lesson,

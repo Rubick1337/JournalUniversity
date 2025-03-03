@@ -3,13 +3,13 @@ const { DataTypes } = require("sequelize");
 
 const { Person } = require("./Person");
 
-const Faculty = sequelize.define("Faculty ", {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
+const Faculty = sequelize.define("Faculty", {
+  id: { type: DataTypes.UUID, primaryKey: true },
   name: { type: DataTypes.STRING, allowNull: false },
   full_name: { type: DataTypes.STRING, allowNull: false },
 
   dean_person_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     references: {
       model: Person,
       key: "id",
