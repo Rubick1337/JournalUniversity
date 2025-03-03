@@ -23,6 +23,7 @@ function LoginPage() {
                 <Calendar onDaySelect={handleDaySelect} />
                 {selectedDay && <Schedule selectedDay={selectedDay} />}
                 <StudentList></StudentList>
+                
             </div>
         </main>
     );
