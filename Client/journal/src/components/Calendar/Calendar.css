@@ -3,7 +3,6 @@
 .calendar {
     background: white;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 626px;
     padding: 20px;
     text-align: center;
@@ -26,7 +25,7 @@
 }
 
 .carret:hover {
-    background-color: #007bff;
+    background-color: #3649F9;
     transform: scale(1.1);
     animation: pulse 0.5s infinite alternate;
 }
@@ -53,7 +52,7 @@
 }
 
 .carret:hover::before {
-    color: #ffcc00;
+    color: #000000;
 }
 .group__carret
 {
@@ -68,7 +67,7 @@
     font-size: 30px;
     font-style: normal;
     font-weight: 700;
-    line-height: 46px; /* 127.778% */
+    line-height: 46px;
     letter-spacing: -1.6px;
 }
 
@@ -112,13 +111,37 @@
     cursor: pointer;
 }
 
-.days .today {
+.day.selected {
     background: #3649F9;
     color: white;
     border-radius: 50%;
     width: 16px;
     height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out, color 0.3s ease-in-out, transform 0.3s ease-in-out;
 }
+
+.day.today {
+    background: #3649F9;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.day.prev-month {
+    color: #ccc;
+}
+
+
+
 @keyframes slideOutLeft {
     0% {
         transform: translateX(0);

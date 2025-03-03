@@ -1,0 +1,71 @@
+.swiper-container {
+    border-radius: 14px;
+    width: 661px;
+    height: 441px;
+    position: relative;
+}
+.swiper
+{
+    border-radius: 14px;
+    height: 441px;
+}
+.swiper-slide {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+
+.slide-content {
+    position: absolute;
+    bottom: 70px;
+    left: 28px;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    font-size: 30px;
+    color: #fff;
+    cursor: pointer;
+}
+
+.slide-content h2 {
+    color: #FFF;
+    font-family: Poppins;
+    font-size: 26px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+.swiper-button-next,
+.swiper-button-prev {
+    background-size: contain;
+    background-repeat: no-repeat;
+    width: 47px;
+    height: 47px;
+}
+
+.swiper-button-next {
+    background-image: url('../../images/right-carrect.png');
+}
+
+.swiper-button-prev {
+    background-image: url('../../images/left-carrect.png');
+}
+.swiper-button-next::after,
+.swiper-button-prev::after {
+    display: none;
+}

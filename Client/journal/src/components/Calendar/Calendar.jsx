@@ -1,59 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Calendar.css';
 
-const Calendar = () => {
+const Calendar = ({ onDaySelect }) => {
     const today = new Date();
     const [currentDate, setCurrentDate] = useState(today);
-    const [animationClass, setAnimationClass] = useState(''); // Состояние для анимации
+    const [selectedDay, setSelectedDay] = useState(null);
+    const [animationClass, setAnimationClass] = useState(''); // Добавил недостающую переменную
 
     const monthNames = [
-        "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December"
+        "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+        "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"
     ];
 
-    const getDaysInMonth = (year, month) => {
-        return new Date(year, month + 1, 0).getDate();
+    const dayNames = ["Воскресенье", "Понедельник", "Вторник", "Среду", "Четверг", "Пятницу", "Субботу"];
+
+    useEffect(() => {
+        if (!selectedDay) {
+            const todayDayName = dayNames[today.getDay()];
+            console.log(`Сегодня: ${todayDayName}`);
+            onDaySelect(todayDayName);
+        }
+    }, [selectedDay, onDaySelect]);
+
+    const prevMonth = async () => {
+        setAnimationClass('slide-out-left');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+        setAnimationClass('slide-in-right');
     };
 
-    const getFirstDayOfMonth = (year, month) => {
-        const day = new Date(year, month, 1).getDay();
-        // Если день недели - воскресенье (0), возвращаем 6 (понедельник будет первым)
-        return day === 0 ? 6 : day - 1;
+    const nextMonth = async () => {
+        setAnimationClass('slide-out-right');
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+        setAnimationClass('slide-in-left');
     };
 
-    const prevMonth = () => {
-        setAnimationClass('slide-out-left'); // Анимация вылета влево
-        setTimeout(() => {
-            setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-            setAnimationClass('slide-in-right'); // Анимация появления справа
-        }, 300); // Длительность анимации
-    };
-
-    const nextMonth = () => {
-        setAnimationClass('slide-out-right'); // Анимация вылета вправо
-        setTimeout(() => {
-            setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-            setAnimationClass('slide-in-left'); // Анимация появления слева
-        }, 300); // Длительность анимации
+    const handleDayClick = (day) => {
+        setSelectedDay(day);
+        const selectedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+        const dayOfWeek = dayNames[selectedDate.getDay()];
+        console.log(`Выбранный день: ${dayOfWeek}`);
+        onDaySelect(dayOfWeek);
     };
 
     const renderDays = () => {
-        const daysInMonth = getDaysInMonth(currentDate.getFullYear(), currentDate.getMonth());
-        const firstDay = getFirstDayOfMonth(currentDate.getFullYear(), currentDate.getMonth());
+        const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
         const days = [];
 
-        // Добавляем пустые дни перед первым днём месяца
-        for (let i = 0; i < firstDay; i++) {
-            days.push(<div key={`empty-${i}`} className="empty"></div>);
+        const prevMonthDays = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+        const firstDayOffset = firstDay === 0 ? 6 : firstDay - 1;
+
+        for (let i = firstDayOffset; i > 0; i--) {
+            days.push(
+                <div key={`prev-${i}`} className="day prev-month">
+                    {prevMonthDays - i + 1}
+                </div>
+            );
         }
 
-        // Добавляем дни месяца
         for (let i = 1; i <= daysInMonth; i++) {
             const isToday = i === today.getDate() &&
                 currentDate.getMonth() === today.getMonth() &&
                 currentDate.getFullYear() === today.getFullYear();
+
+            const isSelected = i === selectedDay;
+
             days.push(
-                <div key={i} className={isToday ? "day today" : "day"}>
+                <div
+                    key={i}
+                    className={`day ${isSelected ? "selected" : isToday && !selectedDay ? "today" : ""}`}
+                    onClick={() => handleDayClick(i)}
+                >
                     {i}
                 </div>
             );
@@ -70,13 +89,13 @@ const Calendar = () => {
                 </div>
             </div>
             <div className="weekdays">
-                <div>Mo</div>
-                <div>Tu</div>
-                <div>We</div>
-                <div>Th</div>
-                <div>Fr</div>
-                <div>Sa</div>
-                <div>Su</div>
+                <div>Пн</div>
+                <div>Вт</div>
+                <div>Ср</div>
+                <div>Чт</div>
+                <div>Пт</div>
+                <div>Сб</div>
+                <div>Вс</div>
             </div>
             <div id="days" className="days">
                 {renderDays()}

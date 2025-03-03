@@ -22,10 +22,6 @@ function Login() {
                 </button>
             </form>
             <div>
-            <button className="login-green">
-                <div className="login__parent__img"></div>
-                <div className="text__parent__button">Регистрация</div>
-            </button>
             </div>
             <div className="footer__login">
                 <h3>Для работы с приложение нужен аккаунт</h3>
