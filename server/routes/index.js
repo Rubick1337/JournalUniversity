@@ -13,7 +13,7 @@ function initializeRoute(route, routeName) {
 }
 
 
-// initializeRoute('role', 'role');
+initializeRoute('person', 'person');
 // initializeRoute('user', 'user');
 // initializeRoute('projectStatus', 'projectStatus');
 // initializeRoute('information', 'information');
