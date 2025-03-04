@@ -4,7 +4,7 @@ import { Button } from "@mui/material";
 import PersonCreationModal from "../PersonCreationModal/PersonCreationModal";
 import { createPerson } from "../../store/slices/personSlice";
 import "./ContainerPersonCreation.css";
-
+//TODO возрат ошибок валидации с сервера
 export default function ContainerPersonCreation() {
   const defaultObjectData = {
     surname: "Кислюк",

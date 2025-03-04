@@ -1,0 +1,18 @@
+CREATE OR REPLACE FUNCTION get_people_data_for_select()
+RETURNS JSONB AS
+$$
+BEGIN
+    -- Возвращаем список с разделенными полями: фамилия, имя и отчество
+    RETURN (
+        SELECT jsonb_agg(
+            jsonb_build_object(
+                'surname', p.surname,
+                'name', p.name,
+                'middlename', p.middlename
+            )
+        )
+        FROM "People" p
+    );
+END;
+$$ LANGUAGE plpgsql;
+SELECT get_people_data_for_select();
