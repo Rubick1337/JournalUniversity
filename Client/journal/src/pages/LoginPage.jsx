@@ -7,6 +7,7 @@ import Schedule from '../components/Schedule/Schedule';
 import './LoginStyle.css';
 import StudentList from "../components/StudentList/StudentList";
 import Header from "../components/Header/Header";
+import Footer from "../components/Footer/Footer";
 
 function LoginPage() {
     const [selectedDay, setSelectedDay] = useState(null);
@@ -22,6 +23,7 @@ function LoginPage() {
                 {/*<Login />*/}
                 {/*<Slider studentId={1} />*/}
                 <Header></Header>
+                <Footer></Footer>
                 {/*<Calendar onDaySelect={handleDaySelect} />*/}
                 {/*{selectedDay && <Schedule selectedDay={selectedDay} />}*/}
                 {/*<StudentList></StudentList>*/}
