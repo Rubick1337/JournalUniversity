@@ -17,7 +17,7 @@ const StudentList = () => {
     }, []);
 
     return (
-        <div className="container">
+        <div className="container__students">
             <div className="header">
                 <h1 className="title">Группа</h1>
                 <a className="see-all" href="#">Показать все...</a>

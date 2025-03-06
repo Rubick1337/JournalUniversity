@@ -1,0 +1,143 @@
+.nav-item {
+    position: relative;
+    padding: 10px 20px;
+    cursor: pointer;
+    width: 180px; /* Фиксированная ширина для каждого элемента */
+    text-align: center; /* Центрируем текст */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.container__logo
+{
+    display: flex;
+}
+.container-fluid
+{
+    gap:230px;
+}
+.logo_bru
+{
+    width: 44.453px;
+    height: 38px;
+    background-image: url(../../images/logoBruheader.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.nav-item a {
+    text-decoration: none;
+    color: #6D7C90;
+    font-family: Poppins;
+    font-size: 18px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    position: relative;
+    z-index: 2;
+    transition: color 0.2s ease-in-out; /* Плавное изменение цвета текста */
+}
+
+/* Активный элемент */
+.nav-item.active a {
+    color: white;
+}
+
+/* Фон для активного и наведенного элемента */
+.hover-bg {
+    position: absolute;
+    top: 0;
+    height: 50px;
+    width: 160px; /* Фиксированная ширина */
+    background: #3649F9;
+    border-radius: 8px;
+    transition: left 0.3s ease-in-out; /* Плавное перемещение */
+    z-index: 1;
+    pointer-events: none; /* Чтобы фон не перехватывал события мыши */
+}
+.nav-icon {
+    z-index: 2;
+    width: 24px;
+    height: 24px;
+    background-size: cover;
+    position: absolute;
+    left: 10px;
+}
+.nav-link-container
+{
+    margin-left: 39px;
+    align-items: center;
+    width: 196px;
+    display: flex;
+    justify-content: flex-start;
+}
+/* Наведение */
+.nav-item:hover a {
+    color: white;
+}
+.profile__header
+{
+    margin-left: 5px;
+    width: 32px;
+    height: 32px;
+    background-image: url(../../images/icons8-пользователь-32.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.offcanvas-body
+{
+    align-items: center;
+    gap:230px;
+}
+header
+{
+    width: 100%;
+}
+.navbar-toggler {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important
+}
+@media screen and (max-width: 1419px) {
+
+    .offcanvas-body
+    {
+        gap:145px;
+    }
+    .container-fluid
+    {
+        gap:150px;
+    }
+}
+@media screen and (max-width: 1241px) {
+
+    .offcanvas-body
+    {
+        gap:95px;
+    }
+    .container-fluid
+    {
+        gap:100px;
+    }
+}
+@media screen and (max-width: 1138px) {
+
+    .offcanvas-body
+    {
+        gap:45px;
+    }
+    .container-fluid
+    {
+        gap:50px;
+    }
+}
+@media screen and (max-width: 1046px) {
+
+    .offcanvas-body
+    {
+        gap:15px;
+    }
+    .container-fluid
+    {
+        gap:20px;
+    }
+}

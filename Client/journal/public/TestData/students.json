@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "firstName": "Nikolay",
     "lastName": "Kisluk",
     "middleName": "",
@@ -8,6 +9,7 @@
     "subgroup": "Подгруппа 1"
   },
   {
+    "id": 2,
     "firstName": "Anna",
     "lastName": "Ivanova",
     "middleName": "",
@@ -16,6 +18,7 @@
     "subgroup": "Подгруппа 2"
   },
   {
+    "id": 3,
     "firstName": "Petr",
     "lastName": "Petrov",
     "middleName": "",
@@ -24,6 +27,16 @@
     "subgroup": "Подгруппа 1"
   },
   {
+    "id": 4,
+    "firstName": "Petr",
+    "lastName": "Petrov1221",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo3.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "id": 5,
     "firstName": "Maria",
     "lastName": "Sidorova",
     "middleName": "",
@@ -32,6 +45,7 @@
     "subgroup": "Подгруппа 2"
   },
   {
+    "id": 6,
     "firstName": "Ivan",
     "lastName": "Ivanov",
     "middleName": "",
@@ -40,6 +54,7 @@
     "subgroup": "Подгруппа 1"
   },
   {
+    "id": 7,
     "firstName": "Olga",
     "lastName": "Smirnova",
     "middleName": "",
@@ -48,6 +63,7 @@
     "subgroup": "Подгруппа 2"
   },
   {
+    "id": 8,
     "firstName": "Sergey",
     "lastName": "Kuznetsov",
     "middleName": "",
@@ -56,6 +72,7 @@
     "subgroup": "Подгруппа 1"
   },
   {
+    "id": 9,
     "firstName": "Elena",
     "lastName": "Popova",
     "middleName": "",
@@ -64,11 +81,20 @@
     "subgroup": "Подгруппа 2"
   },
   {
+    "id": 10,
     "firstName": "Dmitry",
     "lastName": "Sokolov",
     "middleName": "",
     "group": "ASOIR-221",
     "photo": "https://example.com/photo9.png",
     "subgroup": "Подгруппа 1"
+  },
+  {
+    "id": 11,
+    "firstName": "Alexey",
+    "lastName": "Sokolov",
+    "middleName": "",
+    "group": "ASOIR-221",
+    "photo": "https://example.com/photo9.png"
   }
 ]

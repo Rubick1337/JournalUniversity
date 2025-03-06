@@ -1,0 +1,192 @@
+footer{
+    display: flex;
+    width: 100%;
+    padding-top: 48px;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.container__footer
+{
+    justify-content: center;
+    display: flex;
+    padding: 0px 80px;
+    align-items: center;
+    align-content: center;
+    gap: 63px 136px;
+    align-self: stretch;
+    flex-wrap: wrap;
+}
+.background__footer
+{
+    background: #3649F9;
+    box-shadow: 130px 140px 250px 0px rgba(0, 0, 0, 0.18);
+    width: 100%;
+    height: auto;
+    padding-bottom: 45px;
+}
+.bru__logo__footer__text h4
+{
+    width: 304px;
+    height: 85px;
+    color: #D6D6D6;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 150%; /* 24px */
+}
+.footer__end
+{
+    width: 100%;
+    background: #120ED6;
+    padding: 8px 0px;
+}
+.footer__end h5
+{
+    margin-block: 0;
+    justify-self: center;
+    color: #FFF;
+    text-align: center;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: 150%; /* 21px */
+}
+.bru__logo__footer
+{
+    background-image: url(../../images/LogoBruFooter.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 140px;
+    height: 130px;
+}
+.container_social
+{
+    display: flex;
+    gap:8px;
+}
+.facebook
+{
+    background-image: url(../../images/logo-facebook.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 24px;
+    height: 24px;
+}
+.instagram
+{
+    background-image: url(../../images/logo-instagram.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 24px;
+    height: 24px;
+}
+.linkedin
+{
+    background-image: url(../../images/logo-linkedin.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 24px;
+    height: 24px;
+}
+.twitter
+{
+    background-image: url(../../images/logo-twitter.png);
+    background-repeat: no-repeat;
+    background-position: center center;
+    width: 24px;
+    height: 24px;
+}
+.universtity
+{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 200px;
+    width: 163px;
+}
+.universtity h4
+{
+    text-align: left;
+    color: #FFF;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+.universtity a
+{
+    text-align: left;
+    text-decoration: none;
+    color: #FFF;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: normal;
+}
+.faculity
+{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 200px;
+}
+.faculity h4
+{
+    text-align: left;
+    color: #FFF;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+.faculity a
+{
+    text-align: left;
+    text-decoration: none;
+    color: #FFF;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: normal;
+}
+.admission
+{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: 200px;
+    width: 163px;
+}
+.admission h4
+{
+    text-align: left;
+    color: #FFF;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+.admission a
+{
+    text-align: left;
+    text-decoration: none;
+    color: #FFF;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 300;
+    line-height: normal;
+}
+.container__bru
+{
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}

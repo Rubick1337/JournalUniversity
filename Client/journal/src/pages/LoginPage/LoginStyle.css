@@ -16,7 +16,7 @@ body
     justify-content: center;
     align-items: center;
     padding: 20px;
-    background-image: url(../images/bru.png);
+    background-image: url(../../images/bru.png);
     align-items: center;
     background-size: cover;
 }
@@ -149,7 +149,7 @@ body
     margin-bottom: 0 !important;
     width: 36px;
     height: 36px;
-    background-image: url(../images/logoBru.jpeg);
+    background-image: url(../../images/logoBru.jpeg);
     background-repeat: no-repeat;
     background-size: 50%;
     background-position: center center;
@@ -162,7 +162,7 @@ body
     margin-bottom: 0 !important;
     width: 36px;
     height: 36px;
-    background-image: url(../images/icons8-пользователь-32.png);
+    background-image: url(../../images/icons8-пользователь-32.png);
     background-repeat: no-repeat;
     background-size: 50%;
     background-position: center center;

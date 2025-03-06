@@ -1,0 +1,19 @@
+.container__slider__calendar {
+    display: flex;
+    padding: 10px 0px;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    align-self: stretch;
+    flex-wrap: wrap;
+}
+.container__student__schedule
+{
+    display: flex;
+    padding: 50px 180px;
+    justify-content: center;
+    align-content: flex-start;
+    gap: 310px;
+    align-self: stretch;
+    flex-wrap: wrap-reverse;
+}
