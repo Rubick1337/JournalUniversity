@@ -15,7 +15,7 @@ function Header() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     const menuItems = [
-        { name: "Главная", icon: dashboardIcon, path: "/" },
+        { name: "Главная", icon: dashboardIcon, path: "/welcome" },
         { name: "Расписание", icon: scheduleIcon, path: "/schedule" },
         // { name: "Курсы", icon: coursesIcon, path: "/courses" },
         { name: "Успеваемость", icon: curriculumIcon, path: "/curriculum" },
@@ -77,7 +77,7 @@ function Header() {
                     ref={sidebarRef}
                 >
                     <div className="offcanvas-header">
-                        <h5 className="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+                        <h5 className="offcanvas-title" id="offcanvasNavbarLabel">Боковое меню</h5>
                         <button
                             type="button"
                             className="btn-close text-reset"

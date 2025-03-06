@@ -50,7 +50,7 @@ const Footer = () => {
                 </div>
             </div>
             <div className="footer__end">
-                <h5>All Copyrights are reserved</h5>
+                <h5>All Copyrights are reserved ©️</h5>
             </div>
         </footer>
     )
