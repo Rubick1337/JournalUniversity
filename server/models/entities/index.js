@@ -8,17 +8,17 @@ const { WeekType, initializeWeekType } = require("./WeekType");
 const { Pair, initializePair } = require("./Pair");
 const { Department, initializeDepartment } = require("./Department");
 const { AcademicSpecialty, initializeAcademicSpecialty } = require("./AcademicSpecialty");
+const { Group } = require("./Group");
+const { Subgroup } = require("./Subgroup");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
 // const { Curriculum } = require("./Curriculum");
 // const { Grade } = require("./Grade");
-// const { Group } = require("./Group");
 // const { Lesson } = require("./Lesson");
 // const { PlannedTask } = require("./PlannedTask");
 // const { PlannedTaskTopic } = require("./PlannedTaskTopic");
 // const { Student } = require("./Student");
-// const { Subgroup } = require("./Subgroup");
 // const { Subject } = require("./Subject");
 // const { Teacher } = require("./Teacher");
 // const { Topic } = require("./Topic");
@@ -45,17 +45,17 @@ module.exports = {
   Pair,
   Department,
   AcademicSpecialty,
+  Group,
+  Subgroup,
 
   // Absenteeism,
   // AcademicPerformance,
   // Curriculum,
   // Grade,
-  // Group,
   // Lesson,
   // PlannedTask,
   // PlannedTaskTopic,
   // Student,
-  // Subgroup,
   // Subject,
   // Teacher,
   // Topic,
