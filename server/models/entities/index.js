@@ -1,6 +1,6 @@
 const { Person } = require("./Person");
 const { TeachingPosition, initializeTeachingPositions } = require("./TeachingPosition");
-const { Faculty } = require("./Faculty");
+const { Faculty, initializeFaculty } = require("./Faculty");
 const { WeekType, initializeWeekType } = require("./WeekType");
 const { Pair, initializePair } = require("./Pair");
 
@@ -26,7 +26,9 @@ const { Pair, initializePair } = require("./Pair");
 const initModels = async () => {
   // await initializeTeachingPositions();
   // await initializeWeekType();
-  await initializePair();
+  // await initializePair();
+  // await initializeFaculty();
+  
 };
 module.exports = {
   initModels,
