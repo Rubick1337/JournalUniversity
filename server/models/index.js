@@ -4,11 +4,12 @@ const {
   TeachingPosition, 
   Faculty, 
   WeekType,
+  Department, 
+  AcademicSpecialty, 
+
 //   Absenteeism, 
 //   AcademicPerformance, 
-//   AcademicSpecialty, 
 //   Curriculum, 
-//   Department, 
 //   Grade, 
 //   GradeTopic, 
 //   Group, 
@@ -57,11 +58,11 @@ const {
 // AcademicSpecialty.hasMany(Curriculum, { foreignKey: "specialty_code" });
 // Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
 
-// Person.hasOne(Department, { foreignKey: "chairperson_of_the_department_person_id" });
-// Department.belongsTo(Person, { foreignKey: "chairperson_of_the_department_person_id" });
+Person.hasOne(Department, { foreignKey: "chairperson_of_the_department_person_id" });
+Department.belongsTo(Person, { foreignKey: "chairperson_of_the_department_person_id" });
 
-// Faculty.hasMany(Department, { foreignKey: "faculty_id" });
-// Department.belongsTo(Faculty, { foreignKey: "faculty_id" });
+Faculty.hasMany(Department, { foreignKey: "faculty_id" });
+Department.belongsTo(Faculty, { foreignKey: "faculty_id" });
 
 Person.hasOne(Faculty, { foreignKey: "dean_person_id" });
 Faculty.belongsTo(Person, { foreignKey: "dean_person_id" });
@@ -191,11 +192,12 @@ module.exports = {
   TeachingPosition,
   Faculty,
   WeekType,
+  Department,
+  AcademicSpecialty,
+
 //   Absenteeism,
 //   AcademicPerformance,
-//   AcademicSpecialty,
 //   Curriculum,
-//   Department,
 //   Grade,
 //   GradeTopic,
 //   Group,

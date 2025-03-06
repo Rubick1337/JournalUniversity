@@ -1,14 +1,17 @@
 const { Person } = require("./Person");
-const { TeachingPosition, initializeTeachingPositions } = require("./TeachingPosition");
+const {
+  TeachingPosition,
+  initializeTeachingPositions,
+} = require("./TeachingPosition");
 const { Faculty, initializeFaculty } = require("./Faculty");
 const { WeekType, initializeWeekType } = require("./WeekType");
 const { Pair, initializePair } = require("./Pair");
+const { Department, initializeDepartment } = require("./Department");
+const { AcademicSpecialty, initializeAcademicSpecialty } = require("./AcademicSpecialty");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
-// const { AcademicSpecialty } = require("./AcademicSpecialty");
 // const { Curriculum } = require("./Curriculum");
-// const { Department } = require("./Department");
 // const { Grade } = require("./Grade");
 // const { Group } = require("./Group");
 // const { Lesson } = require("./Lesson");
@@ -28,6 +31,9 @@ const initModels = async () => {
   // await initializeWeekType();
   // await initializePair();
   // await initializeFaculty();
+  // await initializeDepartment();
+  // await initializeAcademicSpecialty();
+  
   
 };
 module.exports = {
@@ -36,12 +42,13 @@ module.exports = {
   TeachingPosition,
   Faculty,
   WeekType,
-  Pair
+  Pair,
+  Department,
+  AcademicSpecialty,
+
   // Absenteeism,
   // AcademicPerformance,
-  // AcademicSpecialty,
   // Curriculum,
-  // Department,
   // Grade,
   // Group,
   // Lesson,
