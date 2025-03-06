@@ -2,7 +2,7 @@ const sequelize = require("../../db");
 const { DataTypes } = require("sequelize");
 
 const TeachingPosition = sequelize.define("TeachingPosition", {
-  id: { type: DataTypes.UUID, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+  id: { type: DataTypes.INTEGER, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
 
   name: {
     type: DataTypes.STRING,

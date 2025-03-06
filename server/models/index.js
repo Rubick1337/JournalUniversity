@@ -3,7 +3,7 @@ const {
   Person,
   TeachingPosition, 
   Faculty, 
-
+  WeekType,
 //   Absenteeism, 
 //   AcademicPerformance, 
 //   AcademicSpecialty, 
@@ -190,7 +190,7 @@ module.exports = {
   Person,
   TeachingPosition,
   Faculty,
-
+  WeekType,
 //   Absenteeism,
 //   AcademicPerformance,
 //   AcademicSpecialty,

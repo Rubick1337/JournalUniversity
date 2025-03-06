@@ -1,6 +1,8 @@
 const { Person } = require("./Person");
 const { TeachingPosition, initializeTeachingPositions } = require("./TeachingPosition");
 const { Faculty } = require("./Faculty");
+const { WeekType, initializeWeekType } = require("./WeekType");
+const { Pair, initializePair } = require("./Pair");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
@@ -22,14 +24,17 @@ const { Faculty } = require("./Faculty");
 // const { TotalScoreType } = require("./TotalScoreType");
 
 const initModels = async () => {
-  await initializeTeachingPositions();
+  // await initializeTeachingPositions();
+  // await initializeWeekType();
+  await initializePair();
 };
 module.exports = {
   initModels,
   Person,
   TeachingPosition,
   Faculty,
-
+  WeekType,
+  Pair
   // Absenteeism,
   // AcademicPerformance,
   // AcademicSpecialty,
