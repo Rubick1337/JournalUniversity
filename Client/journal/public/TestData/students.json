@@ -96,5 +96,86 @@
     "middleName": "",
     "group": "ASOIR-221",
     "photo": "https://example.com/photo9.png"
+  },
+  {
+    "id": 12,
+    "firstName": "Viktor",
+    "lastName": "Ivanov",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo10.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "id": 13,
+    "firstName": "Natalia",
+    "lastName": "Kozlova",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo11.png",
+    "subgroup": "Подгруппа 2"
+  },
+  {
+    "id": 14,
+    "firstName": "Andrey",
+    "lastName": "Sidorov",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo12.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "id": 15,
+    "firstName": "Tatiana",
+    "lastName": "Kuznetsova",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo13.png",
+    "subgroup": "Подгруппа 2"
+  },
+  {
+    "id": 16,
+    "firstName": "Sergey",
+    "lastName": "Petrov",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo14.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "id": 17,
+    "firstName": "Elena",
+    "lastName": "Ivanova",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo15.png",
+    "subgroup": "Подгруппа 2"
+  },
+  {
+    "id": 18,
+    "firstName": "Dmitry",
+    "lastName": "Kozlov",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo16.png",
+    "subgroup": "Подгруппа 1"
+  },
+  {
+    "id": 19,
+    "firstName": "Olga",
+    "lastName": "Sidorova",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo17.png",
+    "subgroup": "Подгруппа 2"
+  },
+  {
+    "id": 20,
+    "firstName": "Alexey",
+    "lastName": "Kuznetsov",
+    "middleName": "",
+    "group": "PIR-221",
+    "photo": "https://example.com/photo18.png",
+    "subgroup": "Подгруппа 1"
   }
 ]

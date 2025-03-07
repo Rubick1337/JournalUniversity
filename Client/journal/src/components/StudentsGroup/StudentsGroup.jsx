@@ -18,7 +18,7 @@ import {
 import "../StudentList/StudentListStyle.css";
 import defaultPhoto from '../../images/icons8-тестовый-аккаунт-64.png';
 
-const StudentsGroup = () => {
+const StudentsGroup = ({ group }) => {
     const [students, setStudents] = useState([]);
     const [isMonitor, setIsMonitor] = useState(true); // Флаг старосты
     const [sortMode, setSortMode] = useState('fullList'); // По умолчанию полный список
@@ -41,18 +41,20 @@ const StudentsGroup = () => {
         axios.get('/TestData/students.json')
             .then(response => {
                 const data = response.data;
-                const sortedData = sortStudentsAlphabetically(data); // Сортируем данные сразу после загрузки
+                // Фильтруем студентов по выбранной группе
+                const filteredStudents = data.filter(student => student.group === group);
+                const sortedData = sortStudentsAlphabetically(filteredStudents); // Сортируем данные
                 setStudents(sortedData);
 
-                // Извлекаем название группы и номер группы из данных студентов
-                if (data.length > 0) {
-                    const [group, number] = data[0].group.split('-');
-                    setGroupName(group);
+                // Извлекаем название группы и номер группы из props
+                if (group) {
+                    const [name, number] = group.split('-');
+                    setGroupName(name);
                     setGroupNumber(number);
                 }
             })
             .catch(error => console.error('Ошибка загрузки данных', error));
-    }, []);
+    }, [group]); // Зависимость от group
 
     const onDragEnd = (event) => {
         if (!isMonitor || sortMode !== 'subgroups') return; // Блокируем DnD

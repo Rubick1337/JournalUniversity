@@ -17,3 +17,40 @@
     align-self: stretch;
     flex-wrap: wrap-reverse;
 }
+@media (max-width: 1416px)
+{
+    .container__student__schedule
+    {
+        gap:150px;
+    }
+}
+@media (max-width: 1256px) {
+    .container__student__schedule
+    {
+        gap:50px;
+    }
+}
+@media (max-width: 674px)
+{
+    .swiper-container {
+        width: 90%;
+    }
+    .calendar
+    {
+        width: 450px;
+    }
+}
+@media(max-width: 450px)
+{
+    .calendar
+    {
+        width: 350px;
+    }
+}
+@media(max-width: 360px)
+{
+    .calendar
+    {
+        width: 300px;
+    }
+}
