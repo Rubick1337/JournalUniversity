@@ -8,7 +8,7 @@ const GroupListPage = props => {
         <>
             <Header/>
             <main>
-                <StudentsGroup/>
+                <StudentsGroup group="ASOIR-221"/>
             </main>
             <Footer/>
         </>

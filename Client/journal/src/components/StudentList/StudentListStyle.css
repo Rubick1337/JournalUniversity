@@ -8,24 +8,26 @@
     flex-wrap: wrap;
 }
 
-.header {
+.header__list {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    gap: 60px;
+    gap: 30px;
 }
 
 .title {
     font-size: 24px;
     font-weight: bold;
     margin-block: 0;
+    width: 215px;
 }
 
 .see-all {
     font-size: 14px;
     color: blue;
     cursor: pointer;
+    width: 149px;
 }
 
 .student-list {
