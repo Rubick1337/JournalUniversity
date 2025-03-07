@@ -1,6 +1,16 @@
 .schedule-container {
     padding: 20px;
 }
+.schedule-container h1
+{
+    color: #000;
+    font-family: "Abhaya Libre ExtraBold";
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: normal;
+    margin-bottom: 20px;
+}
 
 h1 {
     text-align: center;
@@ -24,7 +34,7 @@ h1 {
     border-radius: 14px;
     background: #F9F9F9;
     width: 353px;
-    height: 86px;
+    height: 111px;
     border: 1px solid #ddd;
     padding: 10px;
     margin-bottom: 10px;

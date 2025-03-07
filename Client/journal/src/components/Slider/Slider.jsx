@@ -32,7 +32,7 @@ const Slider = ({ studentId }) => {
                     disciplines.map(discipline => (
                         <SwiperSlide key={discipline.id}>
                             <div className="swiper-slide" style={{ backgroundImage: `url(${backgroundImage})` }}>
-                                <button className="play-button">&#9658;</button>
+                                <button className="play-button">&#9655;</button>
                                 <div className="slide-content">
                                     <h2>{discipline.name}</h2>
                                 </div>
