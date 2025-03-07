@@ -93,3 +93,83 @@ BEGIN
     RETURN result;
 END;
 $$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION get_current_semester(start_year INT) 
+RETURNS INT AS $$
+DECLARE
+    current_year INT;
+    current_month INT;
+    years_passed INT;
+    semester INT;
+BEGIN
+    -- Получаем текущий год и месяц
+    SELECT EXTRACT(YEAR FROM CURRENT_DATE), EXTRACT(MONTH FROM CURRENT_DATE)
+    INTO current_year, current_month;
+    -- Вычисляем количество полных учебных лет
+    years_passed := current_year - start_year;
+
+    -- Определяем семестр
+    IF current_month BETWEEN 9 AND 12 OR current_month = 1 THEN
+        semester := years_passed * 2 +1; -- Осенний семестр
+    ELSE
+        semester := years_passed * 2; -- Весенний семестр
+    END IF;
+
+    RETURN semester;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION get_group_current_semester(p_group_id UUID) 
+RETURNS INT AS $$
+DECLARE
+    start_year INT;
+    semester INT;
+BEGIN
+    -- Получаем год начала обучения группы
+    SELECT graduation_year INTO start_year 
+    FROM "Groups"
+    WHERE id = p_group_id;
+
+    -- Проверяем, найдена ли группа
+    IF start_year IS NULL THEN
+        RAISE EXCEPTION 'Группа с id % не найдена', p_group_id;
+    END IF;
+
+    -- Вызываем функцию get_current_semester
+    semester := get_current_semester(start_year);
+
+    RETURN semester;
+END;
+$$ LANGUAGE plpgsql;
+SELECT get_group_current_semester('db487c13-af08-4bf0-9218-e13333086a08')
+SELECT * FROM public."Groups"
+
+
+CREATE OR REPLACE FUNCTION get_active_curriculum_id(p_year INTEGER)
+RETURNS UUID AS $$
+DECLARE
+    active_curriculum_id UUID;
+BEGIN
+    SELECT id
+    INTO active_curriculum_id
+    FROM "Curriculums"
+    WHERE year_of_specialty_training <= p_year
+    AND id = (
+        SELECT id
+        FROM "Curriculums"
+        WHERE year_of_specialty_training <= p_year
+        ORDER BY year_of_specialty_training DESC
+        LIMIT 1
+    );
+
+    IF active_curriculum_id IS NULL THEN
+        RAISE EXCEPTION 'No active curriculum found for the year %', p_year;
+    END IF;
+
+    RETURN active_curriculum_id;
+END;
+$$ LANGUAGE plpgsql;
+SELECT * from public."Curriculums"
+SELECT get_active_curriculum_id(2019)

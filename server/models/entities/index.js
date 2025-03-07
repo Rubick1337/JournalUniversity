@@ -7,22 +7,30 @@ const { Faculty, initializeFaculty } = require("./Faculty");
 const { WeekType, initializeWeekType } = require("./WeekType");
 const { Pair, initializePair } = require("./Pair");
 const { Department, initializeDepartment } = require("./Department");
-const { AcademicSpecialty, initializeAcademicSpecialty } = require("./AcademicSpecialty");
+const {
+  AcademicSpecialty,
+  initializeAcademicSpecialty,
+} = require("./AcademicSpecialty");
 const { Group } = require("./Group");
 const { Subgroup } = require("./Subgroup");
 const { Student } = require("./Student");
+const { Subject } = require("./Subject");
+const { SemesterType, initializeSemesterType } = require("./SemesterType");
+const {
+  AssessmentType,
+  initializeAssessmentType,
+} = require("./AssessmentType");
+
+const { Curriculum } = require("./Curriculum");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
-// const { Curriculum } = require("./Curriculum");
 // const { Grade } = require("./Grade");
 // const { Lesson } = require("./Lesson");
 // const { PlannedTask } = require("./PlannedTask");
 // const { PlannedTaskTopic } = require("./PlannedTaskTopic");
-// const { Subject } = require("./Subject");
 // const { Teacher } = require("./Teacher");
 // const { Topic } = require("./Topic");
-// const { AssessmentType } = require("./AssessmentType");
 // const { SubjectType } = require("./SubjectType");
 // const { TotalScoreType } = require("./TotalScoreType");
 
@@ -33,8 +41,8 @@ const initModels = async () => {
   // await initializeFaculty();
   // await initializeDepartment();
   // await initializeAcademicSpecialty();
-  
-  
+  // await initializeSemesterType();
+  // await initializeAssessmentType();
 };
 module.exports = {
   initModels,
@@ -48,18 +56,19 @@ module.exports = {
   Group,
   Subgroup,
   Student,
+  Subject,
+  SemesterType,
+  AssessmentType,
+  Curriculum,
 
   // Absenteeism,
   // AcademicPerformance,
-  // Curriculum,
   // Grade,
   // Lesson,
   // PlannedTask,
   // PlannedTaskTopic,
-  // Subject,
   // Teacher,
   // Topic,
-  // AssessmentType,
   // SubjectType,
   // TotalScoreType,
 };
