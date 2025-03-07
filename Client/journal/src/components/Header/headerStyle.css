@@ -125,6 +125,7 @@ header
     {
         gap:45px;
     }
+
     .container-fluid
     {
         gap:50px;
@@ -139,5 +140,13 @@ header
     .container-fluid
     {
         gap:20px;
+    }
+}
+@media (max-width: 991px) {
+    .profile__header
+    {
+        position: absolute;
+        top: 16px;
+        left: 170px;
     }
 }

@@ -6,6 +6,7 @@ import {Route, Routes } from 'react-router-dom';
 import MainPage from "./pages/MainPage/Main";
 import GroupListPage from "./pages/GroupListPage/GroupListPage";
 import SchedulePage from "./pages/SchedulePage/SchedulePage";
+import TestPage from "./pages/TestPage/TestPage";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
               <Route path="/welcome" element={<MainPage/>}/>
               <Route path="/group" element={<GroupListPage/>}/>
               <Route path="/schedule" element={<SchedulePage/>}/>
+              <Route path="/test" element={<TestPage/>}/>
           </Routes>
       </div>
   );

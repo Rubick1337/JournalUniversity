@@ -1,0 +1,37 @@
+{
+  "specialtyCode": "09.03.01",
+  "specialtyName": "Информатика и вычислительная техника",
+  "startYear": 2022,
+  "disciplines": [
+    { "id": 1, "name": "Информатика - ПОИТ" },
+    { "id": 2, "name": "Математика" },
+    { "id": 3, "name": "Физика" },
+    { "id": 4, "name": "Физика и Электроэнергетика" }
+  ],
+  "departments": [
+    { "id": 1, "name": "Кафедра информатики" },
+    { "id": 2, "name": "Кафедра математики" },
+    { "id": 3, "name": "Кафедра физики" }
+  ],
+  "formsOfAttestation": [
+    { "id": 1, "name": "Экзамен" },
+    { "id": 2, "name": "Зачет" },
+    { "id": 3, "name": "Курсовая работа" }
+  ],
+  "tableData": [
+    {
+      "id": 1,
+      "discipline": "Информатика - ПОИТ",
+      "department": "Кафедра информатики",
+      "formOfAttestation": "Экзамен",
+      "semester": 1
+    },
+    {
+      "id": 2,
+      "discipline": "Математика",
+      "department": "Кафедра математики",
+      "formOfAttestation": "Зачет",
+      "semester": 2
+    }
+  ]
+}
