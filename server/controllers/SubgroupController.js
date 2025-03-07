@@ -9,7 +9,6 @@ class SubgroupController {
       const resultDto = result.map((element) => {
         return new StudentFIOData(element);
       });
-      console.log(resultDto);
       return res.status(200).json({ data: resultDto });
     } catch (err) {
       console.error(err);

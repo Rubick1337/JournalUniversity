@@ -9,6 +9,13 @@ class GroupService {
     const extractedData = Object.values(data[0])[0];
     return extractedData;
   };
+  getGroupName = async (groupId) => {
+    const params = [groupId];
+    const data = await dbQuery(QUERIES.GET_GROUP_NAME, params);
+    const extractedData = Object.values(data[0])[0];
+    return extractedData;
+  };
+  
 }
 
 module.exports = new GroupService();
