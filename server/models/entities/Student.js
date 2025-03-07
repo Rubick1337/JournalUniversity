@@ -19,9 +19,12 @@ const Student = sequelize.define("Student", {
     defaultValue: STUDENT.DEFAULT_REPRIMANDS,
     validate: { min: STUDENT.MIN_REPRIMANDS, max: STUDENT.MAX_REPRIMANDS },
   },
-
+  icon_path: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
   person_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     references: {
       model: Person,
       key: "id",
@@ -29,23 +32,23 @@ const Student = sequelize.define("Student", {
     allowNull: false,
   },
   group_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     references: {
       model: Group,
       key: "id",
     },
-    allowNull: true,
+    allowNull: false,
   },
   subgroup_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     references: {
       model: Subgroup,
       key: "id",
     },
-    allowNull: true,
+    allowNull: false,
   },
   perent_person_id: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.UUID,
     references: {
       model: Person,
       key: "id",
