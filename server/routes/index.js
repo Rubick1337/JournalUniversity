@@ -14,6 +14,7 @@ function initializeRoute(route, routeName) {
 
 
 initializeRoute('person', 'person');
+initializeRoute('group', 'group');
 initializeRoute('subgroup', 'subgroup');
 
 
