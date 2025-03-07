@@ -10,6 +10,7 @@ const { Department, initializeDepartment } = require("./Department");
 const { AcademicSpecialty, initializeAcademicSpecialty } = require("./AcademicSpecialty");
 const { Group } = require("./Group");
 const { Subgroup } = require("./Subgroup");
+const { Student } = require("./Student");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
@@ -18,7 +19,6 @@ const { Subgroup } = require("./Subgroup");
 // const { Lesson } = require("./Lesson");
 // const { PlannedTask } = require("./PlannedTask");
 // const { PlannedTaskTopic } = require("./PlannedTaskTopic");
-// const { Student } = require("./Student");
 // const { Subject } = require("./Subject");
 // const { Teacher } = require("./Teacher");
 // const { Topic } = require("./Topic");
@@ -47,6 +47,7 @@ module.exports = {
   AcademicSpecialty,
   Group,
   Subgroup,
+  Student,
 
   // Absenteeism,
   // AcademicPerformance,
@@ -55,7 +56,6 @@ module.exports = {
   // Lesson,
   // PlannedTask,
   // PlannedTaskTopic,
-  // Student,
   // Subject,
   // Teacher,
   // Topic,

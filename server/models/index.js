@@ -8,6 +8,7 @@ const {
   AcademicSpecialty, 
   Group, 
   Subgroup, 
+  Student, 
 
 //   Absenteeism, 
 //   AcademicPerformance, 
@@ -17,7 +18,6 @@ const {
 //   Lesson, 
 //   PlannedTask, 
 //   PlannedTaskTopic, 
-//   Student, 
 //   SubgroupStudent, 
 //   Subject, 
 //   Teacher, 
@@ -50,6 +50,18 @@ Group.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
 //Subgroup
 Group.hasMany(Subgroup, { foreignKey: 'group_id' });
 Subgroup.belongsTo(Group, { foreignKey: 'group_id' });
+
+//Student
+Person.hasMany(Student, { foreignKey: 'person_id' });
+Student.belongsTo(Person, { foreignKey: 'person_id' });
+Group.hasMany(Student, { foreignKey: 'group_id' });
+Student.belongsTo(Group, { foreignKey: 'group_id' });
+Subgroup.hasMany(Student, { foreignKey: 'subgroup_id' });
+Student.belongsTo(Subgroup, { foreignKey: 'subgroup_id' });
+Person.hasMany(Student, { foreignKey: 'perent_person_id' });
+Student.belongsTo(Person, { foreignKey: 'perent_person_id' });
+
+
 
 
 // //TODO связи
@@ -151,21 +163,6 @@ Subgroup.belongsTo(Group, { foreignKey: 'group_id' });
 // Subject.hasMany(PlannedTaskTopic, { foreignKey: 'subject_id' });
 // PlannedTaskTopic.belongsTo(Subject, { foreignKey: 'subject_id' });
 
-// Person.hasOne(Student, { foreignKey: 'person_id' });
-// Student.belongsTo(Person, { foreignKey: 'person_id' });
-
-// // Group и Student
-// Group.hasMany(Student, { foreignKey: 'group_id' });
-// Student.belongsTo(Group, { foreignKey: 'group_id' });
-
-// // Subgroup и Student
-// Subgroup.hasMany(Student, { foreignKey: 'subgroup_id' });
-// Student.belongsTo(Subgroup, { foreignKey: 'subgroup_id' });
-
-// // Person (родитель) и Student
-// Person.hasOne(Student, { foreignKey: 'perent_person_id' });
-// Student.belongsTo(Person, { foreignKey: 'perent_person_id' });
-
 
 // // Student и Subgroup (лидер)
 // Student.hasOne(Subgroup, { foreignKey: 'leader_id' });
@@ -204,6 +201,7 @@ module.exports = {
   AcademicSpecialty,
   Group,
   Subgroup,
+  Student,
 
 //   Absenteeism,
 //   AcademicPerformance,
@@ -213,7 +211,6 @@ module.exports = {
 //   Lesson,
 //   PlannedTask,
 //   PlannedTaskTopic,
-//   Student,
 //   SubgroupStudent,
 //   Subject,
 //   Teacher,
