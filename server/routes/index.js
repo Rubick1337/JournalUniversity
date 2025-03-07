@@ -13,10 +13,9 @@ function initializeRoute(route, routeName) {
 }
 
 
-// initializeRoute('role', 'role');
-// initializeRoute('user', 'user');
-// initializeRoute('projectStatus', 'projectStatus');
-// initializeRoute('information', 'information');
-// initializeRoute('project', 'project');
+initializeRoute('person', 'person');
+initializeRoute('group', 'group');
+initializeRoute('subgroup', 'subgroup');
+
 
 module.exports = router;
