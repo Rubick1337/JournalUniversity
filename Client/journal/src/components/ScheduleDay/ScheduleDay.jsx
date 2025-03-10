@@ -21,7 +21,9 @@ const ScheduleDay = () => {
     useEffect(() => {
         const today = new Date();
         const dayIndex = today.getDay(); // 0 (воскресенье) - 6 (суббота)
-        const todayDay = daysOfWeek[dayIndex === 0 ? 6 : dayIndex - 1]; // Воскресенье не учитываем
+
+        // Если день недели — воскресенье, устанавливаем понедельник как выбранный день
+        const todayDay = dayIndex === 0 ? daysOfWeek[0] : daysOfWeek[dayIndex - 1]; // Воскресенье игнорируем
         setSelectedDay(todayDay.full);
 
         // Определяем верхняя или нижняя неделя
