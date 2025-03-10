@@ -97,4 +97,9 @@
 .swiper-container.expanded .swiper-button-prev {
     display: none;
 }
-
+@media (max-width: 673px) {
+    .small-expand-button
+    {
+        display: none;
+    }
+}

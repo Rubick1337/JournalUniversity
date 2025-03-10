@@ -24,7 +24,7 @@ const Slider = ({ studentId }) => {
         if (expanded && swiperRef.current) {
             const { left, width } = e.currentTarget.getBoundingClientRect();
             const clickPosition = e.clientX;
-            const edgeBoundary = width * 0.1;
+            const edgeBoundary = width * 0.2;
 
             if (clickPosition < left + edgeBoundary) {
                 swiperRef.current.swiper.slidePrev();
