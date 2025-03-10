@@ -14,7 +14,8 @@ const {
   AssessmentType,
   Curriculum,
   Teacher,
-
+  AcademicBuilding,
+  Audience
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
@@ -73,6 +74,15 @@ Subject.belongsTo(Department, { foreignKey: "department_id" });
 //Curriculum
 AcademicSpecialty.hasMany(Curriculum, { foreignKey: "specialty_code" });
 Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
+
+//Teacher
+Person.hasMany(Teacher, { foreignKey: 'person_id' });
+Teacher.belongsTo(Person, { foreignKey: 'person_id' });
+Department.hasMany(Teacher, { foreignKey: 'department_id' });
+Teacher.belongsTo(Department, { foreignKey: 'department_id' });
+TeachingPosition.hasMany(Teacher, { foreignKey: 'teaching_position_id' });
+Teacher.belongsTo(TeachingPosition, { foreignKey: 'teaching_position_id' });
+
 
 // //TODO связи
 // Group.hasMany(Absenteeism, { foreignKey: "group_id" });
@@ -167,17 +177,6 @@ Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
 // Student.hasOne(Subgroup, { foreignKey: 'leader_id' });
 // Subgroup.belongsTo(Student, { foreignKey: 'leader_id' });
 
-// // Person и Teacher
-// Person.hasOne(Teacher, { foreignKey: 'person_id' });
-// Teacher.belongsTo(Person, { foreignKey: 'person_id' });
-
-// // Department и Teacher
-// Department.hasMany(Teacher, { foreignKey: 'department_id' });
-// Teacher.belongsTo(Department, { foreignKey: 'department_id' });
-
-// // TeachingPosition и Teacher
-// TeachingPosition.hasMany(Teacher, { foreignKey: 'teaching_position_id' });
-// Teacher.belongsTo(TeachingPosition, { foreignKey: 'teaching_position_id' });
 
 // // Subject и Topic
 // Subject.hasMany(Topic, { foreignKey: 'subject_id' });
@@ -203,6 +202,8 @@ module.exports = {
   AssessmentType,
   Curriculum,
   Teacher,
+  AcademicBuilding,
+  Audience
 
   //   Absenteeism,
   //   AcademicPerformance,

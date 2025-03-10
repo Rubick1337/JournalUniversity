@@ -1,6 +1,8 @@
 const sequelize = require("../../db");
 const { DataTypes } = require("sequelize");
 
+const { AcademicBuilding } = require("./AcademicBuilding");
+
 const Audience = sequelize.define("Audience", {
   id: {
     type: DataTypes.UUID,
@@ -8,10 +10,17 @@ const Audience = sequelize.define("Audience", {
     defaultValue: DataTypes.UUIDV4,
   },
   number: { type: DataTypes.INTEGER, allowNull: false },
-  name: { type: DataTypes.STRING, allowNull: false },
-  middlename: { type: DataTypes.STRING, allowNull: true },
-  phone_number: { type: DataTypes.STRING, allowNull: true },
-  email: { type: DataTypes.STRING, allowNull: true },
+  capacity: { type: DataTypes.INTEGER, allowNull: false },
+  academic_building_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: AcademicBuilding,
+      key: "id",
+    },
+    allowNull: false,
+  },
+
+  description: { type: DataTypes.STRING(1026), allowNull: false },
 });
 
 module.exports = { Audience };
