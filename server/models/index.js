@@ -13,6 +13,7 @@ const {
   SemesterType,
   AssessmentType,
   Curriculum,
+  Teacher,
 
   //   Absenteeism,
   //   AcademicPerformance,
@@ -22,7 +23,6 @@ const {
   //   PlannedTask,
   //   PlannedTaskTopic,
   //   SubgroupStudent,
-  //   Teacher,
   //   Topic,
   //   SubjectType,
   //   TotalScoreType
@@ -74,7 +74,6 @@ Subject.belongsTo(Department, { foreignKey: "department_id" });
 AcademicSpecialty.hasMany(Curriculum, { foreignKey: "specialty_code" });
 Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
 
-
 // //TODO связи
 // Group.hasMany(Absenteeism, { foreignKey: "group_id" });
 // Absenteeism.belongsTo(Group, { foreignKey: "group_id" });
@@ -102,7 +101,6 @@ Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
 
 // AssessmentType.hasMany(Curriculum, { foreignKey: "type_of_assessment_id" });
 // Curriculum.belongsTo(AssessmentType, { foreignKey: "type_of_assessment_id" });
-
 
 // Topic.hasMany(Grade, { foreignKey: "topic_id" });
 // Grade.belongsTo(Topic, { foreignKey: "topic_id" });
@@ -203,7 +201,8 @@ module.exports = {
   Subject,
   SemesterType,
   AssessmentType,
-    Curriculum,
+  Curriculum,
+  Teacher,
 
   //   Absenteeism,
   //   AcademicPerformance,
@@ -213,7 +212,6 @@ module.exports = {
   //   PlannedTask,
   //   PlannedTaskTopic,
   //   SubgroupStudent,
-  //   Teacher,
   //   Topic,
   //   SubjectType,
   //   TotalScoreType,

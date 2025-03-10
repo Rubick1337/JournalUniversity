@@ -22,6 +22,7 @@ const {
 } = require("./AssessmentType");
 
 const { Curriculum } = require("./Curriculum");
+const { Teacher } = require("./Teacher");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
@@ -29,7 +30,6 @@ const { Curriculum } = require("./Curriculum");
 // const { Lesson } = require("./Lesson");
 // const { PlannedTask } = require("./PlannedTask");
 // const { PlannedTaskTopic } = require("./PlannedTaskTopic");
-// const { Teacher } = require("./Teacher");
 // const { Topic } = require("./Topic");
 // const { SubjectType } = require("./SubjectType");
 // const { TotalScoreType } = require("./TotalScoreType");
@@ -60,6 +60,7 @@ module.exports = {
   SemesterType,
   AssessmentType,
   Curriculum,
+  Teacher,
 
   // Absenteeism,
   // AcademicPerformance,
@@ -67,7 +68,6 @@ module.exports = {
   // Lesson,
   // PlannedTask,
   // PlannedTaskTopic,
-  // Teacher,
   // Topic,
   // SubjectType,
   // TotalScoreType,
