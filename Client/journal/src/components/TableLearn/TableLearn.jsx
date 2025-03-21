@@ -2,9 +2,11 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    IconButton, TextField, Autocomplete, Box
+    IconButton, TextField, Autocomplete, Box, Menu, MenuItem, Modal, Typography, Button
 } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import CloseIcon from '@mui/icons-material/Close';
 import './TableLearn.css'; // Импортируем CSS для анимации
 
 const TableLearn = () => {
@@ -21,6 +23,10 @@ const TableLearn = () => {
         formOfAttestation: "",
         semester: "",
     });
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [currentRow, setCurrentRow] = useState(null);
+    const [openEditModal, setOpenEditModal] = useState(false);
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
 
     useEffect(() => {
         axios.get("/TestData/data.json")
@@ -58,6 +64,44 @@ const TableLearn = () => {
         }
     };
 
+    const handleMenuClick = (event, row) => {
+        setAnchorEl(event.currentTarget);
+        setCurrentRow(row);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleEdit = () => {
+        setOpenEditModal(true);
+        handleMenuClose();
+    };
+
+    const handleDelete = () => {
+        setOpenDeleteModal(true);
+        handleMenuClose();
+    };
+
+    const handleCloseModals = () => {
+        setOpenEditModal(false);
+        setOpenDeleteModal(false);
+    };
+
+    const handleSaveEdit = () => {
+        // Логика сохранения изменений
+        const updatedData = data.map(row => row.id === currentRow.id ? currentRow : row);
+        setData(updatedData);
+        handleCloseModals();
+    };
+
+    const handleDeleteConfirm = () => {
+        // Логика удаления записи
+        const updatedData = data.filter(row => row.id !== currentRow.id);
+        setData(updatedData);
+        handleCloseModals();
+    };
+
     return (
         <Box sx={{ maxWidth: '100%', overflowX: 'auto' }}>
             <TableContainer component={Paper} sx={{ boxShadow: 'none' }}>
@@ -72,6 +116,7 @@ const TableLearn = () => {
                             <TableCell sx={{ borderRight: '1px solid #e0e0e0' }}>Кафедра</TableCell>
                             <TableCell sx={{ borderRight: '1px solid #e0e0e0' }}>Форма аттестации</TableCell>
                             <TableCell>Семестр</TableCell>
+                            <TableCell>Действия</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -81,6 +126,11 @@ const TableLearn = () => {
                                 <TableCell>{row.department}</TableCell>
                                 <TableCell>{row.formOfAttestation}</TableCell>
                                 <TableCell style={{ width: 150 }}>{row.semester}</TableCell>
+                                <TableCell>
+                                    <IconButton onClick={(e) => handleMenuClick(e, row)}>
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                </TableCell>
                             </TableRow>
                         ))}
                         <TableRow>
@@ -138,6 +188,7 @@ const TableLearn = () => {
                                     fullWidth
                                 />
                             </TableCell>
+                            <TableCell></TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
@@ -157,6 +208,75 @@ const TableLearn = () => {
                     <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
                 </IconButton>
             </Box>
+            <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+            >
+                <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
+                <MenuItem onClick={handleDelete}>Удалить</MenuItem>
+            </Menu>
+            <Modal open={openEditModal || openDeleteModal} onClose={handleCloseModals}>
+                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24 }}>
+                    <Box sx={{ bgcolor: '#1976d2', color: 'white', p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Typography variant="h6">
+                            {openEditModal && "Редактировать запись"}
+                            {openDeleteModal && "Удалить запись"}
+                        </Typography>
+                        <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+                    <Box sx={{ p: 3 }}>
+                        {openEditModal && (
+                            <div>
+                                <TextField
+                                    label="Дисциплина"
+                                    fullWidth
+                                    margin="normal"
+                                    value={currentRow?.discipline || ""}
+                                    onChange={(e) => setCurrentRow({ ...currentRow, discipline: e.target.value })}
+                                />
+                                <TextField
+                                    label="Кафедра"
+                                    fullWidth
+                                    margin="normal"
+                                    value={currentRow?.department || ""}
+                                    onChange={(e) => setCurrentRow({ ...currentRow, department: e.target.value })}
+                                />
+                                <TextField
+                                    label="Форма аттестации"
+                                    fullWidth
+                                    margin="normal"
+                                    value={currentRow?.formOfAttestation || ""}
+                                    onChange={(e) => setCurrentRow({ ...currentRow, formOfAttestation: e.target.value })}
+                                />
+                                <TextField
+                                    label="Семестр"
+                                    type="number"
+                                    fullWidth
+                                    margin="normal"
+                                    value={currentRow?.semester || ""}
+                                    onChange={(e) => setCurrentRow({ ...currentRow, semester: e.target.value })}
+                                />
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                    <Button onClick={handleCloseModals}>Отмена</Button>
+                                    <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
+                                </Box>
+                            </div>
+                        )}
+                        {openDeleteModal && (
+                            <div>
+                                <Typography>Вы уверены, что хотите удалить запись {currentRow?.discipline}?</Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                    <Button onClick={handleCloseModals}>Отмена</Button>
+                                    <Button onClick={handleDeleteConfirm} color="error">Удалить</Button>
+                                </Box>
+                            </div>
+                        )}
+                    </Box>
+                </Box>
+            </Modal>
         </Box>
     );
 };
