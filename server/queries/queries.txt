@@ -200,3 +200,18 @@ $$ LANGUAGE plpgsql;
 SELECT * FROm public."Groups"
 SELECT * FROm public."Curriculums"
 SELECT get_curriculum_for_group('db487c13-af08-4bf0-9218-e13333086a08')
+
+
+CREATE OR REPLACE FUNCTION public.get_academic_specialties_json()
+RETURNS TABLE (json_data JSON) AS
+$$
+BEGIN
+    RETURN QUERY
+    SELECT json_agg(row_to_json(t))
+    FROM (
+        SELECT code, name
+        FROM public."AcademicSpecialties"
+    ) t;
+END;
+$$
+LANGUAGE plpgsql;

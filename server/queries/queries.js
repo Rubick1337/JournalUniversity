@@ -3,6 +3,7 @@ const QUERIES = {
   GET_STUDENTS_FULL_NAME_BY_SUBGROUP_ID: `SELECT * FROM get_students_full_name_by_subgroup_id($1);`,
   GET_SUBGROUPS_BY_GROUP_ID: `SELECT * FROM get_subgroups_by_group_id($1);`,
   GET_GROUP_NAME:`SELECT * FROM get_group_name($1);`,
+  GET_ACADEMIC_SPECIALTIES: `SELECT * FROM get_academic_specialties_json();`
 };
 
 module.exports = QUERIES;
