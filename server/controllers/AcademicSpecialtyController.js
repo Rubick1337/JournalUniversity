@@ -22,9 +22,7 @@ class AcademicSpecialtyController {
         dataForCreate
       );
       const resultDto = result;
-      // result.map((element) => {
-      //   return new GetAcademicSpecialtiesDto(element);
-      // });
+
       return res.status(201).json({ data: resultDto });
     } catch (err) {
       console.error(err);
