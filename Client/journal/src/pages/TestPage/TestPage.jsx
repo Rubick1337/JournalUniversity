@@ -5,6 +5,7 @@ import SpecializationListTable from "../../components/SpecializationList/Special
 import StudentsTable from "../../components/StudentsTable/StudentsTable";
 import FacultiesTable from "../../components/FacultiesTable/FacultiesTable";
 import DepartmentsTable from "../../components/DepartmentsTable/DepartmentsTable";
+import UserProfile from "../../components/Profile/Profile";
 
 
 const SchedulePage = props => {
@@ -13,10 +14,11 @@ const SchedulePage = props => {
             <Header/>
             <main>
                 {/*<FacultiesTable></FacultiesTable>*/}
-                <DepartmentsTable></DepartmentsTable>
+                {/*<DepartmentsTable></DepartmentsTable>*/}
                 {/*<TableLearn/>*/}
                 {/*<StudentsTable/>*/}
                 {/*<SpecializationListTable/>*/}
+                <UserProfile/>
             </main>
             <Footer/>
         </>

@@ -13,6 +13,7 @@ import StudentTablePage from "./pages/StudentTablePage/StudentTablePage";
 import DepartamentTablePage from "./pages/DepartamentTablePage/DepartamentTablePage";
 import SpecilizationTablePage from "./pages/SpecilizationTablePage/SpecilizationTablePage";
 import FacultiesTablePage from "./pages/FacultiesTablePage/FacultiesTablePage";
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/specilization" element={<SpecilizationTablePage />} />
           <Route path="/faculties" element={<FacultiesTablePage />} />
           <Route path="/test" element={<TestPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Routes>
       </div>
     </Provider>
