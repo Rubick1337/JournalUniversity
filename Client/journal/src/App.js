@@ -14,6 +14,7 @@ import DepartamentTablePage from "./pages/DepartamentTablePage/DepartamentTableP
 import SpecilizationTablePage from "./pages/SpecilizationTablePage/SpecilizationTablePage";
 import FacultiesTablePage from "./pages/FacultiesTablePage/FacultiesTablePage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import TableLearnPage from "./pages/TableLearnPage/TableLearnPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/faculties" element={<FacultiesTablePage />} />
           <Route path="/test" element={<TestPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/tablelearn" element={<TableLearnPage />} />
         </Routes>
       </div>
     </Provider>
