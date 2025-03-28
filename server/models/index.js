@@ -1,30 +1,32 @@
-const { 
+const {
   initModels,
   Person,
-  TeachingPosition, 
-  Faculty, 
+  TeachingPosition,
+  Faculty,
   WeekType,
-  Department, 
-  AcademicSpecialty, 
-  Group, 
-  Subgroup, 
-  Student, 
-
-//   Absenteeism, 
-//   AcademicPerformance, 
-//   Curriculum, 
-//   Grade, 
-//   GradeTopic, 
-//   Lesson, 
-//   PlannedTask, 
-//   PlannedTaskTopic, 
-//   SubgroupStudent, 
-//   Subject, 
-//   Teacher, 
-//   Topic, 
-//   AssessmentType, 
-//   SubjectType, 
-//   TotalScoreType 
+  Department,
+  AcademicSpecialty,
+  Group,
+  Subgroup,
+  Student,
+  Subject,
+  SemesterType,
+  AssessmentType,
+  Curriculum,
+  Teacher,
+  AcademicBuilding,
+  Audience
+  //   Absenteeism,
+  //   AcademicPerformance,
+  //   Grade,
+  //   GradeTopic,
+  //   Lesson,
+  //   PlannedTask,
+  //   PlannedTaskTopic,
+  //   SubgroupStudent,
+  //   Topic,
+  //   SubjectType,
+  //   TotalScoreType
 } = require("./entities");
 
 //Faculty
@@ -32,8 +34,12 @@ Person.hasOne(Faculty, { foreignKey: "dean_person_id" });
 Faculty.belongsTo(Person, { foreignKey: "dean_person_id" });
 
 //Department
-Person.hasOne(Department, { foreignKey: "chairperson_of_the_department_person_id" });
-Department.belongsTo(Person, { foreignKey: "chairperson_of_the_department_person_id" });
+Person.hasOne(Department, {
+  foreignKey: "chairperson_of_the_department_person_id",
+});
+Department.belongsTo(Person, {
+  foreignKey: "chairperson_of_the_department_person_id",
+});
 Faculty.hasMany(Department, { foreignKey: "faculty_id" });
 Department.belongsTo(Faculty, { foreignKey: "faculty_id" });
 
@@ -48,20 +54,34 @@ AcademicSpecialty.hasMany(Group, { foreignKey: "specialty_code" });
 Group.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
 
 //Subgroup
-Group.hasMany(Subgroup, { foreignKey: 'group_id' });
-Subgroup.belongsTo(Group, { foreignKey: 'group_id' });
+Group.hasMany(Subgroup, { foreignKey: "group_id" });
+Subgroup.belongsTo(Group, { foreignKey: "group_id" });
 
 //Student
-Person.hasMany(Student, { foreignKey: 'person_id' });
-Student.belongsTo(Person, { foreignKey: 'person_id' });
-Group.hasMany(Student, { foreignKey: 'group_id' });
-Student.belongsTo(Group, { foreignKey: 'group_id' });
-Subgroup.hasMany(Student, { foreignKey: 'subgroup_id' });
-Student.belongsTo(Subgroup, { foreignKey: 'subgroup_id' });
-Person.hasMany(Student, { foreignKey: 'perent_person_id' });
-Student.belongsTo(Person, { foreignKey: 'perent_person_id' });
+Person.hasMany(Student, { foreignKey: "person_id" });
+Student.belongsTo(Person, { foreignKey: "person_id" });
+Group.hasMany(Student, { foreignKey: "group_id" });
+Student.belongsTo(Group, { foreignKey: "group_id" });
+Subgroup.hasMany(Student, { foreignKey: "subgroup_id" });
+Student.belongsTo(Subgroup, { foreignKey: "subgroup_id" });
+Person.hasMany(Student, { foreignKey: "perent_person_id" });
+Student.belongsTo(Person, { foreignKey: "perent_person_id" });
 
+//Subject
+Department.hasMany(Subject, { foreignKey: "department_id" });
+Subject.belongsTo(Department, { foreignKey: "department_id" });
 
+//Curriculum
+AcademicSpecialty.hasMany(Curriculum, { foreignKey: "specialty_code" });
+Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
+
+//Teacher
+Person.hasMany(Teacher, { foreignKey: 'person_id' });
+Teacher.belongsTo(Person, { foreignKey: 'person_id' });
+Department.hasMany(Teacher, { foreignKey: 'department_id' });
+Teacher.belongsTo(Department, { foreignKey: 'department_id' });
+TeachingPosition.hasMany(Teacher, { foreignKey: 'teaching_position_id' });
+Teacher.belongsTo(TeachingPosition, { foreignKey: 'teaching_position_id' });
 
 
 // //TODO связи
@@ -92,10 +112,6 @@ Student.belongsTo(Person, { foreignKey: 'perent_person_id' });
 // AssessmentType.hasMany(Curriculum, { foreignKey: "type_of_assessment_id" });
 // Curriculum.belongsTo(AssessmentType, { foreignKey: "type_of_assessment_id" });
 
-// AcademicSpecialty.hasMany(Curriculum, { foreignKey: "specialty_code" });
-// Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
-
-
 // Topic.hasMany(Grade, { foreignKey: "topic_id" });
 // Grade.belongsTo(Topic, { foreignKey: "topic_id" });
 
@@ -114,16 +130,10 @@ Student.belongsTo(Person, { foreignKey: 'perent_person_id' });
 // // PlannedTask и Grade
 // PlannedTask.hasMany(Grade, { foreignKey: "planned_task_id" });
 // Grade.belongsTo(PlannedTask, { foreignKey: "planned_task_id" });
-  
-
-
 
 // // Person (учитель-куратор) и Group
 // Person.hasMany(Group, { foreignKey: "teacher_curator_id" });
 // Group.belongsTo(Person, { foreignKey: "teacher_curator_id" });
-
-
-
 
 // Group.belongsToMany(Lesson, { through: 'GroupLesson', foreignKey: 'group_id' });
 // Lesson.belongsToMany(Group, { through: 'GroupLesson', foreignKey: 'lesson_id' });
@@ -163,25 +173,10 @@ Student.belongsTo(Person, { foreignKey: 'perent_person_id' });
 // Subject.hasMany(PlannedTaskTopic, { foreignKey: 'subject_id' });
 // PlannedTaskTopic.belongsTo(Subject, { foreignKey: 'subject_id' });
 
-
 // // Student и Subgroup (лидер)
 // Student.hasOne(Subgroup, { foreignKey: 'leader_id' });
 // Subgroup.belongsTo(Student, { foreignKey: 'leader_id' });
 
-// Department.hasMany(Subject, { foreignKey: 'department_id' });
-// Subject.belongsTo(Department, { foreignKey: 'department_id' });
-
-// // Person и Teacher
-// Person.hasOne(Teacher, { foreignKey: 'person_id' });
-// Teacher.belongsTo(Person, { foreignKey: 'person_id' });
-
-// // Department и Teacher
-// Department.hasMany(Teacher, { foreignKey: 'department_id' });
-// Teacher.belongsTo(Department, { foreignKey: 'department_id' });
-
-// // TeachingPosition и Teacher
-// TeachingPosition.hasMany(Teacher, { foreignKey: 'teaching_position_id' });
-// Teacher.belongsTo(TeachingPosition, { foreignKey: 'teaching_position_id' });
 
 // // Subject и Topic
 // Subject.hasMany(Topic, { foreignKey: 'subject_id' });
@@ -202,20 +197,23 @@ module.exports = {
   Group,
   Subgroup,
   Student,
+  Subject,
+  SemesterType,
+  AssessmentType,
+  Curriculum,
+  Teacher,
+  AcademicBuilding,
+  Audience
 
-//   Absenteeism,
-//   AcademicPerformance,
-//   Curriculum,
-//   Grade,
-//   GradeTopic,
-//   Lesson,
-//   PlannedTask,
-//   PlannedTaskTopic,
-//   SubgroupStudent,
-//   Subject,
-//   Teacher,
-//   Topic,
-//   AssessmentType,
-//   SubjectType,
-//   TotalScoreType,
+  //   Absenteeism,
+  //   AcademicPerformance,
+  //   Grade,
+  //   GradeTopic,
+  //   Lesson,
+  //   PlannedTask,
+  //   PlannedTaskTopic,
+  //   SubgroupStudent,
+  //   Topic,
+  //   SubjectType,
+  //   TotalScoreType,
 };

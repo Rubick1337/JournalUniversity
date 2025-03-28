@@ -16,6 +16,8 @@ function initializeRoute(route, routeName) {
 initializeRoute('person', 'person');
 initializeRoute('group', 'group');
 initializeRoute('subgroup', 'subgroup');
+initializeRoute('academicSpecialty', 'academicSpecialty');
+initializeRoute('faculty', 'faculty');
 
 
 module.exports = router;
