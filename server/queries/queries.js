@@ -6,6 +6,7 @@ const QUERIES = {
   GET_ACADEMIC_SPECIALTIES: `SELECT * FROM get_academic_specialties_json();`,
   FACULTY: {
     GET_ALL_FACULTY_WITH_FULL_DATA: `SELECT * FROM get_all_faculty_with_full_data()`,
+    GET_BY_ID_GULL_DATA:  `SELECT * FROM get_faculty_by_id_with_full_data($1)`,
   },
 };
 
