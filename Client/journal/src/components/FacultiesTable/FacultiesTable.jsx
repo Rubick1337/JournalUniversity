@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import {
     Table,
     TableBody,
@@ -23,14 +24,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import Alert from '../Alert/Alert';
 
-const initialFacultiesData = [
-    { id: "1", shortName: "ИЭФ", fullName: "Инженерно-экономический факультет", dean: "Иванов Иван Иванович" },
-    { id: "2", shortName: "ФКН", fullName: "Факультет компьютерных наук", dean: "Петров Петр Петрович" },
-    { id: "3", shortName: "ФФ", fullName: "Факультет физики", dean: "Сидоров Сидор Сидорович" },
-];
-
 const FacultiesTable = () => {
-    const [facultiesData, setFacultiesData] = useState(initialFacultiesData);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [searchShortName, setSearchShortName] = useState('');
@@ -70,6 +64,26 @@ const FacultiesTable = () => {
         setAlertState(prev => ({ ...prev, open: false }));
     };
 
+    const dispatch = useDispatch();
+    const facultiesData = useSelector(state => state.faculty.facultiesList.data);
+    const loading = useSelector(state => state.faculty.facultiesList.isLoading);
+    const error = useSelector(state => state.faculty.facultiesList.errors);
+
+    if(loading) {
+        return <div>Загрузка данных...</div>;
+    }
+    if (error?.length > 0) {
+        return (
+            <div>
+                Ошибка загрузки данных:
+                <ul>
+                    {error.map((err, index) => (
+                        <li key={index}>{err.message || err.toString()}</li>
+                    ))}
+                </ul>
+            </div>
+        );
+    }
     const handleSearchShortNameChange = (event) => {
         setSearchShortName(event.target.value);
     };
