@@ -136,32 +136,31 @@ const FacultiesTable = () => {
     };
 
     const handleSaveEdit = () => {
+        //TODO update data
         if (!editFaculty.shortName || !editFaculty.fullName || !editFaculty.dean) {
             showAlert('Все поля должны быть заполнены!', 'error');
             return;
         }
 
-        setFacultiesData(facultiesData.map(faculty =>
-            faculty.id === currentRow.id ? { ...editFaculty, id: currentRow.id } : faculty
-        ));
+
         showAlert('Факультет успешно обновлен!', 'success');
         handleCloseModals();
     };
 
     const handleSaveAdd = () => {
+        //TODO hnaldesave add faculty
         if (!newFaculty.shortName || !newFaculty.fullName || !newFaculty.dean) {
             showAlert('Все поля должны быть заполнены!', 'error');
             return;
         }
 
         const newId = Math.max(...facultiesData.map(faculty => parseInt(faculty.id))) + 1;
-        setFacultiesData([...facultiesData, { ...newFaculty, id: newId.toString() }]);
         showAlert('Факультет успешно добавлен!', 'success');
         handleCloseModals();
     };
 
     const handleDeleteConfirm = () => {
-        setFacultiesData(facultiesData.filter(faculty => faculty.id !== currentRow.id));
+        //TODO handle delete faculty
         showAlert('Факультет успешно удален!', 'success');
         handleCloseModals();
     };
