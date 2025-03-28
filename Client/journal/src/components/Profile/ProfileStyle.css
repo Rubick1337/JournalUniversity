@@ -227,11 +227,16 @@
     font-weight: 600;
     color: #555;
 }
-
+.container--diagram
+{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
 /* Адаптивность для курсов */
 @media (max-width: 600px) {
     .course-item {
-        flex-direction: column;
         align-items: flex-start;
     }
 

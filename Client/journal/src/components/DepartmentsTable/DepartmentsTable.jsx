@@ -25,8 +25,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
+import Alert from '../Alert/Alert';
 
-const departmentsData = [
+const initialDepartmentsData = [
     {
         id: "1",
         shortName: "ИВТ",
@@ -48,12 +49,12 @@ const departmentsData = [
         head: "Сидоров Сидор Сидорович",
         faculty: "Факультет физики",
     },
-    // Добавьте остальные записи
 ];
 
 const faculties = ["Факультет компьютерных наук", "Факультет прикладной математики", "Факультет физики"];
 
 const DepartmentsTable = () => {
+    const [departmentsData, setDepartmentsData] = useState(initialDepartmentsData);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [searchShortName, setSearchShortName] = useState('');
@@ -66,8 +67,35 @@ const DepartmentsTable = () => {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
-    const [newDepartment, setNewDepartment] = useState({ shortName: '', fullName: '', head: '', faculty: '' });
-    const [editDepartment, setEditDepartment] = useState({ shortName: '', fullName: '', head: '', faculty: '' });
+    const [newDepartment, setNewDepartment] = useState({
+        shortName: '',
+        fullName: '',
+        head: '',
+        faculty: ''
+    });
+    const [editDepartment, setEditDepartment] = useState({
+        shortName: '',
+        fullName: '',
+        head: '',
+        faculty: ''
+    });
+    const [alertState, setAlertState] = useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
+
+    const showAlert = (message, severity = 'success') => {
+        setAlertState({
+            open: true,
+            message,
+            severity
+        });
+    };
+
+    const handleCloseAlert = () => {
+        setAlertState(prev => ({ ...prev, open: false }));
+    };
 
     const handleSearchShortNameChange = (event) => {
         setSearchShortName(event.target.value);
@@ -125,20 +153,33 @@ const DepartmentsTable = () => {
     };
 
     const handleSaveEdit = () => {
-        // Логика сохранения изменений
-        console.log('Измененная запись:', editDepartment);
+        if (!editDepartment.shortName || !editDepartment.fullName || !editDepartment.head || !editDepartment.faculty) {
+            showAlert('Все поля должны быть заполнены!', 'error');
+            return;
+        }
+
+        setDepartmentsData(departmentsData.map(dept =>
+            dept.id === currentRow.id ? { ...editDepartment, id: currentRow.id } : dept
+        ));
+        showAlert('Кафедра успешно обновлена!', 'success');
         handleCloseModals();
     };
 
     const handleSaveAdd = () => {
-        // Логика добавления новой записи
-        console.log('Новая запись:', newDepartment);
+        if (!newDepartment.shortName || !newDepartment.fullName || !newDepartment.head || !newDepartment.faculty) {
+            showAlert('Все поля должны быть заполнены!', 'error');
+            return;
+        }
+
+        const newId = Math.max(...departmentsData.map(dept => parseInt(dept.id))) + 1;
+        setDepartmentsData([...departmentsData, { ...newDepartment, id: newId.toString() }]);
+        showAlert('Кафедра успешно добавлена!', 'success');
         handleCloseModals();
     };
 
     const handleDeleteConfirm = () => {
-        // Логика удаления записи
-        console.log('Удалена запись:', currentRow);
+        setDepartmentsData(departmentsData.filter(dept => dept.id !== currentRow.id));
+        showAlert('Кафедра успешно удалена!', 'success');
         handleCloseModals();
     };
 
@@ -152,224 +193,252 @@ const DepartmentsTable = () => {
     });
 
     return (
-        <TableContainer component={Paper}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-                <Typography variant="h6">Список кафедр</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <IconButton onClick={handleSearchMenuClick}>
-                        <SearchIcon />
-                    </IconButton>
-                    <Menu
-                        anchorEl={searchAnchorEl}
-                        open={Boolean(searchAnchorEl)}
-                        onClose={handleSearchMenuClose}
-                        sx={{ maxWidth: 320 }}
-                    >
-                        <Box sx={{ p: 1, width: 320 }}>
-                            <TextField
-                                label="Поиск по сокращенному названию"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                margin="normal"
-                                value={searchShortName}
-                                onChange={handleSearchShortNameChange}
-                                sx={{ maxWidth: 270 }}
-                            />
-                            <TextField
-                                label="Поиск по полному названию"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                margin="normal"
-                                value={searchFullName}
-                                onChange={handleSearchFullNameChange}
-                                sx={{ maxWidth: 270 }}
-                            />
-                            <TextField
-                                label="Поиск по ФИО заведующего"
-                                variant="outlined"
-                                size="small"
-                                fullWidth
-                                margin="normal"
-                                value={searchHead}
-                                onChange={handleSearchHeadChange}
-                                sx={{ maxWidth: 270 }}
-                            />
-                            <FormControl variant="outlined" size="small" fullWidth margin="normal">
-                                <InputLabel>Поиск по факультету</InputLabel>
-                                <Select
-                                    value={searchFaculty}
-                                    onChange={handleSearchFacultyChange}
-                                    label="Поиск по факультету"
-                                    sx={{ maxWidth: 270 }}
-                                >
-                                    <SelectMenuItem value="">Все факультеты</SelectMenuItem>
-                                    {faculties.map((faculty) => (
-                                        <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        </Box>
-                    </Menu>
-                </Box>
-            </Box>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Сокращенное название</TableCell>
-                        <TableCell>Полное название</TableCell>
-                        <TableCell>ФИО заведующего</TableCell>
-                        <TableCell>Факультет</TableCell>
-                        <TableCell>Действия</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(department => (
-                        <TableRow key={department.id}>
-                            <TableCell>{department.shortName}</TableCell>
-                            <TableCell>{department.fullName}</TableCell>
-                            <TableCell>{department.head}</TableCell>
-                            <TableCell>{department.faculty}</TableCell>
-                            <TableCell>
-                                <IconButton onClick={(e) => handleMenuClick(e, department)}>
-                                    <MoreVertIcon />
-                                </IconButton>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={filteredData.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={(e, newPage) => setPage(newPage)}
-                onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
-            />
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-            >
-                <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
-                <MenuItem onClick={handleDelete}>Удалить</MenuItem>
-            </Menu>
-            <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
-                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24 }}>
-                    <Box sx={{ bgcolor: '#1976d2', color: 'white', p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h6">
-                            {openEditModal && "Редактировать запись"}
-                            {openDeleteModal && "Удалить запись"}
-                            {openAddModal && "Добавить новую запись"}
-                        </Typography>
-                        <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
-                            <CloseIcon />
+        <>
+            <TableContainer component={Paper}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
+                    <Typography variant="h6">Список кафедр</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <IconButton onClick={handleSearchMenuClick}>
+                            <SearchIcon />
                         </IconButton>
-                    </Box>
-                    <Box sx={{ p: 3 }}>
-                        {openEditModal && (
-                            <div>
+                        <Menu
+                            anchorEl={searchAnchorEl}
+                            open={Boolean(searchAnchorEl)}
+                            onClose={handleSearchMenuClose}
+                            sx={{ maxWidth: 320 }}
+                        >
+                            <Box sx={{ p: 1, width: 320 }}>
                                 <TextField
-                                    label="Сокращенное название"
+                                    label="Поиск по сокращенному названию"
+                                    variant="outlined"
+                                    size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={editDepartment.shortName}
-                                    onChange={(e) => setEditDepartment({ ...editDepartment, shortName: e.target.value })}
+                                    value={searchShortName}
+                                    onChange={handleSearchShortNameChange}
+                                    sx={{ maxWidth: 270 }}
                                 />
                                 <TextField
-                                    label="Полное название"
+                                    label="Поиск по полному названию"
+                                    variant="outlined"
+                                    size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={editDepartment.fullName}
-                                    onChange={(e) => setEditDepartment({ ...editDepartment, fullName: e.target.value })}
+                                    value={searchFullName}
+                                    onChange={handleSearchFullNameChange}
+                                    sx={{ maxWidth: 270 }}
                                 />
                                 <TextField
-                                    label="ФИО заведующего"
+                                    label="Поиск по ФИО заведующего"
+                                    variant="outlined"
+                                    size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={editDepartment.head}
-                                    onChange={(e) => setEditDepartment({ ...editDepartment, head: e.target.value })}
+                                    value={searchHead}
+                                    onChange={handleSearchHeadChange}
+                                    sx={{ maxWidth: 270 }}
                                 />
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel>Факультет</InputLabel>
+                                <FormControl variant="outlined" size="small" fullWidth margin="normal">
+                                    <InputLabel>Поиск по факультету</InputLabel>
                                     <Select
-                                        value={editDepartment.faculty}
-                                        onChange={(e) => setEditDepartment({ ...editDepartment, faculty: e.target.value })}
-                                        label="Факультет"
+                                        value={searchFaculty}
+                                        onChange={handleSearchFacultyChange}
+                                        label="Поиск по факультету"
+                                        sx={{ maxWidth: 270 }}
                                     >
+                                        <SelectMenuItem value="">Все факультеты</SelectMenuItem>
                                         {faculties.map((faculty) => (
                                             <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
                                         ))}
                                     </Select>
                                 </FormControl>
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                    <Button onClick={handleCloseModals}>Отмена</Button>
-                                    <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
-                                </Box>
-                            </div>
-                        )}
-                        {openDeleteModal && (
-                            <div>
-                                <Typography>Вы уверены, что хотите удалить запись {currentRow?.shortName}?</Typography>
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                    <Button onClick={handleCloseModals}>Отмена</Button>
-                                    <Button onClick={handleDeleteConfirm} color="error">Удалить</Button>
-                                </Box>
-                            </div>
-                        )}
-                        {openAddModal && (
-                            <div>
-                                <TextField
-                                    label="Сокращенное название"
-                                    fullWidth
-                                    margin="normal"
-                                    value={newDepartment.shortName}
-                                    onChange={(e) => setNewDepartment({ ...newDepartment, shortName: e.target.value })}
-                                />
-                                <TextField
-                                    label="Полное название"
-                                    fullWidth
-                                    margin="normal"
-                                    value={newDepartment.fullName}
-                                    onChange={(e) => setNewDepartment({ ...newDepartment, fullName: e.target.value })}
-                                />
-                                <TextField
-                                    label="ФИО заведующего"
-                                    fullWidth
-                                    margin="normal"
-                                    value={newDepartment.head}
-                                    onChange={(e) => setNewDepartment({ ...newDepartment, head: e.target.value })}
-                                />
-                                <FormControl fullWidth margin="normal">
-                                    <InputLabel>Факультет</InputLabel>
-                                    <Select
-                                        value={newDepartment.faculty}
-                                        onChange={(e) => setNewDepartment({ ...newDepartment, faculty: e.target.value })}
-                                        label="Факультет"
-                                    >
-                                        {faculties.map((faculty) => (
-                                            <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                    <Button onClick={handleCloseModals}>Отмена</Button>
-                                    <Button onClick={handleSaveAdd} color="primary">Добавить</Button>
-                                </Box>
-                            </div>
-                        )}
+                            </Box>
+                        </Menu>
                     </Box>
                 </Box>
-            </Modal>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <IconButton onClick={handleAdd} color="primary">
-                    <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
-                </IconButton>
-            </Box>
-        </TableContainer>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Сокращенное название</TableCell>
+                            <TableCell>Полное название</TableCell>
+                            <TableCell>ФИО заведующего</TableCell>
+                            <TableCell>Факультет</TableCell>
+                            <TableCell>Действия</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(department => (
+                            <TableRow key={department.id}>
+                                <TableCell>{department.shortName}</TableCell>
+                                <TableCell>{department.fullName}</TableCell>
+                                <TableCell>{department.head}</TableCell>
+                                <TableCell>{department.faculty}</TableCell>
+                                <TableCell>
+                                    <IconButton onClick={(e) => handleMenuClick(e, department)}>
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={filteredData.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={(e, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value, 10));
+                        setPage(0);
+                    }}
+                />
+                <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                >
+                    <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
+                    <MenuItem onClick={handleDelete}>Удалить</MenuItem>
+                </Menu>
+                <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        bgcolor: 'background.paper',
+                        boxShadow: 24
+                    }}>
+                        <Box sx={{
+                            bgcolor: '#1976d2',
+                            color: 'white',
+                            p: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <Typography variant="h6">
+                                {openEditModal && "Редактировать запись"}
+                                {openDeleteModal && "Удалить запись"}
+                                {openAddModal && "Добавить новую запись"}
+                            </Typography>
+                            <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                        <Box sx={{ p: 3 }}>
+                            {openEditModal && (
+                                <div>
+                                    <TextField
+                                        label="Сокращенное название"
+                                        fullWidth
+                                        margin="normal"
+                                        value={editDepartment.shortName}
+                                        onChange={(e) => setEditDepartment({ ...editDepartment, shortName: e.target.value })}
+                                    />
+                                    <TextField
+                                        label="Полное название"
+                                        fullWidth
+                                        margin="normal"
+                                        value={editDepartment.fullName}
+                                        onChange={(e) => setEditDepartment({ ...editDepartment, fullName: e.target.value })}
+                                    />
+                                    <TextField
+                                        label="ФИО заведующего"
+                                        fullWidth
+                                        margin="normal"
+                                        value={editDepartment.head}
+                                        onChange={(e) => setEditDepartment({ ...editDepartment, head: e.target.value })}
+                                    />
+                                    <FormControl fullWidth margin="normal">
+                                        <InputLabel>Факультет</InputLabel>
+                                        <Select
+                                            value={editDepartment.faculty}
+                                            onChange={(e) => setEditDepartment({ ...editDepartment, faculty: e.target.value })}
+                                            label="Факультет"
+                                        >
+                                            {faculties.map((faculty) => (
+                                                <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                        <Button onClick={handleCloseModals}>Отмена</Button>
+                                        <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
+                                    </Box>
+                                </div>
+                            )}
+                            {openDeleteModal && (
+                                <div>
+                                    <Typography>Вы уверены, что хотите удалить запись {currentRow?.shortName}?</Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                        <Button onClick={handleCloseModals}>Отмена</Button>
+                                        <Button onClick={handleDeleteConfirm} color="error">Удалить</Button>
+                                    </Box>
+                                </div>
+                            )}
+                            {openAddModal && (
+                                <div>
+                                    <TextField
+                                        label="Сокращенное название"
+                                        fullWidth
+                                        margin="normal"
+                                        value={newDepartment.shortName}
+                                        onChange={(e) => setNewDepartment({ ...newDepartment, shortName: e.target.value })}
+                                    />
+                                    <TextField
+                                        label="Полное название"
+                                        fullWidth
+                                        margin="normal"
+                                        value={newDepartment.fullName}
+                                        onChange={(e) => setNewDepartment({ ...newDepartment, fullName: e.target.value })}
+                                    />
+                                    <TextField
+                                        label="ФИО заведующего"
+                                        fullWidth
+                                        margin="normal"
+                                        value={newDepartment.head}
+                                        onChange={(e) => setNewDepartment({ ...newDepartment, head: e.target.value })}
+                                    />
+                                    <FormControl fullWidth margin="normal">
+                                        <InputLabel>Факультет</InputLabel>
+                                        <Select
+                                            value={newDepartment.faculty}
+                                            onChange={(e) => setNewDepartment({ ...newDepartment, faculty: e.target.value })}
+                                            label="Факультет"
+                                        >
+                                            {faculties.map((faculty) => (
+                                                <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                        <Button onClick={handleCloseModals}>Отмена</Button>
+                                        <Button onClick={handleSaveAdd} color="primary">Добавить</Button>
+                                    </Box>
+                                </div>
+                            )}
+                        </Box>
+                    </Box>
+                </Modal>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <IconButton onClick={handleAdd} color="primary">
+                        <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
+                    </IconButton>
+                </Box>
+            </TableContainer>
+
+            {/* Компонент Alert для отображения уведомлений */}
+            <Alert
+                open={alertState.open}
+                message={alertState.message}
+                severity={alertState.severity}
+                handleClose={handleCloseAlert}
+            />
+        </>
     );
 };
 

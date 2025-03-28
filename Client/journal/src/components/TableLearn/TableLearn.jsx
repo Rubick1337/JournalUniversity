@@ -7,7 +7,8 @@ import {
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import CloseIcon from '@mui/icons-material/Close';
-import './TableLearn.css'; // Импортируем CSS для анимации
+import Alert from '../Alert/Alert'; // Импортируем компонент Alert
+import './TableLearn.css';
 
 const TableLearn = () => {
     const [data, setData] = useState([]);
@@ -27,6 +28,23 @@ const TableLearn = () => {
     const [currentRow, setCurrentRow] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [alertState, setAlertState] = useState({
+        open: false,
+        message: '',
+        severity: 'success'
+    });
+
+    const showAlert = (message, severity = 'success') => {
+        setAlertState({
+            open: true,
+            message,
+            severity
+        });
+    };
+
+    const handleCloseAlert = () => {
+        setAlertState(prev => ({ ...prev, open: false }));
+    };
 
     useEffect(() => {
         axios.get("/TestData/data.json")
@@ -40,7 +58,10 @@ const TableLearn = () => {
                 setSpecialtyName(specialtyName);
                 setStartYear(startYear);
             })
-            .catch((error) => console.error("Ошибка загрузки данных:", error));
+            .catch((error) => {
+                console.error("Ошибка загрузки данных:", error);
+                showAlert('Ошибка загрузки данных', 'error');
+            });
     }, []);
 
     const handleInputChange = (e, field) => {
@@ -57,11 +78,21 @@ const TableLearn = () => {
     };
 
     const addRow = () => {
-        if (newRow.discipline && newRow.department && newRow.formOfAttestation && newRow.semester) {
-            const newRowWithId = { ...newRow, id: data.length + 1, semester: parseInt(newRow.semester, 10) };
-            setData([...data, { ...newRowWithId, animationClass: 'fade-in' }]);
-            setNewRow({ discipline: "", department: "", formOfAttestation: "", semester: "" });
+        if (!newRow.discipline || !newRow.department || !newRow.formOfAttestation || !newRow.semester) {
+            showAlert('Все поля должны быть заполнены!', 'error');
+            return;
         }
+
+        const newRowWithId = {
+            ...newRow,
+            id: data.length + 1,
+            semester: parseInt(newRow.semester, 10),
+            animationClass: 'fade-in'
+        };
+
+        setData([...data, newRowWithId]);
+        setNewRow({ discipline: "", department: "", formOfAttestation: "", semester: "" });
+        showAlert('Запись успешно добавлена!', 'success');
     };
 
     const handleMenuClick = (event, row) => {
@@ -89,17 +120,22 @@ const TableLearn = () => {
     };
 
     const handleSaveEdit = () => {
-        // Логика сохранения изменений
+        if (!currentRow.discipline || !currentRow.department || !currentRow.formOfAttestation || !currentRow.semester) {
+            showAlert('Все поля должны быть заполнены!', 'error');
+            return;
+        }
+
         const updatedData = data.map(row => row.id === currentRow.id ? currentRow : row);
         setData(updatedData);
         handleCloseModals();
+        showAlert('Запись успешно обновлена!', 'success');
     };
 
     const handleDeleteConfirm = () => {
-        // Логика удаления записи
         const updatedData = data.filter(row => row.id !== currentRow.id);
         setData(updatedData);
         handleCloseModals();
+        showAlert('Запись успешно удалена!', 'success');
     };
 
     return (
@@ -277,6 +313,14 @@ const TableLearn = () => {
                     </Box>
                 </Box>
             </Modal>
+
+            {/* Компонент Alert для показа уведомлений */}
+            <Alert
+                open={alertState.open}
+                message={alertState.message}
+                severity={alertState.severity}
+                handleClose={handleCloseAlert}
+            />
         </Box>
     );
 };

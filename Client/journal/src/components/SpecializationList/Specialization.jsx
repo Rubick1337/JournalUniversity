@@ -16,25 +16,22 @@ import {
     Modal,
     Box,
     Button,
-    Grid,
-    DialogTitle,
-    DialogContent,
-    DialogActions
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
+import Alert from '../Alert/Alert';
 
-const data = [
+const initialData = [
     { id: "09.03.01", name: "Информатика и вычислительная техника" },
     { id: "09.03.02", name: "Информационные системы и технологии" },
     { id: "09.03.03", name: "Прикладная информатика" },
     { id: "09.03.04", name: "Программная инженерия" },
     { id: "09.03.05", name: "Информационная безопасность" },
-    // Добавьте остальные записи
 ];
 
 const SpecializationListTable = () => {
+    const [data, setData] = useState(initialData);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [searchTerm, setSearchTerm] = useState('');
@@ -45,6 +42,23 @@ const SpecializationListTable = () => {
     const [openAddModal, setOpenAddModal] = useState(false);
     const [newSpecialty, setNewSpecialty] = useState({ id: '', name: '' });
     const [editSpecialty, setEditSpecialty] = useState({ id: '', name: '' });
+    const [alertState, setAlertState] = useState({
+        open: false,
+        message: '',
+        severity: 'success',
+    });
+
+    const showAlert = (message, severity) => {
+        setAlertState({
+            open: true,
+            message,
+            severity,
+        });
+    };
+
+    const handleCloseAlert = () => {
+        setAlertState(prev => ({ ...prev, open: false }));
+    };
 
     const handleSearchChange = (event) => {
         setSearchTerm(event.target.value);
@@ -82,20 +96,30 @@ const SpecializationListTable = () => {
     };
 
     const handleSaveEdit = () => {
-        // Логика сохранения изменений
-        console.log('Измененная запись:', editSpecialty);
+        if (!editSpecialty.id || !editSpecialty.name) {
+            showAlert('Все поля должны быть заполнены!', 'error');
+            return;
+        }
+
+        setData(data.map(item => item.id === currentRow.id ? editSpecialty : item));
+        showAlert('Специальность успешно изменена!', 'success');
         handleCloseModals();
     };
 
     const handleSaveAdd = () => {
-        // Логика добавления новой записи
-        console.log('Новая запись:', newSpecialty);
+        if (!newSpecialty.id || !newSpecialty.name) {
+            showAlert('Все поля должны быть заполнены!', 'error');
+            return;
+        }
+
+        setData([...data, newSpecialty]);
+        showAlert('Специальность успешно добавлена!', 'success');
         handleCloseModals();
     };
 
     const handleDeleteConfirm = () => {
-        // Логика удаления записи
-        console.log('Удалена запись:', currentRow);
+        setData(data.filter(item => item.id !== currentRow.id));
+        showAlert('Специальность успешно удалена!', 'success');
         handleCloseModals();
     };
 
@@ -105,132 +129,159 @@ const SpecializationListTable = () => {
     );
 
     return (
-        <TableContainer component={Paper}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-                <Typography variant="h6">Список специальностей</Typography>
-                <TextField
-                    label="Поиск"
-                    variant="outlined"
-                    size="small"
-                    sx={{ width: 300 }}
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                />
-            </Box>
-            <Table>
-                <TableHead>
-                    <TableRow>
-                        <TableCell>Номер специальности</TableCell>
-                        <TableCell>Расшифровка специальности</TableCell>
-                        <TableCell>Действия</TableCell>
-                    </TableRow>
-                </TableHead>
-                <TableBody>
-                    {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => (
-                        <TableRow key={row.id}>
-                            <TableCell>{row.id}</TableCell>
-                            <TableCell>{row.name}</TableCell>
-                            <TableCell>
-                                <IconButton onClick={(e) => handleMenuClick(e, row)}>
-                                    <MoreVertIcon />
-                                </IconButton>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-            <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={filteredData.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={(e, newPage) => setPage(newPage)}
-                onRowsPerPageChange={(e) => setRowsPerPage(parseInt(e.target.value, 10))}
-            />
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-            >
-                <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
-                <MenuItem onClick={handleDelete}>Удалить</MenuItem>
-            </Menu>
-            <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
-                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', boxShadow: 24 }}>
-                    <Box sx={{ bgcolor: '#1976d2', color: 'white', p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="h6">
-                            {openEditModal && "Редактировать запись"}
-                            {openDeleteModal && "Удалить запись"}
-                            {openAddModal && "Добавить новую запись"}
-                        </Typography>
-                        <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
-                            <CloseIcon />
-                        </IconButton>
-                    </Box>
-                    <Box sx={{ p: 3 }}>
-                        {openEditModal && (
-                            <div>
-                                <TextField
-                                    label="Номер специальности"
-                                    fullWidth
-                                    margin="normal"
-                                    value={editSpecialty.id}
-                                    onChange={(e) => setEditSpecialty({ ...editSpecialty, id: e.target.value })}
-                                />
-                                <TextField
-                                    label="Расшифровка специальности"
-                                    fullWidth
-                                    margin="normal"
-                                    value={editSpecialty.name}
-                                    onChange={(e) => setEditSpecialty({ ...editSpecialty, name: e.target.value })}
-                                />
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                    <Button onClick={handleCloseModals}>Отмена</Button>
-                                    <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
-                                </Box>
-                            </div>
-                        )}
-                        {openDeleteModal && (
-                            <div>
-                                <Typography>Вы уверены, что хотите удалить запись {currentRow?.id}?</Typography>
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                    <Button onClick={handleCloseModals}>Отмена</Button>
-                                    <Button onClick={handleDeleteConfirm} color="error">Удалить</Button>
-                                </Box>
-                            </div>
-                        )}
-                        {openAddModal && (
-                            <div>
-                                <TextField
-                                    label="Номер специальности"
-                                    fullWidth
-                                    margin="normal"
-                                    value={newSpecialty.id}
-                                    onChange={(e) => setNewSpecialty({ ...newSpecialty, id: e.target.value })}
-                                />
-                                <TextField
-                                    label="Расшифровка специальности"
-                                    fullWidth
-                                    margin="normal"
-                                    value={newSpecialty.name}
-                                    onChange={(e) => setNewSpecialty({ ...newSpecialty, name: e.target.value })}
-                                />
-                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                    <Button onClick={handleCloseModals}>Отмена</Button>
-                                    <Button onClick={handleSaveAdd} color="primary">Добавить</Button>
-                                </Box>
-                            </div>
-                        )}
-                    </Box>
+        <>
+            <TableContainer component={Paper}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
+                    <Typography variant="h6">Список специальностей</Typography>
+                    <TextField
+                        label="Поиск"
+                        variant="outlined"
+                        size="small"
+                        sx={{ width: 300 }}
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                    />
                 </Box>
-            </Modal>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                <IconButton onClick={handleAdd} color="primary">
-                    <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
-                </IconButton>
-            </Box>
-        </TableContainer>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Номер специальности</TableCell>
+                            <TableCell>Расшифровка специальности</TableCell>
+                            <TableCell>Действия</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => (
+                            <TableRow key={row.id}>
+                                <TableCell>{row.id}</TableCell>
+                                <TableCell>{row.name}</TableCell>
+                                <TableCell>
+                                    <IconButton onClick={(e) => handleMenuClick(e, row)}>
+                                        <MoreVertIcon />
+                                    </IconButton>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={filteredData.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={(e, newPage) => setPage(newPage)}
+                    onRowsPerPageChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value, 10));
+                        setPage(0);
+                    }}
+                />
+                <Menu
+                    anchorEl={anchorEl}
+                    open={Boolean(anchorEl)}
+                    onClose={handleMenuClose}
+                >
+                    <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
+                    <MenuItem onClick={handleDelete}>Удалить</MenuItem>
+                </Menu>
+                <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        bgcolor: 'background.paper',
+                        boxShadow: 24
+                    }}>
+                        <Box sx={{
+                            bgcolor: '#1976d2',
+                            color: 'white',
+                            p: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <Typography variant="h6">
+                                {openEditModal && "Редактировать запись"}
+                                {openDeleteModal && "Удалить запись"}
+                                {openAddModal && "Добавить новую запись"}
+                            </Typography>
+                            <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                        <Box sx={{ p: 3 }}>
+                            {openEditModal && (
+                                <div>
+                                    <TextField
+                                        label="Номер специальности"
+                                        fullWidth
+                                        margin="normal"
+                                        value={editSpecialty.id}
+                                        onChange={(e) => setEditSpecialty({ ...editSpecialty, id: e.target.value })}
+                                    />
+                                    <TextField
+                                        label="Расшифровка специальности"
+                                        fullWidth
+                                        margin="normal"
+                                        value={editSpecialty.name}
+                                        onChange={(e) => setEditSpecialty({ ...editSpecialty, name: e.target.value })}
+                                    />
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                        <Button onClick={handleCloseModals}>Отмена</Button>
+                                        <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
+                                    </Box>
+                                </div>
+                            )}
+                            {openDeleteModal && (
+                                <div>
+                                    <Typography>Вы уверены, что хотите удалить запись {currentRow?.id}?</Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                        <Button onClick={handleCloseModals}>Отмена</Button>
+                                        <Button onClick={handleDeleteConfirm} color="error">Удалить</Button>
+                                    </Box>
+                                </div>
+                            )}
+                            {openAddModal && (
+                                <div>
+                                    <TextField
+                                        label="Номер специальности"
+                                        fullWidth
+                                        margin="normal"
+                                        value={newSpecialty.id}
+                                        onChange={(e) => setNewSpecialty({ ...newSpecialty, id: e.target.value })}
+                                    />
+                                    <TextField
+                                        label="Расшифровка специальности"
+                                        fullWidth
+                                        margin="normal"
+                                        value={newSpecialty.name}
+                                        onChange={(e) => setNewSpecialty({ ...newSpecialty, name: e.target.value })}
+                                    />
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                        <Button onClick={handleCloseModals}>Отмена</Button>
+                                        <Button onClick={handleSaveAdd} color="primary">Добавить</Button>
+                                    </Box>
+                                </div>
+                            )}
+                        </Box>
+                    </Box>
+                </Modal>
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                    <IconButton onClick={handleAdd} color="primary">
+                        <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
+                    </IconButton>
+                </Box>
+            </TableContainer>
+
+            <Alert
+                open={alertState.open}
+                message={alertState.message}
+                severity={alertState.severity}
+                handleClose={handleCloseAlert}
+            />
+        </>
     );
 };
 
