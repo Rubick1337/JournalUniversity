@@ -8,8 +8,8 @@ export const API_ENDPOINTS = {
             CREATE_Faculty: `${API_BASE_URL}/faculty/create`,
             UPDATE_Faculty: `${API_BASE_URL}/faculty/update`,
             DELETE_Faculty: `${API_BASE_URL}/faculty/delete`,
-            GETALL_Faculty: `${API_BASE_URL}/faculty/GetAll`,
-            GETIDE_Faculty: `${API_BASE_URL}/faculty/GetById`
+            GETALL_Faculty: `faculty/getAll`,
+            GETIDE_Faculty: `${API_BASE_URL}/faculty/getById`
 
         }
 };
