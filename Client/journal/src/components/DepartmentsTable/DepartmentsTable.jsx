@@ -20,11 +20,16 @@ import {
     FormControl,
     InputLabel,
     MenuItem as SelectMenuItem,
+    Autocomplete
 } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import CloseIcon from '@mui/icons-material/Close';
-import SearchIcon from '@mui/icons-material/Search';
+import {
+    MoreVert as MoreVertIcon,
+    AddCircleOutline as AddCircleOutlineIcon,
+    Close as CloseIcon,
+    Search as SearchIcon,
+    PersonAdd as PersonAddIcon
+} from '@mui/icons-material';
+import { PersonModal } from '../PersonCreationModal/PersonCreationModal';
 import Alert from '../Alert/Alert';
 
 const initialDepartmentsData = [
@@ -67,6 +72,7 @@ const DepartmentsTable = () => {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
+    const [openPersonModal, setOpenPersonModal] = useState(false);
     const [newDepartment, setNewDepartment] = useState({
         shortName: '',
         fullName: '',
@@ -84,6 +90,18 @@ const DepartmentsTable = () => {
         message: '',
         severity: 'success'
     });
+    const [people, setPeople] = useState([
+        { id: "1", fullName: "Иванов Иван Иванович", lastName: "Иванов", firstName: "Иван", patronymic: "Иванович" },
+        { id: "2", fullName: "Петров Петр Петрович", lastName: "Петров", firstName: "Петр", patronymic: "Петрович" },
+        { id: "3", fullName: "Сидоров Сидор Сидорович", lastName: "Сидоров", firstName: "Сидор", patronymic: "Сидорович" },
+    ]);
+    const [personInputValue, setPersonInputValue] = useState('');
+
+    const filteredPeopleOptions = people
+        .filter(person =>
+            person.fullName.toLowerCase().includes(personInputValue.toLowerCase())
+        )
+        .slice(0, 8);
 
     const showAlert = (message, severity = 'success') => {
         setAlertState({
@@ -143,6 +161,7 @@ const DepartmentsTable = () => {
 
     const handleAdd = () => {
         setNewDepartment({ shortName: '', fullName: '', head: '', faculty: '' });
+        setPersonInputValue('');
         setOpenAddModal(true);
     };
 
@@ -150,11 +169,95 @@ const DepartmentsTable = () => {
         setOpenEditModal(false);
         setOpenDeleteModal(false);
         setOpenAddModal(false);
+        setPersonInputValue('');
+    };
+
+    const handlePersonInputChange = (event, value) => {
+        setPersonInputValue(value);
+    };
+
+    const handleAddNewPerson = (newPerson) => {
+        if (!newPerson.lastName || !newPerson.firstName) {
+            showAlert('Фамилия и имя обязательны для заполнения!', 'error');
+            return;
+        }
+
+        const fullName = `${newPerson.lastName} ${newPerson.firstName} ${newPerson.patronymic || ''}`.trim();
+        const newPersonWithId = {
+            ...newPerson,
+            id: `new-${Date.now()}`,
+            fullName: fullName
+        };
+
+        setPeople([...people, newPersonWithId]);
+
+        if (openEditModal) {
+            setEditDepartment(prev => ({
+                ...prev,
+                head: fullName
+            }));
+        } else if (openAddModal) {
+            setNewDepartment(prev => ({
+                ...prev,
+                head: fullName
+            }));
+        }
+
+        setOpenPersonModal(false);
+        showAlert('Человек успешно добавлен!', 'success');
+    };
+
+    const renderPersonSelector = (isEditModal) => {
+        const value = isEditModal ? editDepartment.head : newDepartment.head;
+        const setValue = isEditModal ?
+            (val) => setEditDepartment({...editDepartment, head: val}) :
+            (val) => setNewDepartment({...newDepartment, head: val});
+
+        return (
+            <FormControl fullWidth margin="normal">
+                <Autocomplete
+                    options={filteredPeopleOptions}
+                    getOptionLabel={(option) => option.fullName}
+                    value={people.find(p => p.fullName === value) || null}
+                    onChange={(_, newValue) => {
+                        setValue(newValue ? newValue.fullName : '');
+                    }}
+                    inputValue={personInputValue}
+                    onInputChange={handlePersonInputChange}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label="ФИО заведующего*"
+                            margin="normal"
+                            required
+                        />
+                    )}
+                    noOptionsText={
+                        <Box sx={{ p: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <Typography variant="body2">Не найдено</Typography>
+                            <Button
+                                startIcon={<PersonAddIcon />}
+                                onClick={() => setOpenPersonModal(true)}
+                                size="small"
+                            >
+                                Добавить нового
+                            </Button>
+                        </Box>
+                    }
+                    renderOption={(props, option) => (
+                        <li {...props} key={option.id}>
+                            {option.fullName}
+                        </li>
+                    )}
+                />
+            </FormControl>
+        );
     };
 
     const handleSaveEdit = () => {
-        if (!editDepartment.shortName || !editDepartment.fullName || !editDepartment.head || !editDepartment.faculty) {
-            showAlert('Все поля должны быть заполнены!', 'error');
+        if (!editDepartment.shortName || !editDepartment.fullName ||
+            !editDepartment.head || !editDepartment.faculty) {
+            showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
 
@@ -162,18 +265,33 @@ const DepartmentsTable = () => {
             dept.id === currentRow.id ? { ...editDepartment, id: currentRow.id } : dept
         ));
         showAlert('Кафедра успешно обновлена!', 'success');
+        setEditDepartment({
+            shortName: '',
+            fullName: '',
+            head: '',
+            faculty: ''
+        });
+        setPersonInputValue('');
         handleCloseModals();
     };
 
     const handleSaveAdd = () => {
-        if (!newDepartment.shortName || !newDepartment.fullName || !newDepartment.head || !newDepartment.faculty) {
-            showAlert('Все поля должны быть заполнены!', 'error');
+        if (!newDepartment.shortName || !newDepartment.fullName ||
+            !newDepartment.head || !newDepartment.faculty) {
+            showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
 
         const newId = Math.max(...departmentsData.map(dept => parseInt(dept.id))) + 1;
         setDepartmentsData([...departmentsData, { ...newDepartment, id: newId.toString() }]);
         showAlert('Кафедра успешно добавлена!', 'success');
+        setNewDepartment({
+            shortName: '',
+            fullName: '',
+            head: '',
+            faculty: ''
+        });
+        setPersonInputValue('');
         handleCloseModals();
     };
 
@@ -333,32 +451,28 @@ const DepartmentsTable = () => {
                             {openEditModal && (
                                 <div>
                                     <TextField
-                                        label="Сокращенное название"
+                                        label="Сокращенное название*"
                                         fullWidth
                                         margin="normal"
                                         value={editDepartment.shortName}
                                         onChange={(e) => setEditDepartment({ ...editDepartment, shortName: e.target.value })}
+                                        required
                                     />
                                     <TextField
-                                        label="Полное название"
+                                        label="Полное название*"
                                         fullWidth
                                         margin="normal"
                                         value={editDepartment.fullName}
                                         onChange={(e) => setEditDepartment({ ...editDepartment, fullName: e.target.value })}
+                                        required
                                     />
-                                    <TextField
-                                        label="ФИО заведующего"
-                                        fullWidth
-                                        margin="normal"
-                                        value={editDepartment.head}
-                                        onChange={(e) => setEditDepartment({ ...editDepartment, head: e.target.value })}
-                                    />
-                                    <FormControl fullWidth margin="normal">
-                                        <InputLabel>Факультет</InputLabel>
+                                    {renderPersonSelector(true)}
+                                    <FormControl fullWidth margin="normal" required>
+                                        <InputLabel>Факультет*</InputLabel>
                                         <Select
                                             value={editDepartment.faculty}
                                             onChange={(e) => setEditDepartment({ ...editDepartment, faculty: e.target.value })}
-                                            label="Факультет"
+                                            label="Факультет*"
                                         >
                                             {faculties.map((faculty) => (
                                                 <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
@@ -383,32 +497,28 @@ const DepartmentsTable = () => {
                             {openAddModal && (
                                 <div>
                                     <TextField
-                                        label="Сокращенное название"
-                                        fullWidth
+                                        label="Сокращенное название*"
+                                        fullWidth   
                                         margin="normal"
                                         value={newDepartment.shortName}
                                         onChange={(e) => setNewDepartment({ ...newDepartment, shortName: e.target.value })}
+                                        required
                                     />
                                     <TextField
-                                        label="Полное название"
+                                        label="Полное название*"
                                         fullWidth
                                         margin="normal"
                                         value={newDepartment.fullName}
                                         onChange={(e) => setNewDepartment({ ...newDepartment, fullName: e.target.value })}
+                                        required
                                     />
-                                    <TextField
-                                        label="ФИО заведующего"
-                                        fullWidth
-                                        margin="normal"
-                                        value={newDepartment.head}
-                                        onChange={(e) => setNewDepartment({ ...newDepartment, head: e.target.value })}
-                                    />
-                                    <FormControl fullWidth margin="normal">
-                                        <InputLabel>Факультет</InputLabel>
+                                    {renderPersonSelector(false)}
+                                    <FormControl fullWidth margin="normal" required>
+                                        <InputLabel>Факультет*</InputLabel>
                                         <Select
                                             value={newDepartment.faculty}
                                             onChange={(e) => setNewDepartment({ ...newDepartment, faculty: e.target.value })}
-                                            label="Факультет"
+                                            label="Факультет*"
                                         >
                                             {faculties.map((faculty) => (
                                                 <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
@@ -431,7 +541,12 @@ const DepartmentsTable = () => {
                 </Box>
             </TableContainer>
 
-            {/* Компонент Alert для отображения уведомлений */}
+            <PersonModal
+                open={openPersonModal}
+                onClose={() => setOpenPersonModal(false)}
+                onSave={handleAddNewPerson}
+            />
+
             <Alert
                 open={alertState.open}
                 message={alertState.message}
