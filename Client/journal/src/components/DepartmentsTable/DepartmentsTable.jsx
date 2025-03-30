@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     Table,
     TableBody,
@@ -103,82 +103,82 @@ const DepartmentsTable = () => {
         )
         .slice(0, 8);
 
-    const showAlert = (message, severity = 'success') => {
+    const showAlert = useCallback((message, severity = 'success') => {
         setAlertState({
             open: true,
             message,
             severity
         });
-    };
+    }, []);
 
-    const handleCloseAlert = () => {
+    const handleCloseAlert = useCallback(() => {
         setAlertState(prev => ({ ...prev, open: false }));
-    };
+    }, []);
 
-    const handleSearchShortNameChange = (event) => {
+    const handleSearchShortNameChange = useCallback((event) => {
         setSearchShortName(event.target.value);
-    };
+    }, []);
 
-    const handleSearchFullNameChange = (event) => {
+    const handleSearchFullNameChange = useCallback((event) => {
         setSearchFullName(event.target.value);
-    };
+    }, []);
 
-    const handleSearchHeadChange = (event) => {
+    const handleSearchHeadChange = useCallback((event) => {
         setSearchHead(event.target.value);
-    };
+    }, []);
 
-    const handleSearchFacultyChange = (event) => {
+    const handleSearchFacultyChange = useCallback((event) => {
         setSearchFaculty(event.target.value);
-    };
+    }, []);
 
-    const handleMenuClick = (event, row) => {
+    const handleMenuClick = useCallback((event, row) => {
         setAnchorEl(event.currentTarget);
         setCurrentRow(row);
-    };
+    }, []);
 
-    const handleMenuClose = () => {
+    const handleMenuClose = useCallback(() => {
         setAnchorEl(null);
-    };
+    }, []);
 
-    const handleSearchMenuClick = (event) => {
+    const handleSearchMenuClick = useCallback((event) => {
         setSearchAnchorEl(event.currentTarget);
-    };
+    }, []);
 
-    const handleSearchMenuClose = () => {
+    const handleSearchMenuClose = useCallback(() => {
         setSearchAnchorEl(null);
-    };
+    }, []);
 
-    const handleEdit = () => {
+    const handleEdit = useCallback(() => {
         setEditDepartment(currentRow);
         setOpenEditModal(true);
         handleMenuClose();
-    };
+    }, [currentRow, handleMenuClose]);
 
-    const handleDelete = () => {
+    const handleDelete = useCallback(() => {
         setOpenDeleteModal(true);
         handleMenuClose();
-    };
+    }, [handleMenuClose]);
 
-    const handleAdd = () => {
+    const handleAdd = useCallback(() => {
         setNewDepartment({ shortName: '', fullName: '', head: '', faculty: '' });
         setPersonInputValue('');
         setOpenAddModal(true);
-    };
+    }, []);
 
-    const handleCloseModals = () => {
+    const handleCloseModals = useCallback(() => {
         setOpenEditModal(false);
         setOpenDeleteModal(false);
         setOpenAddModal(false);
         setPersonInputValue('');
-    };
+    }, []);
 
-    const handlePersonInputChange = (event, value) => {
+    const handlePersonInputChange = useCallback((event, value) => {
         setPersonInputValue(value);
-    };
+    }, []);
 
-    const handleAddNewPerson = (newPerson) => {
-        if (!newPerson.lastName || !newPerson.firstName) {
-            showAlert('Фамилия и имя обязательны для заполнения!', 'error');
+    const handleAddNewPerson = useCallback((newPerson, error) => {
+        if (error) {
+            showAlert(error, 'error');
             return;
         }
 
@@ -189,7 +189,7 @@ const DepartmentsTable = () => {
             fullName: fullName
         };
 
-        setPeople([...people, newPersonWithId]);
+        setPeople(prev => [...prev, newPersonWithId]);
 
         if (openEditModal) {
             setEditDepartment(prev => ({
@@ -203,11 +203,10 @@ const DepartmentsTable = () => {
             }));
         }
 
-        setOpenPersonModal(false);
         showAlert('Человек успешно добавлен!', 'success');
-    };
+    }, [openEditModal, openAddModal, showAlert]);
 
-    const renderPersonSelector = (isEditModal) => {
+    const renderPersonSelector = useCallback((isEditModal) => {
         const value = isEditModal ? editDepartment.head : newDepartment.head;
         const setValue = isEditModal ?
             (val) => setEditDepartment({...editDepartment, head: val}) :
@@ -252,9 +251,9 @@ const DepartmentsTable = () => {
                 />
             </FormControl>
         );
-    };
+    }, [editDepartment, newDepartment, filteredPeopleOptions, people, personInputValue, handlePersonInputChange]);
 
-    const handleSaveEdit = () => {
+    const handleSaveEdit = useCallback(() => {
         if (!editDepartment.shortName || !editDepartment.fullName ||
             !editDepartment.head || !editDepartment.faculty) {
             showAlert('Все обязательные поля должны быть заполнены!', 'error');
@@ -265,17 +264,10 @@ const DepartmentsTable = () => {
             dept.id === currentRow.id ? { ...editDepartment, id: currentRow.id } : dept
         ));
         showAlert('Кафедра успешно обновлена!', 'success');
-        setEditDepartment({
-            shortName: '',
-            fullName: '',
-            head: '',
-            faculty: ''
-        });
-        setPersonInputValue('');
         handleCloseModals();
-    };
+    }, [editDepartment, currentRow, departmentsData, showAlert, handleCloseModals]);
 
-    const handleSaveAdd = () => {
+    const handleSaveAdd = useCallback(() => {
         if (!newDepartment.shortName || !newDepartment.fullName ||
             !newDepartment.head || !newDepartment.faculty) {
             showAlert('Все обязательные поля должны быть заполнены!', 'error');
@@ -285,21 +277,14 @@ const DepartmentsTable = () => {
         const newId = Math.max(...departmentsData.map(dept => parseInt(dept.id))) + 1;
         setDepartmentsData([...departmentsData, { ...newDepartment, id: newId.toString() }]);
         showAlert('Кафедра успешно добавлена!', 'success');
-        setNewDepartment({
-            shortName: '',
-            fullName: '',
-            head: '',
-            faculty: ''
-        });
-        setPersonInputValue('');
         handleCloseModals();
-    };
+    }, [newDepartment, departmentsData, showAlert, handleCloseModals]);
 
-    const handleDeleteConfirm = () => {
+    const handleDeleteConfirm = useCallback(() => {
         setDepartmentsData(departmentsData.filter(dept => dept.id !== currentRow.id));
         showAlert('Кафедра успешно удалена!', 'success');
         handleCloseModals();
-    };
+    }, [currentRow, departmentsData, showAlert, handleCloseModals]);
 
     const filteredData = departmentsData.filter(department => {
         return (
@@ -420,7 +405,7 @@ const DepartmentsTable = () => {
                     <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
                     <MenuItem onClick={handleDelete}>Удалить</MenuItem>
                 </Menu>
-                <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
+                <Modal open={openEditModal} onClose={handleCloseModals}>
                     <Box sx={{
                         position: 'absolute',
                         top: '50%',
@@ -438,99 +423,137 @@ const DepartmentsTable = () => {
                             justifyContent: 'space-between',
                             alignItems: 'center'
                         }}>
-                            <Typography variant="h6">
-                                {openEditModal && "Редактировать запись"}
-                                {openDeleteModal && "Удалить запись"}
-                                {openAddModal && "Добавить новую запись"}
-                            </Typography>
+                            <Typography variant="h6">Редактировать запись</Typography>
                             <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
                                 <CloseIcon />
                             </IconButton>
                         </Box>
                         <Box sx={{ p: 3 }}>
-                            {openEditModal && (
-                                <div>
-                                    <TextField
-                                        label="Сокращенное название*"
-                                        fullWidth
-                                        margin="normal"
-                                        value={editDepartment.shortName}
-                                        onChange={(e) => setEditDepartment({ ...editDepartment, shortName: e.target.value })}
-                                        required
-                                    />
-                                    <TextField
-                                        label="Полное название*"
-                                        fullWidth
-                                        margin="normal"
-                                        value={editDepartment.fullName}
-                                        onChange={(e) => setEditDepartment({ ...editDepartment, fullName: e.target.value })}
-                                        required
-                                    />
-                                    {renderPersonSelector(true)}
-                                    <FormControl fullWidth margin="normal" required>
-                                        <InputLabel>Факультет*</InputLabel>
-                                        <Select
-                                            value={editDepartment.faculty}
-                                            onChange={(e) => setEditDepartment({ ...editDepartment, faculty: e.target.value })}
-                                            label="Факультет*"
-                                        >
-                                            {faculties.map((faculty) => (
-                                                <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
-                                    </Box>
-                                </div>
-                            )}
-                            {openDeleteModal && (
-                                <div>
-                                    <Typography>Вы уверены, что хотите удалить запись {currentRow?.shortName}?</Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button onClick={handleDeleteConfirm} color="error">Удалить</Button>
-                                    </Box>
-                                </div>
-                            )}
-                            {openAddModal && (
-                                <div>
-                                    <TextField
-                                        label="Сокращенное название*"
-                                        fullWidth   
-                                        margin="normal"
-                                        value={newDepartment.shortName}
-                                        onChange={(e) => setNewDepartment({ ...newDepartment, shortName: e.target.value })}
-                                        required
-                                    />
-                                    <TextField
-                                        label="Полное название*"
-                                        fullWidth
-                                        margin="normal"
-                                        value={newDepartment.fullName}
-                                        onChange={(e) => setNewDepartment({ ...newDepartment, fullName: e.target.value })}
-                                        required
-                                    />
-                                    {renderPersonSelector(false)}
-                                    <FormControl fullWidth margin="normal" required>
-                                        <InputLabel>Факультет*</InputLabel>
-                                        <Select
-                                            value={newDepartment.faculty}
-                                            onChange={(e) => setNewDepartment({ ...newDepartment, faculty: e.target.value })}
-                                            label="Факультет*"
-                                        >
-                                            {faculties.map((faculty) => (
-                                                <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button onClick={handleSaveAdd} color="primary">Добавить</Button>
-                                    </Box>
-                                </div>
-                            )}
+                            <TextField
+                                label="Сокращенное название*"
+                                fullWidth
+                                margin="normal"
+                                value={editDepartment.shortName}
+                                onChange={(e) => setEditDepartment({ ...editDepartment, shortName: e.target.value })}
+                                required
+                            />
+                            <TextField
+                                label="Полное название*"
+                                fullWidth
+                                margin="normal"
+                                value={editDepartment.fullName}
+                                onChange={(e) => setEditDepartment({ ...editDepartment, fullName: e.target.value })}
+                                required
+                            />
+                            {renderPersonSelector(true)}
+                            <FormControl fullWidth margin="normal" required>
+                                <InputLabel>Факультет*</InputLabel>
+                                <Select
+                                    value={editDepartment.faculty}
+                                    onChange={(e) => setEditDepartment({ ...editDepartment, faculty: e.target.value })}
+                                    label="Факультет*"
+                                >
+                                    {faculties.map((faculty) => (
+                                        <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                <Button onClick={handleCloseModals}>Отмена</Button>
+                                <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
+                            </Box>
+                        </Box>
+                    </Box>
+                </Modal>
+                <Modal open={openDeleteModal} onClose={handleCloseModals}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        bgcolor: 'background.paper',
+                        boxShadow: 24
+                    }}>
+                        <Box sx={{
+                            bgcolor: '#1976d2',
+                            color: 'white',
+                            p: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <Typography variant="h6">Удалить запись</Typography>
+                            <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                        <Box sx={{ p: 3 }}>
+                            <Typography>Вы уверены, что хотите удалить запись {currentRow?.shortName}?</Typography>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                <Button onClick={handleCloseModals}>Отмена</Button>
+                                <Button onClick={handleDeleteConfirm} color="error">Удалить</Button>
+                            </Box>
+                        </Box>
+                    </Box>
+                </Modal>
+                <Modal open={openAddModal} onClose={handleCloseModals}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        bgcolor: 'background.paper',
+                        boxShadow: 24
+                    }}>
+                        <Box sx={{
+                            bgcolor: '#1976d2',
+                            color: 'white',
+                            p: 2,
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <Typography variant="h6">Добавить новую запись</Typography>
+                            <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                        <Box sx={{ p: 3 }}>
+                            <TextField
+                                label="Сокращенное название*"
+                                fullWidth
+                                margin="normal"
+                                value={newDepartment.shortName}
+                                onChange={(e) => setNewDepartment({ ...newDepartment, shortName: e.target.value })}
+                                required
+                            />
+                            <TextField
+                                label="Полное название*"
+                                fullWidth
+                                margin="normal"
+                                value={newDepartment.fullName}
+                                onChange={(e) => setNewDepartment({ ...newDepartment, fullName: e.target.value })}
+                                required
+                            />
+                            {renderPersonSelector(false)}
+                            <FormControl fullWidth margin="normal" required>
+                                <InputLabel>Факультет*</InputLabel>
+                                <Select
+                                    value={newDepartment.faculty}
+                                    onChange={(e) => setNewDepartment({ ...newDepartment, faculty: e.target.value })}
+                                    label="Факультет*"
+                                >
+                                    {faculties.map((faculty) => (
+                                        <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                <Button onClick={handleCloseModals}>Отмена</Button>
+                                <Button onClick={handleSaveAdd} color="primary">Добавить</Button>
+                            </Box>
                         </Box>
                     </Box>
                 </Modal>
@@ -557,4 +580,4 @@ const DepartmentsTable = () => {
     );
 };
 
-export default DepartmentsTable;
+export default React.memo(DepartmentsTable);

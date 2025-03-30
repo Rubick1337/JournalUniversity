@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Modal,
   Box,
@@ -8,122 +8,123 @@ import {
   IconButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import CustomAlert from '../Alert/Alert';
 
-export const PersonModal = ({ open, onClose, onSave, initialData = {} }) => {
+export const PersonModal = React.memo(({ open, onClose, onSave, initialData = {} }) => {
   const [personData, setPersonData] = useState({
-    lastName: initialData.lastName || '',
-    firstName: initialData.firstName || '',
-    patronymic: initialData.patronymic || '',
-    phone: initialData.phone || '',
-    email: initialData.email || ''
+    lastName: '',
+    firstName: '',
+    patronymic: '',
+    phone: '',
+    email: ''
   });
 
-  const [alert, setAlert] = useState({ open: false, message: '', severity: 'error' });
+  // Синхронизация с initialData при изменении
+  useEffect(() => {
+    if (open) {
+      setPersonData({
+        lastName: initialData?.lastName || '',
+        firstName: initialData?.firstName || '',
+        patronymic: initialData?.patronymic || '',
+        phone: initialData?.phone || '',
+        email: initialData?.email || ''
+      });
+    }
+  }, [open]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setPersonData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
     if (!personData.lastName || !personData.firstName) {
-      setAlert({ open: true, message: 'Фамилия и имя обязательны для заполнения!', severity: 'error' });
+      // Передаем ошибку через onSave
+      onSave(null, 'Фамилия и имя обязательны для заполнения!');
       return;
     }
     onSave(personData);
-    setPersonData({ lastName: '', firstName: '', patronymic: '', phone: '', email: '' });
-    setAlert({ open: true, message: 'Человек успешно сохранён!', severity: 'success' });
-    onClose();
   };
 
   return (
-      <>
-        <Modal open={open} onClose={onClose}>
+      <Modal open={open} onClose={onClose}>
+        <Box sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 400,
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          borderRadius: 1
+        }}>
           <Box sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: 400,
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            borderRadius: 1
+            bgcolor: '#1976d2',
+            color: 'white',
+            p: 2,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            borderTopLeftRadius: 4,
+            borderTopRightRadius: 4
           }}>
-            <Box sx={{
-              bgcolor: '#1976d2',
-              color: 'white',
-              p: 2,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              borderTopLeftRadius: 4,
-              borderTopRightRadius: 4
-            }}>
-              <Typography variant="h6">
-                {initialData.id ? 'Редактировать человека' : 'Добавить человека'}
-              </Typography>
-              <IconButton onClick={onClose} sx={{ color: 'white' }}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Box sx={{ p: 3 }}>
-              <TextField
-                  label="Фамилия*"
-                  fullWidth
-                  margin="normal"
-                  name="lastName"
-                  value={personData.lastName}
-                  onChange={handleChange}
-                  required
-              />
-              <TextField
-                  label="Имя*"
-                  fullWidth
-                  margin="normal"
-                  name="firstName"
-                  value={personData.firstName}
-                  onChange={handleChange}
-                  required
-              />
-              <TextField
-                  label="Отчество"
-                  fullWidth
-                  margin="normal"
-                  name="patronymic"
-                  value={personData.patronymic}
-                  onChange={handleChange}
-              />
-              <TextField
-                  label="Телефон"
-                  fullWidth
-                  margin="normal"
-                  name="phone"
-                  value={personData.phone}
-                  onChange={handleChange}
-              />
-              <TextField
-                  label="Email"
-                  fullWidth
-                  margin="normal"
-                  name="email"
-                  value={personData.email}
-                  onChange={handleChange}
-                  type="email"
-              />
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                <Button onClick={onClose} sx={{ mr: 1 }}>Отмена</Button>
-                <Button onClick={handleSubmit} variant="contained">Сохранить</Button>
-              </Box>
+            <Typography variant="h6">
+              {initialData.id ? 'Редактировать человека' : 'Добавить человека'}
+            </Typography>
+            <IconButton onClick={onClose} sx={{ color: 'white' }}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Box component="form" onSubmit={handleSubmit} sx={{ p: 3 }}>
+            <TextField
+                label="Фамилия*"
+                fullWidth
+                margin="normal"
+                name="lastName"
+                value={personData.lastName}
+                onChange={handleChange}
+                required
+            />
+            <TextField
+                label="Имя*"
+                fullWidth
+                margin="normal"
+                name="firstName"
+                value={personData.firstName}
+                onChange={handleChange}
+                required
+            />
+            <TextField
+                label="Отчество"
+                fullWidth
+                margin="normal"
+                name="patronymic"
+                value={personData.patronymic}
+                onChange={handleChange}
+            />
+            <TextField
+                label="Телефон"
+                fullWidth
+                margin="normal"
+                name="phone"
+                value={personData.phone}
+                onChange={handleChange}
+            />
+            <TextField
+                label="Email"
+                fullWidth
+                margin="normal"
+                name="email"
+                value={personData.email}
+                onChange={handleChange}
+                type="email"
+            />
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+              <Button onClick={onClose} sx={{ mr: 1 }}>Отмена</Button>
+              <Button type="submit" variant="contained">Сохранить</Button>
             </Box>
           </Box>
-        </Modal>
-        <CustomAlert
-            open={alert.open}
-            message={alert.message}
-            severity={alert.severity}
-            handleClose={() => setAlert({ ...alert, open: false })}
-        />
-      </>
+        </Box>
+      </Modal>
   );
-};
+});
