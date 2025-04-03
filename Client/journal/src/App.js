@@ -15,6 +15,7 @@ import SpecilizationTablePage from "./pages/SpecilizationTablePage/Specilization
 import FacultiesTablePage from "./pages/FacultiesTablePage/FacultiesTablePage";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import TableLearnPage from "./pages/TableLearnPage/TableLearnPage";
+import TeachersTablePage from "./pages/TeachersTablePage/TeacherTablePage";
 
 function App() {
   return (
@@ -32,6 +33,7 @@ function App() {
           <Route path="/test" element={<TestPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/tablelearn" element={<TableLearnPage />} />
+          <Route path="/teachers" element={<TeachersTablePage/>} />
         </Routes>
       </div>
     </Provider>
