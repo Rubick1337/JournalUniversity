@@ -5,7 +5,6 @@ import styled from 'styled-components';
 const StudentProgress = () => {
     const student = {
         name: "Смирнова Анна Дмитриевна",
-        averageScore: 4.5,
         subjects: [
             {
                 name: "Веб-программирование",
@@ -46,11 +45,11 @@ const StudentProgress = () => {
             {
                 name: "Физическая культура",
                 type: "Зачет",
-                module1: 30,
-                module2: 60,
+                module1: null,
+                module2: null,
                 final: true,
-                passed: true,
-                attended: true
+                passed: false,
+                attended: false
             },
             {
                 name: "Иностранный язык",
@@ -65,28 +64,28 @@ const StudentProgress = () => {
         courseWorks: [
             {
                 discipline: "Веб-программирование",
-                supervisor: "Иванов И.И.",
+                grade: 5,
                 module1: 28,
                 module2: 55,
                 passed: true
             },
             {
                 discipline: "Компьютерные сети",
-                supervisor: "Петров П.П.",
+                grade: 4,
                 module1: 25,
                 module2: 52,
                 passed: true
             },
             {
                 discipline: "Базы данных",
-                supervisor: "Сидорова С.С.",
+                grade: null,
                 module1: 18,
                 module2: 42,
                 passed: false
             },
             {
                 discipline: "Теория алгоритмов",
-                supervisor: "Кузнецов К.К.",
+                grade: 5,
                 module1: 30,
                 module2: 60,
                 passed: true
@@ -94,14 +93,43 @@ const StudentProgress = () => {
         ]
     };
 
+    // Функция для отображения значений (заменяет null на '-')
+    const displayValue = (value) => value !== null ? value : '-';
+
+    // Функция подсчёта среднего балла
+    const calculateAverageGrade = () => {
+        // Собираем все оценки
+        const allGrades = [
+            // Оценки за экзамены (финальные)
+            ...student.subjects
+                .filter(subject => subject.type === 'Экзамен' && subject.final !== null)
+                .map(subject => subject.final),
+
+            // Оценки за курсовые
+            ...student.courseWorks
+                .filter(work => work.grade !== null)
+                .map(work => work.grade),
+        ];
+
+        if (allGrades.length === 0) return 0;
+
+        const sum = allGrades.reduce((acc, grade) => acc + grade, 0);
+        return (sum / allGrades.length).toFixed(2);
+    };
+
+    const averageGrade = calculateAverageGrade();
+
     // Подсчёт зачётов
     const credits = student.subjects.filter(subject => subject.type === 'Зачет');
+    const exams = student.subjects.filter(subject => subject.type === 'Экзамен');
+    const passedExam = exams.filter(exam => exam.passed).length;
+    const totalExam = exams.length;
     const passedCredits = credits.filter(credit => credit.passed).length;
     const totalCredits = credits.length;
     const missedExams = student.subjects.filter(subject => !subject.attended).length;
 
-    const TableRow = styled.div `
-        display:table-row;
+    const TableRow = styled.div`
+        display: table-row;
         animation: fadeIn 0.5s ease-out forwards;
         opacity: 0;
         animation-delay: ${props => props.$index * 0.1}s;
@@ -116,7 +144,8 @@ const StudentProgress = () => {
                 transform: translateX(0);
             }
         }
-    `
+    `;
+
     return (
         <div className="student-progress">
             <h2>Успеваемость студента: {student.name}</h2>
@@ -124,8 +153,9 @@ const StudentProgress = () => {
             {/* Общая сводка */}
             <div className="summary">
                 <div className="summary-row">
-                    <p>Средний балл: <strong>{student.averageScore}</strong></p>
+                    <p>Общий средний балл: <strong>{averageGrade}</strong></p>
                     <p>Зачёты: <strong>{passedCredits}/{totalCredits}</strong> сдано</p>
+                    <p>Экзамены: <strong>{passedExam}/{totalExam}</strong> сдано</p>
                     <p>Курсовые: <strong>
                         {student.courseWorks.filter(cw => cw.passed).length}/
                         {student.courseWorks.length}
@@ -153,17 +183,15 @@ const StudentProgress = () => {
                         <TableRow key={index} $index={index}>
                             <div className="cell">{subject.name}</div>
                             <div className="cell">{subject.type}</div>
-                            <div className="cell score">
-                                {subject.module1 !== null ? subject.module1 : '-'}
-                            </div>
-                            <div className="cell score">
-                                {subject.module2 !== null ? subject.module2 : '-'}
-                            </div>
+                            <div className="cell score">{displayValue(subject.module1)}</div>
+                            <div className="cell score">{displayValue(subject.module2)}</div>
                             <div className="cell final">
                                 {subject.type === 'Зачет' ? (
-                                    subject.final === true ? 'Зачет' : 'Незачет'
+                                    subject.final === true ? 'Зачёт' : 'Незачёт'
                                 ) : (
-                                    <span className={`grade-${subject.final}`}>{subject.final}</span>
+                                    <span className={`grade-${subject.final}`}>
+                                        {displayValue(subject.final)}
+                                    </span>
                                 )}
                             </div>
                             <div className="cell status">
@@ -175,7 +203,7 @@ const StudentProgress = () => {
                                     <span className="not-passed">Не сдано</span>
                                 )}
                             </div>
-                            </TableRow>
+                        </TableRow>
                     ))}
                 </div>
             </div>
@@ -186,23 +214,29 @@ const StudentProgress = () => {
                 <div className="progress-table">
                     <div className="table-header">
                         <div className="header-cell">Дисциплина</div>
-                        <div className="header-cell">Руководитель</div>
                         <div className="header-cell">Модуль 1 (30)</div>
                         <div className="header-cell">Модуль 2 (60)</div>
+                        <div className="header-cell">Оценка</div>
                         <div className="header-cell">Статус</div>
                     </div>
 
                     {student.courseWorks.map((work, index) => (
                         <div className="table-row" key={index}>
                             <div className="cell">{work.discipline}</div>
-                            <div className="cell">{work.supervisor}</div>
-                            <div className="cell score">{work.module1}</div>
-                            <div className="cell score">{work.module2}</div>
+                            <div className="cell score">{displayValue(work.module1)}</div>
+                            <div className="cell score">{displayValue(work.module2)}</div>
+                            <div className="cell grade">
+                                {work.grade !== null ? (
+                                    <span className={`grade-${work.grade}`}>{work.grade}</span>
+                                ) : (
+                                    '-'
+                                )}
+                            </div>
                             <div className="cell status">
                                 {work.passed ? (
-                                    <span className="passed">Защищена</span>
+                                    <span className="passed">Сдано</span>
                                 ) : (
-                                    <span className="not-passed">Не сдана</span>
+                                    <span className="not-passed">Не сдано</span>
                                 )}
                             </div>
                         </div>
