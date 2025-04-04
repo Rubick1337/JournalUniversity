@@ -19,6 +19,7 @@ import TeachersTablePage from "./pages/TeachersTablePage/TeacherTablePage";
 import DisciplinesTablePage from "./pages/DisciplinesTablePage/DisciplinesTablePage";
 import GroupTablePage from "./pages/GroupTablePage/GroupTablePage";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
+import StudentRaitingPage from "./pages/StudentRaitingPage/StudentRaitingPage";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           <Route path="/discipline" element={<DisciplinesTablePage />} />
           <Route path="/tablegroups" element={<GroupTablePage />} />
           <Route path="*" element={<NotFoundPage />} />
+          <Route path="/curriculum" element={<StudentRaitingPage />} />
         </Routes>
       </div>
     </Provider>

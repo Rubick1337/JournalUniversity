@@ -1,0 +1,157 @@
+.student-progress {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-in-out forwards;
+}
+
+h2, h3 {
+    color: #2c3e50;
+    margin: 20px 0 15px;
+}
+
+h3 {
+    font-size: 1.2em;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.summary {
+    margin-bottom: 20px;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 15px;
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.summary-row p {
+    margin: 0;
+    font-size: 1.1em;
+    min-width: 200px;
+}
+
+.warning {
+    color: #e74c3c;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 30px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.progress-table {
+    display: inline-table;
+    min-width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-header, .table-row {
+    display: table-row;
+}
+
+.header-cell, .cell {
+    display: table-cell;
+    padding: 14px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+}
+
+.header-cell {
+    background-color: #3498db;
+    color: white;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.cell {
+    text-align: center;
+}
+
+.cell:first-child {
+    text-align: left;
+}
+
+.score {
+    font-weight: 500;
+}
+
+.final {
+    font-weight: 600;
+}
+
+.grade-5 { color: #27ae60; }
+.grade-4 { color: #f39c12; }
+.grade-3 { color: #e67e22; }
+
+.status {
+    justify-content: center;
+}
+
+.passed {
+    background-color: #27ae60;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.9em;
+}
+
+.not-passed {
+    background-color: #e74c3c;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.9em;
+}
+
+.missed {
+    background-color: #e74c3c;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.9em;
+}
+
+@media (max-width: 768px) {
+    .student-progress {
+        padding: 15px;
+    }
+
+    .header-cell, .cell {
+        padding: 10px 12px;
+        font-size: 0.9em;
+    }
+
+    .summary-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+@keyframes fadeInUp  {
+    from{
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to
+    {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
