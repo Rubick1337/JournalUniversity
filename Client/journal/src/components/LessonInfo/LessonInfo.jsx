@@ -21,7 +21,7 @@ const LessonInfo = () => {
     const [loading, setLoading] = useState(true);
 
     // Временное значение роли (в будущем будет из JWT)
-    const role = 'teacher'; // или 'headman' или 'student'
+    const role = 'headman'; // или 'headman' или 'student'
 
     useEffect(() => {
         const fetchLesson = async () => {
@@ -87,7 +87,6 @@ const LessonInfo = () => {
                     <InfoItem label="Преподаватель" value={lessonData.teacher} />
                     <InfoItem label="Тема" value={lessonData.topic} />
                     <InfoItem label="Тип занятия" value={lessonData.type} />
-                    <InfoItem label="Время" value={lessonData.time} />
                 </Box>
 
                 {role === 'headman' && <AttendanceTable lessonData={lessonData} />}

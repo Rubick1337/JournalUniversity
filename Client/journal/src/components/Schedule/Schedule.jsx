@@ -6,7 +6,7 @@ import './ScheduleStyle.css';
 const Schedule = ({ selectedDay, weekType }) => {
     const [scheduleData, setScheduleData] = useState([]);
     const navigate = useNavigate();
-    const role = "teacher";
+    const role = "headman";
     useEffect(() => {
         if (selectedDay && weekType) {
             axios.get('/TestData/schedule.json')

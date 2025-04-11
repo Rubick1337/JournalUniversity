@@ -11,19 +11,22 @@ import {
     TextField,
     IconButton,
     Tooltip,
-    Button,
-    Autocomplete
+    Autocomplete,
+    Menu,
+    MenuItem,
+    Divider,
+    Alert,
+    Snackbar
 } from '@mui/material';
 import {
-    Check as CheckIcon,
     Add as AddIcon,
     Close as CloseIcon,
     Save as SaveIcon,
-    Delete as DeleteIcon
+    Delete as DeleteIcon,
+    MoreVert as MoreVertIcon,
+    Edit as EditIcon
 } from '@mui/icons-material';
-import { green, red } from '@mui/material/colors';
 import styles from './LessonInfo.module.css';
-import AnimatedCheckbox from './AnimatedCheckbox';
 
 const mockStudents = [
     { id: 1, name: 'Иванов Иван' },
@@ -39,16 +42,44 @@ const AttendanceTable = ({ lessonData }) => {
     const [absentStudents, setAbsentStudents] = useState([]);
     const [newStudent, setNewStudent] = useState({
         student: null,
-        isValidAbsence: false,
-        isInvalidAbsence: false
+        validAbsence: '',
+        invalidAbsence: ''
     });
     const [isAdding, setIsAdding] = useState(false);
+    const [editingStudentId, setEditingStudentId] = useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [selectedStudentId, setSelectedStudentId] = useState(null);
+    const [errorOpen, setErrorOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
-    const handleAttendanceChange = (studentId, type) => {
+    const MAX_HOURS = 2;
+
+    const handleAbsenceChange = (studentId, type, value) => {
+        const numericValue = value === '' ? 0 : Number(value);
+
+        // Проверка суммы часов перед изменением
+        const existingRecord = attendance.find(a => a.studentId === studentId);
+        const otherType = type === 'validAbsence' ? 'invalidAbsence' : 'validAbsence';
+        const otherValue = existingRecord ? existingRecord[otherType] : 0;
+
+        if (numericValue + otherValue > MAX_HOURS) {
+            setErrorMessage(`Сумма часов не может превышать ${MAX_HOURS} ч`);
+            setErrorOpen(true);
+            return;
+        }
+
         setAttendance(prev => {
             const filtered = prev.filter(a => a.studentId !== studentId);
-            if (type === null) return filtered;
-            return [...filtered, { studentId, type }];
+
+            if (numericValue === 0 && otherValue === 0) {
+                return filtered;
+            }
+
+            return [...filtered, {
+                studentId,
+                validAbsence: type === 'validAbsence' ? numericValue : otherValue,
+                invalidAbsence: type === 'invalidAbsence' ? numericValue : otherValue
+            }];
         });
     };
 
@@ -57,26 +88,37 @@ const AttendanceTable = ({ lessonData }) => {
     };
 
     const handleSaveNewStudent = () => {
-        if (!newStudent.student) {
+        if (!newStudent.student || (newStudent.validAbsence === '' && newStudent.invalidAbsence === '')) {
             return;
         }
 
-        if (!newStudent.isValidAbsence && !newStudent.isInvalidAbsence) {
+        const valid = newStudent.validAbsence === '' ? 0 : Number(newStudent.validAbsence);
+        const invalid = newStudent.invalidAbsence === '' ? 0 : Number(newStudent.invalidAbsence);
+
+        // Проверка суммы часов для нового студента
+        if (valid + invalid > MAX_HOURS) {
+            setErrorMessage(`Сумма часов не может превышать ${MAX_HOURS} ч`);
+            setErrorOpen(true);
             return;
         }
 
         setAbsentStudents([...absentStudents, newStudent.student]);
 
-        if (newStudent.isValidAbsence) {
-            handleAttendanceChange(newStudent.student.id, 'valid');
-        } else if (newStudent.isInvalidAbsence) {
-            handleAttendanceChange(newStudent.student.id, 'invalid');
+        if (valid > 0 || invalid > 0) {
+            setAttendance(prev => [
+                ...prev,
+                {
+                    studentId: newStudent.student.id,
+                    validAbsence: valid,
+                    invalidAbsence: invalid
+                }
+            ]);
         }
 
         setNewStudent({
             student: null,
-            isValidAbsence: false,
-            isInvalidAbsence: false
+            validAbsence: '',
+            invalidAbsence: ''
         });
         setIsAdding(false);
     };
@@ -85,19 +127,47 @@ const AttendanceTable = ({ lessonData }) => {
         setIsAdding(false);
         setNewStudent({
             student: null,
-            isValidAbsence: false,
-            isInvalidAbsence: false
+            validAbsence: '',
+            invalidAbsence: ''
         });
     };
 
     const handleDeleteStudent = (studentId) => {
         setAbsentStudents(absentStudents.filter(s => s.id !== studentId));
         setAttendance(attendance.filter(a => a.studentId !== studentId));
+        handleCloseMenu();
     };
 
-    const getAttendanceStatus = (studentId) => {
+    const handleEditStudent = (studentId) => {
+        setEditingStudentId(studentId);
+        handleCloseMenu();
+    };
+
+    const handleSaveEdit = (studentId) => {
+        setEditingStudentId(null);
+    };
+
+    const handleCancelEdit = () => {
+        setEditingStudentId(null);
+    };
+
+    const getStudentAbsence = (studentId) => {
         const record = attendance.find(a => a.studentId === studentId);
-        return record ? record.type : null;
+        return record || { validAbsence: 0, invalidAbsence: 0 };
+    };
+
+    const handleOpenMenu = (event, studentId) => {
+        setAnchorEl(event.currentTarget);
+        setSelectedStudentId(studentId);
+    };
+
+    const handleCloseMenu = () => {
+        setAnchorEl(null);
+        setSelectedStudentId(null);
+    };
+
+    const handleCloseError = () => {
+        setErrorOpen(false);
     };
 
     const availableStudentsForAbsence = mockStudents.filter(
@@ -106,6 +176,17 @@ const AttendanceTable = ({ lessonData }) => {
 
     return (
         <>
+            <Snackbar
+                open={errorOpen}
+                autoHideDuration={6000}
+                onClose={handleCloseError}
+                anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+            >
+                <Alert onClose={handleCloseError} severity="error" sx={{ width: '100%' }}>
+                    {errorMessage}
+                </Alert>
+            </Snackbar>
+
             <Box className={styles.attendanceHeader}>
                 <Typography variant="h6" className={styles.attendanceTitle}>
                     Посещаемость группы <span className={styles.groupName}>{lessonData.group}</span>
@@ -151,9 +232,8 @@ const AttendanceTable = ({ lessonData }) => {
                         ) : (
                             <>
                                 {absentStudents.map(student => {
-                                    const status = getAttendanceStatus(student.id);
-                                    const isValidAbsence = status === 'valid';
-                                    const isInvalidAbsence = status === 'invalid';
+                                    const absence = getStudentAbsence(student.id);
+                                    const isEditing = editingStudentId === student.id;
 
                                     return (
                                         <TableRow key={student.id} className={styles.tableRow}>
@@ -163,41 +243,104 @@ const AttendanceTable = ({ lessonData }) => {
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="center">
-                                                <AnimatedCheckbox
-                                                    checked={isValidAbsence}
-                                                    onChange={() => {
-                                                        handleAttendanceChange(
+                                                {isEditing ? (
+                                                    <TextField
+                                                        type="number"
+                                                        value={absence.validAbsence}
+                                                        onChange={(e) => handleAbsenceChange(
                                                             student.id,
-                                                            isValidAbsence ? null : 'valid'
-                                                        );
-                                                    }}
-                                                    color={green[500]}
-                                                    icon={<CheckIcon />}
-                                                />
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <AnimatedCheckbox
-                                                    checked={isInvalidAbsence}
-                                                    onChange={() => {
-                                                        handleAttendanceChange(
-                                                            student.id,
-                                                            isInvalidAbsence ? null : 'invalid'
-                                                        );
-                                                    }}
-                                                    color={red[500]}
-                                                    icon={<CloseIcon />}
-                                                />
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                <Tooltip title="Удалить студента">
-                                                    <IconButton
-                                                        onClick={() => handleDeleteStudent(student.id)}
-                                                        color="error"
+                                                            'validAbsence',
+                                                            e.target.value
+                                                        )}
+                                                        inputProps={{
+                                                            min: 0,
+                                                            max: MAX_HOURS,
+                                                            step: 1,
+                                                            style: { textAlign: 'center' }
+                                                        }}
                                                         size="small"
-                                                    >
-                                                        <DeleteIcon />
-                                                    </IconButton>
-                                                </Tooltip>
+                                                        variant="outlined"
+                                                        className={styles.absenceInput}
+                                                    />
+                                                ) : (
+                                                    <Typography>
+                                                        {absence.validAbsence > 0 ? `${absence.validAbsence} ч` : '-'}
+                                                    </Typography>
+                                                )}
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                {isEditing ? (
+                                                    <TextField
+                                                        type="number"
+                                                        value={absence.invalidAbsence}
+                                                        onChange={(e) => handleAbsenceChange(
+                                                            student.id,
+                                                            'invalidAbsence',
+                                                            e.target.value
+                                                        )}
+                                                        inputProps={{
+                                                            min: 0,
+                                                            max: MAX_HOURS,
+                                                            step: 1,
+                                                            style: { textAlign: 'center' }
+                                                        }}
+                                                        size="small"
+                                                        variant="outlined"
+                                                        className={styles.absenceInput}
+                                                    />
+                                                ) : (
+                                                    <Typography>
+                                                        {absence.invalidAbsence > 0 ? `${absence.invalidAbsence} ч` : '-'}
+                                                    </Typography>
+                                                )}
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                {isEditing ? (
+                                                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                        <Tooltip title="Сохранить">
+                                                            <IconButton
+                                                                onClick={() => handleSaveEdit(student.id)}
+                                                                color="primary"
+                                                                size="small"
+                                                            >
+                                                                <SaveIcon />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title="Отменить">
+                                                            <IconButton
+                                                                onClick={handleCancelEdit}
+                                                                color="error"
+                                                                size="small"
+                                                            >
+                                                                <CloseIcon />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={(e) => handleOpenMenu(e, student.id)}
+                                                        >
+                                                            <MoreVertIcon />
+                                                        </IconButton>
+                                                        <Menu
+                                                            anchorEl={anchorEl}
+                                                            open={Boolean(anchorEl) && selectedStudentId === student.id}
+                                                            onClose={handleCloseMenu}
+                                                        >
+                                                            <MenuItem onClick={() => handleEditStudent(student.id)}>
+                                                                <EditIcon fontSize="small" sx={{ mr: 1 }} />
+                                                                Редактировать
+                                                            </MenuItem>
+                                                            <Divider />
+                                                            <MenuItem onClick={() => handleDeleteStudent(student.id)}>
+                                                                <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+                                                                Удалить
+                                                            </MenuItem>
+                                                        </Menu>
+                                                    </>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -227,37 +370,68 @@ const AttendanceTable = ({ lessonData }) => {
                                             />
                                         </TableCell>
                                         <TableCell align="center">
-                                            <AnimatedCheckbox
-                                                checked={newStudent.isValidAbsence}
-                                                onChange={() => setNewStudent({
+                                            <TextField
+                                                type="number"
+                                                value={newStudent.validAbsence}
+                                                onChange={(e) => setNewStudent({
                                                     ...newStudent,
-                                                    isValidAbsence: !newStudent.isValidAbsence,
-                                                    isInvalidAbsence: false
+                                                    validAbsence: e.target.value
                                                 })}
-                                                color={green[500]}
-                                                icon={<CheckIcon />}
-                                            />
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <AnimatedCheckbox
-                                                checked={newStudent.isInvalidAbsence}
-                                                onChange={() => setNewStudent({
-                                                    ...newStudent,
-                                                    isInvalidAbsence: !newStudent.isInvalidAbsence,
-                                                    isValidAbsence: false
-                                                })}
-                                                color={red[500]}
-                                                icon={<CloseIcon />}
-                                            />
-                                        </TableCell>
-                                        <TableCell align="center">
-                                            <IconButton
-                                                onClick={handleCancelAdd}
-                                                color="error"
+                                                inputProps={{
+                                                    min: 0,
+                                                    max: MAX_HOURS,
+                                                    step: 1,
+                                                    style: { textAlign: 'center' }
+                                                }}
                                                 size="small"
-                                            >
-                                                <CloseIcon />
-                                            </IconButton>
+                                                variant="outlined"
+                                                className={styles.absenceInput}
+                                            />
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <TextField
+                                                type="number"
+                                                value={newStudent.invalidAbsence}
+                                                onChange={(e) => setNewStudent({
+                                                    ...newStudent,
+                                                    invalidAbsence: e.target.value
+                                                })}
+                                                inputProps={{
+                                                    min: 0,
+                                                    max: MAX_HOURS,
+                                                    step: 1,
+                                                    style: { textAlign: 'center' }
+                                                }}
+                                                size="small"
+                                                variant="outlined"
+                                                className={styles.absenceInput}
+                                            />
+                                        </TableCell>
+                                        <TableCell align="center">
+                                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                                <Tooltip title="Сохранить">
+                                                    <IconButton
+                                                        onClick={handleSaveNewStudent}
+                                                        color="primary"
+                                                        size="small"
+                                                        disabled={!newStudent.student || (
+                                                            newStudent.validAbsence === '' &&
+                                                            newStudent.invalidAbsence === ''
+                                                        )}
+                                                    >
+                                                        <SaveIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="Отменить">
+                                                    <IconButton
+                                                        onClick={handleCancelAdd}
+                                                        color="error"
+                                                        size="small"
+                                                    >
+                                                        <CloseIcon />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 )}
@@ -266,32 +440,6 @@ const AttendanceTable = ({ lessonData }) => {
                     </TableBody>
                 </Table>
             </TableContainer>
-
-            {isAdding && (
-                <Box className={styles.actionsBox}>
-                    <div className={styles.actionAnimation}>
-                        <Button
-                            variant="outlined"
-                            startIcon={<CloseIcon />}
-                            onClick={handleCancelAdd}
-                            className={styles.cancelButton}
-                        >
-                            Отмена
-                        </Button>
-                    </div>
-                    <div className={styles.actionAnimation}>
-                        <Button
-                            variant="contained"
-                            startIcon={<SaveIcon />}
-                            onClick={handleSaveNewStudent}
-                            disabled={!newStudent.student}
-                            className={styles.saveButton}
-                        >
-                            Сохранить
-                        </Button>
-                    </div>
-                </Box>
-            )}
 
             {availableStudentsForAbsence.length === 0 && !isAdding && absentStudents.length > 0 && (
                 <Typography
