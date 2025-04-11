@@ -1,0 +1,324 @@
+/* Основные стили контейнера */
+.paperContainer {
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+    background: linear-gradient(to bottom right, #f9f9f9, #ffffff);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+}
+
+/* Анимация появления */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Заголовок и кнопка назад */
+.headerBox {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.backButton {
+    margin-right: 16px;
+    background: rgba(25, 118, 210, 0.08);
+    transition: background-color 0.3s ease;
+}
+
+.backButton:hover {
+    background: rgba(25, 118, 210, 0.15);
+}
+
+.title {
+    font-weight: 700;
+    background: linear-gradient(to right, #1976d2, #5e35b1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Разделитель */
+.divider {
+    margin: 16px 0;
+    background: linear-gradient(to right, transparent, #1976d2, transparent);
+    height: 2px;
+    border: none;
+}
+
+/* Сетка с информацией */
+.infoGrid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+}
+
+@media (min-width: 600px) {
+    .infoGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 900px) {
+    .infoGrid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.infoItem {
+    padding: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.infoLabel {
+    font-weight: 600;
+    color: rgba(0, 0, 0, 0.6);
+    margin-bottom: 8px;
+}
+
+.infoValue {
+    font-weight: 500;
+    color: #1976d2;
+}
+
+/* Заголовок посещаемости */
+.attendanceHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: linear-gradient(to right, rgba(25, 118, 210, 0.1), rgba(25, 118, 210, 0.05));
+    border-radius: 12px;
+}
+
+.attendanceTitle {
+    font-weight: 600;
+}
+
+.groupName {
+    color: #1976d2;
+}
+
+/* Кнопка добавления */
+.addButton {
+    background: linear-gradient(135deg, #1976d2, #2196f3);
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.addButton:hover {
+    background: linear-gradient(135deg, #1565c0, #1976d2);
+    transform: scale(1.1);
+}
+
+.addButton:active {
+    transform: scale(0.95);
+}
+
+.addButton.Mui-disabled {
+    background: #e0e0e0;
+    color: #9e9e9e;
+}
+
+
+/* Таблица */
+.tableContainer {
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    overflow-x: auto;
+    max-height: 500px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+/* Стили скроллбара */
+.tableContainer::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+}
+
+.tableContainer::-webkit-scrollbar-track {
+    background: #f5f5f5;
+    border-radius: 3px;
+}
+
+.tableContainer::-webkit-scrollbar-thumb {
+    background: #1976d2;
+    border-radius: 3px;
+}
+
+.table {
+    min-width: 650px;
+}
+
+.tableHead {
+    background: linear-gradient(45deg, #1976d2 0%, #1565c0 100%);
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.headerCell {
+    color: white !important;
+    font-weight: 600;
+    font-size: 0.875rem;
+    border-bottom: none !important;
+}
+
+/* Строки таблицы */
+.tableRow:nth-of-type(even) {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.tableRow:last-child td {
+    border-bottom: none !important;
+}
+
+.tableRow {
+    transition: all 0.2s ease;
+}
+
+.tableRow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0px 3px 1px -2px rgba(0,0,0,0.2),
+    0px 2px 2px 0px rgba(0,0,0,0.14),
+    0px 1px 5px 0px rgba(0,0,0,0.12);
+}
+
+/* Сообщение "нет студентов" */
+.noStudentsCell {
+    padding: 32px !important;
+}
+
+.noStudentsText {
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: rgba(0, 0, 0, 0.6);
+}
+
+.studentName {
+    font-weight: 500;
+}
+
+/* Анимированный чекбокс */
+.checkboxContainer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid;
+    transition: all 0.3s;
+}
+
+.checkboxContainer.checked {
+    animation: checkboxScale 0.2s;
+}
+
+@keyframes checkboxScale {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.checkbox {
+    padding: 0 !important;
+}
+
+.checkbox:hover {
+    background-color: transparent !important;
+}
+
+/* Поле автозаполнения */
+.autocompleteInput .MuiOutlinedInput-root {
+    border-radius: 8px;
+    background: white;
+}
+
+/* Кнопки действий */
+.actionsBox {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    gap: 8px;
+    padding: 16px;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 12px;
+}
+
+.cancelButton {
+    border-radius: 8px;
+    text-transform: none;
+    padding: 8px 24px;
+    transition: transform 0.2s;
+}
+
+.saveButton {
+    border-radius: 8px;
+    text-transform: none;
+    padding: 8px 24px;
+    background: linear-gradient(135deg, #4caf50, #2e7d32);
+    color: white;
+    transition: all 0.2s;
+}
+
+.cancelButton:hover, .saveButton:hover {
+    transform: scale(1.03);
+}
+
+.saveButton:hover {
+    background: linear-gradient(135deg, #388e3c, #1b5e20);
+}
+
+/* Сообщение о всех студентах */
+.allStudentsAdded {
+    text-align: center;
+    padding: 16px 0;
+    font-style: italic;
+    color: #1976d2;
+}
+
+/* Анимации для кнопок */
+.scaleAnimation {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.scaleAnimation:hover {
+    transform: scale(1.1);
+}
+
+.scaleAnimation:active {
+    transform: scale(0.95);
+}
+
+.actionAnimation {
+    transition: transform 0.2s ease;
+}
+
+.actionAnimation:hover {
+    transform: scale(1.03);
+}
+.gradeInput .MuiOutlinedInput-root {
+    border-radius: 8px;
+    background: white;
+}
+
+.select .MuiOutlinedInput-root {
+    border-radius: 8px;
+    background: white;
+}
+
+/* Отступ между таблицами */
+.gradesTable {
+    margin-top: 32px;
+}

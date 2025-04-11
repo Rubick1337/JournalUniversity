@@ -7,6 +7,7 @@ import FacultiesTable from "../../components/FacultiesTable/FacultiesTable";
 import DepartmentsTable from "../../components/DepartmentsTable/DepartmentsTable";
 import UserProfile from "../../components/Profile/Profile";
 import StudentProgress from "../../components/StudentProgress/StudentProgress";
+import CreateLessonForm from "../../components/CreateLessonForm/CreateLessonForm";
 
 
 const SchedulePage = props => {
@@ -19,7 +20,7 @@ const SchedulePage = props => {
                 {/*<TableLearn/>*/}
                 {/*<StudentsTable/>*/}
                 {/*<SpecializationListTable/>*/}
-                <StudentProgress/>
+                <CreateLessonForm/>
             </main>
             <Footer/>
         </>

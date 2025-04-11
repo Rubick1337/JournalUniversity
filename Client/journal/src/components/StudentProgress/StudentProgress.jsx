@@ -47,7 +47,7 @@ const StudentProgress = () => {
                 type: "Зачет",
                 module1: null,
                 module2: null,
-                final: true,
+                final: false,
                 passed: false,
                 attended: false
             },
