@@ -47,6 +47,7 @@
 
 /* Сетка с информацией */
 .infoGrid {
+    margin-top: 10px;
     display: grid;
     grid-template-columns: 1fr;
     gap: 24px;
