@@ -1,5 +1,5 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
     Paper,
     Typography,
@@ -11,13 +11,56 @@ import { ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import styles from './LessonInfo.module.css';
 import AttendanceTable from './AttendanceTable';
 import GradesTable from './GradesTable';
+import axios from 'axios';
 
-const LessonInfo = ({ lessonData, role }) => {
+
+const LessonInfo = () => {
+    const { id } = useParams();
     const navigate = useNavigate();
+    const [lessonData, setLessonData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    // Временное значение роли (в будущем будет из JWT)
+    const role = 'teacher'; // или 'headman' или 'student'
+
+    useEffect(() => {
+        const fetchLesson = async () => {
+            try {
+                const response = await axios.get('/TestData/schedule.json'); // Путь из public
+                const scheduleData = response.data;
+
+                let foundLesson = null;
+
+                for (const day of scheduleData) {
+                    const lesson = day.schedule.find(item => item.id === parseInt(id));
+                    if (lesson) {
+                        foundLesson = lesson;
+                        break;
+                    }
+                }
+
+                setLessonData(foundLesson);
+            } catch (error) {
+                console.error('Ошибка при загрузке или поиске занятия:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchLesson();
+    }, [id]);
 
     const handleBack = () => {
         navigate('/schedule');
     };
+
+    if (loading) {
+        return <div>Загрузка данных о занятии...</div>;
+    }
+
+    if (!lessonData) {
+        return <div>Занятие с ID {id} не найдено</div>;
+    }
 
     return (
         <div style={{ animation: 'fadeIn 0.3s' }}>
@@ -43,6 +86,8 @@ const LessonInfo = ({ lessonData, role }) => {
                     <InfoItem label="Дисциплина" value={lessonData.discipline} />
                     <InfoItem label="Преподаватель" value={lessonData.teacher} />
                     <InfoItem label="Тема" value={lessonData.topic} />
+                    <InfoItem label="Тип занятия" value={lessonData.type} />
+                    <InfoItem label="Время" value={lessonData.time} />
                 </Box>
 
                 {role === 'headman' && <AttendanceTable lessonData={lessonData} />}
@@ -58,7 +103,7 @@ const InfoItem = ({ label, value }) => (
             {label}
         </Typography>
         <Typography variant="body1" className={styles.infoValue}>
-            {value}
+            {value || 'Не указано'}
         </Typography>
     </Box>
 );

@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './ScheduleStyle.css';
 
 const Schedule = ({ selectedDay, weekType }) => {
     const [scheduleData, setScheduleData] = useState([]);
-
+    const navigate = useNavigate();
+    const role = "teacher";
     useEffect(() => {
         if (selectedDay && weekType) {
-            axios.get(`/TestData/schedule.json`)
+            axios.get('/TestData/schedule.json')
                 .then(response => {
                     const filteredData = response.data.filter(daySchedule =>
                         daySchedule.day === selectedDay && daySchedule.week === weekType
@@ -17,6 +19,10 @@ const Schedule = ({ selectedDay, weekType }) => {
                 .catch(error => console.error('Ошибка загрузки расписания:', error));
         }
     }, [selectedDay, weekType]);
+
+    const handleLessonAction = (lessonId) => {
+            navigate(`/infolesson/${lessonId}`);
+    };
 
     return (
         <div className="schedule-container">
@@ -28,10 +34,18 @@ const Schedule = ({ selectedDay, weekType }) => {
                             <div key={lessonIndex} className="lesson">
                                 <div className="dot"></div>
                                 <div className="information__lesson">
-                                    <div className="time">{lesson.time}</div>
-                                    <div className="subject">{lesson.subject}</div>
-                                    <div className="teacher">{lesson.teacher}</div>
-                                    <div className="room">Аудитория: {lesson.room}</div>
+                                    <div className="lesson-main-info">
+                                        <div className="time">{lesson.time}</div>
+                                        <div className="subject">{lesson.subject}</div>
+                                        <div className="teacher">{lesson.teacher}</div>
+                                        <div className="room">Аудитория: {lesson.room}</div>
+                                    </div>
+                                    <button
+                                        className={`action-button ${role === 'teacher' ? 'conduct' : 'details'}`}
+                                        onClick={() => handleLessonAction(lesson.id)}
+                                    >
+                                        {role === 'teacher' ? 'Провести' : 'Подробнее'}
+                                    </button>
                                 </div>
                             </div>
                         ))}

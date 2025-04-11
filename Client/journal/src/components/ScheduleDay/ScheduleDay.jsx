@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import './ScheduleDayStyle.css';
 
-const ScheduleDay = () => {
-    const [scheduleData, setScheduleData] = useState([]); // Данные расписания
-    const [selectedDay, setSelectedDay] = useState(''); // Выбранный день недели
-    const [weekType, setWeekType] = useState(''); // Тип недели: верхняя или нижняя
-
-    // Дни недели с сокращенными названиями
+const ScheduleDay = ({  }) => {
+    const [scheduleData, setScheduleData] = useState([]);
+    const [selectedDay, setSelectedDay] = useState('');
+    const [weekType, setWeekType] = useState('');
+    const navigate = useNavigate();
+    const role = "teacher";
     const daysOfWeek = [
         { full: 'Понедельник', short: 'Пн' },
         { full: 'Вторник', short: 'Вт' },
@@ -17,27 +18,21 @@ const ScheduleDay = () => {
         { full: 'Суббота', short: 'Сб' }
     ];
 
-    // Определяем сегодняшний день и тип недели
     useEffect(() => {
         const today = new Date();
-        const dayIndex = today.getDay(); // 0 (воскресенье) - 6 (суббота)
-
-        // Если день недели — воскресенье, устанавливаем понедельник как выбранный день
-        const todayDay = dayIndex === 0 ? daysOfWeek[0] : daysOfWeek[dayIndex - 1]; // Воскресенье игнорируем
+        const dayIndex = today.getDay();
+        const todayDay = dayIndex === 0 ? daysOfWeek[0] : daysOfWeek[dayIndex - 1];
         setSelectedDay(todayDay.full);
 
-        // Определяем верхняя или нижняя неделя
-        const weekNumber = Math.floor((today.getDate() - 1) / 7) + 1; // Номер недели в месяце
-        const isUpperWeek = weekNumber % 2 === 1; // Нечетная неделя = верхняя
+        const weekNumber = Math.floor((today.getDate() - 1) / 7) + 1;
+        const isUpperWeek = weekNumber % 2 === 1;
         setWeekType(isUpperWeek ? 'upper' : 'lower');
     }, []);
 
-    // Загрузка данных расписания
     useEffect(() => {
         if (selectedDay && weekType) {
             axios.get('/TestData/schedule.json')
                 .then(response => {
-                    // Фильтруем данные по выбранному дню и типу недели
                     const filteredData = response.data.filter(item =>
                         item.day === selectedDay && item.week === weekType
                     );
@@ -49,21 +44,22 @@ const ScheduleDay = () => {
         }
     }, [selectedDay, weekType]);
 
-    // Обработчик изменения выбранного дня
     const handleDayChange = (day) => {
         setSelectedDay(day);
     };
 
-    // Обработчик изменения типа недели
     const handleWeekChange = (event) => {
         setWeekType(event.target.value);
     };
 
+    const handleLessonAction = (lessonId) => {
+        navigate(`/infolesson/${lessonId}`);
+    };
+
     return (
         <div className="schedule-container">
-            <h1>Расписание на {selectedDay}</h1>
+            <h1 className="day__title">Расписание на {selectedDay} ({weekType === 'upper' ? 'Вн' : 'Нн'})</h1>
 
-            {/* Переключатель недели (верхняя/нижняя) */}
             <div className="week-selector">
                 <label>
                     <input
@@ -85,7 +81,6 @@ const ScheduleDay = () => {
                 </label>
             </div>
 
-            {/* Кружки для выбора дня недели */}
             <div className="day-selector">
                 {daysOfWeek.map((day, index) => (
                     <div
@@ -98,18 +93,25 @@ const ScheduleDay = () => {
                 ))}
             </div>
 
-            {/* Отображение расписания */}
             {scheduleData.length > 0 ? (
                 scheduleData.map((daySchedule, index) => (
                     <div key={index} className="day-schedule">
                         {daySchedule.schedule.map((lesson, lessonIndex) => (
-                            <div key={lessonIndex} className="lesson-day">
+                            <div key={lessonIndex} className="lesson">
                                 <div className="dot"></div>
-                                <div className="lesson-info">
-                                    <div className="time">{lesson.time}</div>
-                                    <div className="subject">{lesson.subject}</div>
-                                    <div className="teacher">{lesson.teacher}</div>
-                                    <div className="room">Аудитория: {lesson.room}</div>
+                                <div className="information__lesson__day">
+                                    <div className="lesson-main-info">
+                                        <div className="time">{lesson.time}</div>
+                                        <div className="subject">{lesson.subject}</div>
+                                        <div className="teacher">{lesson.teacher}</div>
+                                        <div className="room">Аудитория: {lesson.room}</div>
+                                    </div>
+                                    <button
+                                        className={`action-button ${role === 'teacher' ? 'conduct' : 'details'}`}
+                                        onClick={() => handleLessonAction(lesson.id)}
+                                    >
+                                        {role === 'teacher' ? 'Провести' : 'Подробнее'}
+                                    </button>
                                 </div>
                             </div>
                         ))}
