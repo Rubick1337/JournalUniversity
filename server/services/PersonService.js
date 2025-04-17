@@ -14,6 +14,61 @@ class PersonService {
     const extractedData = Object.values(data[0])[0];
     return extractedData;
   };
+  async getAll({
+    page = 1,
+    limit = 10,
+    sortBy = "id",
+    sortOrder = "ASC",
+    query = {
+      surnameQuery: "",
+      nameQuery: "",
+      middlenameQuery: "",
+      phoneNumberQuery: "",
+      emailQuery: "",
+    },
+  }) {
+    try {
+      const params = [
+        limit,
+        page,
+        sortBy,
+        sortOrder,
+        query.surnameQuery || null,
+        query.nameQuery || null,
+        query.middlenameQuery || null,
+        query.phoneNumberQuery || null,
+        query.emailQuery || null,
+      ];
+
+      // Вызываем функцию из PostgreSQL
+      const result = await dbQuery(QUERIES.PEOPLE.GET_ALL, params);
+
+      // Извлекаем данные из результата
+      const fullResult = result[0].get_all_person_full_data;
+
+      if (!fullResult) {
+        throw ApiError.internal("Ошибка при получении данных");
+      }
+
+      // Парсим JSON результат
+      const parsedResult =
+        typeof fullResult === "string" ? JSON.parse(fullResult) : fullResult;
+      console.log("TEST",parsedResult)
+      return {
+        data: parsedResult.data || [],
+        meta: parsedResult.meta || {
+          currentPage: page,
+          perPage: limit,
+          totalItems: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
+      };
+    } catch (error) {
+      throw ApiError.internal("Ошибка при получении данных: " + error.message);
+    }
+  }
 }
 
 module.exports = new PersonService();
