@@ -9,10 +9,10 @@ const PersonDataDto = require("../DTOs/Data/PersonDataDto");
 class PersonController {
   create = async (req, res, next) => {
     try {
-      const data = { ...req.body };
-      const dataDto = new PersonCreationDTO(data);
-      const result = await PersonService.createPerson(dataDto);
-      return res.status(200).json({ message: "created", data: result });
+      const dataDto = new PersonCreationDTO(req.body);
+      const result = await PersonService.create(dataDto);
+      const resultDto = new PersonDataDto(result);
+      return res.status(200).json({ message: "created", data: resultDto });
     } catch (err) {
       console.error(err);
       next(err);
@@ -39,12 +39,12 @@ class PersonController {
         sortBy = "surname",
         sortOrder = "ASC",
         surnameQuery = "",
-        nameQuery = '',
-        middlenameQuery = '',
-        phoneNumberQuery = '',
-        emailQuery = ''
+        nameQuery = "",
+        middlenameQuery = "",
+        phoneNumberQuery = "",
+        emailQuery = "",
       } = req.query;
-      console.log("afds", limit)
+      console.log("afds", limit);
 
       const { data, meta } = await PersonService.getAll({
         page: parseInt(page),
@@ -59,12 +59,38 @@ class PersonController {
           emailQuery,
         },
       });
-      const dataDto = data.map(obj => new PersonDataDto(obj));
+      const dataDto = data.map((obj) => new PersonDataDto(obj));
       const metaDto = new MetaDataDto(meta);
       return res.status(200).json({
         data: dataDto,
-        meta: metaDto
-      })
+        meta: metaDto,
+      });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
+  getById  = async (req, res, next) => {
+    try {
+      const {personId}  = req.params;
+      const data = await PersonService.getById(personId);
+      const dataDto = new PersonDataDto(data);
+      return res.status(200).json({
+        data: dataDto,
+      });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
+  delete = async (req, res, next) => {
+    try {
+      const { personId } = req.params;
+      const result = await PersonService.delete(personId);
+      if (!result) {
+        return res.status(404).json({message: `Not found person by id ${result}`})
+      }
+      return res.status(204).send();
     } catch (err) {
       console.error(err);
       next(err);

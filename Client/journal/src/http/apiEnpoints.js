@@ -12,5 +12,7 @@ export const API_ENDPOINTS = {
   },
   PERSON: {
     GETALL: "person/getAll",
+    DELETE: 'person/delete/:personId',
+    CREATE: 'person/create'
   },
 };

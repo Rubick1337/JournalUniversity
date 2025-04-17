@@ -3,9 +3,14 @@ const { Person } = require("../models/index");
 const { dbQuery } = require("../dbUtils");
 const QUERIES = require("../queries/queries");
 class PersonService {
-  createPerson = async (data) => {
-    const result = await Person.create(data);
-    return result;
+  create = async (data) => {
+    try {
+      const result = await Person.create(data);
+      return result;
+    } catch (error) {
+      console.error(error);
+      throw ApiError.badRequest("Error", error);
+    }
   };
 
   getDataForSelect = async () => {
@@ -53,7 +58,7 @@ class PersonService {
       // Парсим JSON результат
       const parsedResult =
         typeof fullResult === "string" ? JSON.parse(fullResult) : fullResult;
-      console.log("TEST",parsedResult)
+      console.log("TEST", parsedResult);
       return {
         data: parsedResult.data || [],
         meta: parsedResult.meta || {
@@ -69,6 +74,18 @@ class PersonService {
       throw ApiError.internal("Ошибка при получении данных: " + error.message);
     }
   }
+  delete = async (personId) => {
+    
+    const person = await Person.findByPk(personId );
+    console.log("TETTTT", person)
+
+    if (!person) return null;
+    await person.destroy();
+    return person;
+  };
+  getById = async (personId) => {
+    return await Specialty.findByPk({ id: personId });
+  };
 }
 
 module.exports = new PersonService();

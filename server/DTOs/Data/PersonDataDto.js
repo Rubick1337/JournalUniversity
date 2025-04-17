@@ -1,16 +1,16 @@
 class PersonDataDto {
     constructor({ 
         id,
-        last_name, 
-        first_name,
-        middle_name,
+        surname, 
+        name,
+        middlename,
         phone_number,
         email
     }) {
         this.id = id;
-        this.surname = last_name;
-        this.name = first_name;
-        this.middlename = middle_name;      
+        this.surname = surname;
+        this.name = name;
+        this.middlename = middlename;      
         this.phone_number = phone_number;      
         this.email = email;      
     }

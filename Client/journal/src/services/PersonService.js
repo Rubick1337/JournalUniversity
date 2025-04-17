@@ -3,8 +3,8 @@ import { API_ENDPOINTS } from "../http/apiEnpoints";
 import BaseService from "./BaseService";
 
 class PersonService extends BaseService {
-  createPerson = async (data) => {
-    const endpoint = API_ENDPOINTS.CREATE_PERSON;
+  create = async (data) => {
+    const endpoint = API_ENDPOINTS.PERSON.CREATE;
     const response = await BaseService.request("post", endpoint, data);
     return response;
   };
@@ -46,6 +46,11 @@ class PersonService extends BaseService {
     const response = await BaseService.request("get", urlWithParams);
     return { data: response.data, meta: response.meta };
   };
+  delete = async (personId) => {
+    const endpoint = API_ENDPOINTS.PERSON.DELETE.replace(':personId', personId);
+    const response = await BaseService.request("delete", endpoint);
+    return response;
+  }
 }
 const personServiceInstance = new PersonService();
 

@@ -7,9 +7,9 @@ DECLARE
 BEGIN
     SELECT json_build_object(
         'id', p.id,
-        'last_name', p.surname,
-        'first_name', p.name,
-        'middle_name', p.middlename,
+        'surname', p.surname,
+        'name', p.name,
+        'middlename', p.middlename,
         'phone_number', p.phone_number,
         'email', p.email
     )
