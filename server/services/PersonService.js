@@ -13,12 +13,15 @@ class PersonService {
     }
   };
 
-  getDataForSelect = async () => {
-    const params = [];
-    const data = await dbQuery(QUERIES.GET_PEOPLE_DATA_FOR_SELECT, params);
-    const extractedData = Object.values(data[0])[0];
-    return extractedData;
-  };
+  update = async(personId, updateData) => {
+    const person = await Person.findByPk(personId);
+    if(!person) {
+      throw ApiError.notFound(`Person with ID ${personId} not found`);
+    }
+    const updatedPerson = await person.update(updateData);
+    return updatedPerson;
+  }
+
   async getAll({
     page = 1,
     limit = 10,
@@ -85,6 +88,14 @@ class PersonService {
   };
   getById = async (personId) => {
     return await Specialty.findByPk({ id: personId });
+  };
+
+  
+  getDataForSelect = async () => {
+    const params = [];
+    const data = await dbQuery(QUERIES.GET_PEOPLE_DATA_FOR_SELECT, params);
+    const extractedData = Object.values(data[0])[0];
+    return extractedData;
   };
 }
 

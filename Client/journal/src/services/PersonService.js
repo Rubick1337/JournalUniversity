@@ -46,6 +46,11 @@ class PersonService extends BaseService {
     const response = await BaseService.request("get", urlWithParams);
     return { data: response.data, meta: response.meta };
   };
+  update = async (personId, data)=> {
+    const endpoint = API_ENDPOINTS.PERSON.UPDATE.replace(':personId', personId);
+    const response = await BaseService.request("put", endpoint, data);
+    return response;
+  } 
   delete = async (personId) => {
     const endpoint = API_ENDPOINTS.PERSON.DELETE.replace(':personId', personId);
     const response = await BaseService.request("delete", endpoint);

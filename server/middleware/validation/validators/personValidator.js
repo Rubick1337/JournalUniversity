@@ -1,8 +1,15 @@
-const { body } = require("express-validator");
-const { SURNAME } = require("../config/person");
+const { body, param } = require("express-validator");
+const { isUUID } = require("validator");
+const { SURNAME, PERSON_ID } = require("../config/person");
 const MESSAGES = require("../messages/person");
 const { handleValidationErrors } = require("../utils/errorHandler");
 const { Person } = require("../../../models");
+
+const handleValidationPersonId = param("personId")
+  .notEmpty()
+  .withMessage(MESSAGES.PERSON_ID.IS_EMPTY)
+  .isUUID(PERSON_ID.VERSION_UUID)
+  .withMessage(MESSAGES.PERSON_ID.IS_UUID);
 
 const handleValidationSurname = body("surname")
   .notEmpty()
@@ -20,12 +27,8 @@ const handleValidationPhone = body("phone");
 const handleValidationEmail = body("email");
 
 const validateUpdate = [
-  handleValidationSurname,
-  handleValidationName,
-  handleValidationMiddlename,
-  handleValidationPhone,
-  handleValidationEmail,
-  handleValidationErrors,
+  handleValidationPersonId,
+  handleValidationErrors
 ];
 const validateCreate = [
   handleValidationSurname,

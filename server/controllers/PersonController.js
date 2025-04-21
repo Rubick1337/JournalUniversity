@@ -5,6 +5,7 @@ const PersonCreationDTO = require("../DTOs/ForCreation/PersonCreationDto");
 const GetPersonDataForSelect = require("../DTOs/Data/GetPersonDataForSelect");
 const MetaDataDto = require("../DTOs/Data/MetaDataDto");
 const PersonDataDto = require("../DTOs/Data/PersonDataDto");
+const PersonUpdateDto = require("../DTOs/ForUpdate/PersonUpdateDto");
 
 class PersonController {
   create = async (req, res, next) => {
@@ -70,9 +71,9 @@ class PersonController {
       next(err);
     }
   };
-  getById  = async (req, res, next) => {
+  getById = async (req, res, next) => {
     try {
-      const {personId}  = req.params;
+      const { personId } = req.params;
       const data = await PersonService.getById(personId);
       const dataDto = new PersonDataDto(data);
       return res.status(200).json({
@@ -83,12 +84,26 @@ class PersonController {
       next(err);
     }
   };
+  update = async (req, res, next) => {
+    try {
+      const { personId } = req.params;
+      const dataDto = new PersonUpdateDto(req.body);
+      const result = await PersonService.update(personId, dataDto)
+      const resultDto = new PersonDataDto(result);
+      return res.status(200).json({ message: "updated", data: resultDto });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
   delete = async (req, res, next) => {
     try {
       const { personId } = req.params;
       const result = await PersonService.delete(personId);
       if (!result) {
-        return res.status(404).json({message: `Not found person by id ${result}`})
+        return res
+          .status(404)
+          .json({ message: `Not found person by id ${result}` });
       }
       return res.status(204).send();
     } catch (err) {
