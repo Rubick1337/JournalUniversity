@@ -8,7 +8,6 @@ const { Op, where, cast, col } = require("sequelize");
 class AcademicSpecialtyService {
   create = async (dataForCreate) => {
     try {
-      await this.validateCreateData(dataForCreate);
       const result = await AcademicSpecialty.create({
         code: dataForCreate.code,
         name: dataForCreate.name,
