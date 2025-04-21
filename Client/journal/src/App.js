@@ -24,8 +24,18 @@ import InfoLessonPage from "./pages/InfoLessonPage/InfoLessonPage";
 
 function App() {
   return (
+    
     <Provider store={store}>
       <div className="App">
+        <nav>
+          <h2>Учебный отдел</h2>
+            <h3>Справочники</h3>
+              <h4>Должности преподователей</h4>
+              
+            <h3>Специальности</h3>
+              <h4>Направления подготовки - </h4>
+              <h4></h4>
+        </nav>
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/welcome" element={<MainPage />} />
