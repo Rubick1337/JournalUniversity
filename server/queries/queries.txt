@@ -19,7 +19,7 @@ SELECT get_people_data_for_select();
 
 
 CREATE OR REPLACE FUNCTION get_group_name(group_id UUID)
-RETURNS JSON AS $$
+RETURNS JSON AS $$g
 DECLARE
     result JSON;
 BEGIN
