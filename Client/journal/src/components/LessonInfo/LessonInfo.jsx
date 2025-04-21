@@ -20,7 +20,6 @@ const LessonInfo = () => {
     const [lessonData, setLessonData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Временное значение роли (в будущем будет из JWT)
     const role = 'headman'; // или 'headman' или 'student'
 
     useEffect(() => {

@@ -8,7 +8,7 @@ const ScheduleDay = ({  }) => {
     const [selectedDay, setSelectedDay] = useState('');
     const [weekType, setWeekType] = useState('');
     const navigate = useNavigate();
-    const role = "teacher";
+    const role = "headman";
     const daysOfWeek = [
         { full: 'Понедельник', short: 'Пн' },
         { full: 'Вторник', short: 'Вт' },

@@ -25,7 +25,7 @@ const PersonSelector = ({
                 renderInput={(params) => (
                     <TextField
                         {...params}
-                        label="ФИО заведующего*"
+                        label="ФИО"
                         margin="normal"
                         required
                     />
