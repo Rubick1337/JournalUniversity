@@ -17,15 +17,18 @@ import {
     FormControl,
     InputLabel,
     Select,
-    Autocomplete
+    Autocomplete,
+    Button
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SearchIcon from '@mui/icons-material/Search';
+import { PersonAdd as PersonAddIcon } from '@mui/icons-material';
 import Alert from '../Alert/Alert';
 import AddTeacherModal from './AddTeacherModal';
 import EditTeacherModal from './EditTeacherModal';
 import DeleteTeacherModal from './DeleteTeacherModal';
+import {PersonModal} from '../PersonCreationModal/PersonCreationModal';
 
 // Mock данные
 const mockTeachers = [
@@ -50,6 +53,15 @@ const mockPositions = [
     { id: 4, name: 'Ассистент' },
 ];
 
+// Mock данные для людей
+const mockPeople = [
+    { id: 1, fullName: 'Иванов Иван Иванович', lastName: 'Иванов', firstName: 'Иван', patronymic: 'Иванович' },
+    { id: 2, fullName: 'Петров Петр Петрович', lastName: 'Петров', firstName: 'Петр', patronymic: 'Петрович' },
+    { id: 3, fullName: 'Сидорова Анна Михайловна', lastName: 'Сидорова', firstName: 'Анна', patronymic: 'Михайловна' },
+    { id: 4, fullName: 'Кузнецов Дмитрий Сергеевич', lastName: 'Кузнецов', firstName: 'Дмитрий', patronymic: 'Сергеевич' },
+    { id: 5, fullName: 'Смирнова Елена Владимировна', lastName: 'Смирнова', firstName: 'Елена', patronymic: 'Владимировна' },
+];
+
 const TeachersTable = () => {
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -64,6 +76,8 @@ const TeachersTable = () => {
         message: '',
         severity: 'success'
     });
+    const [openPersonModal, setOpenPersonModal] = useState(false);
+    const [personInputValue, setPersonInputValue] = useState('');
 
     // Modal states
     const [openAddModal, setOpenAddModal] = useState(false);
@@ -72,6 +86,7 @@ const TeachersTable = () => {
 
     // Используем mock данные
     const [teachersData, setTeachersData] = useState(mockTeachers);
+    const [people, setPeople] = useState(mockPeople);
     const departments = mockDepartments;
     const positions = mockPositions;
     const loading = false;
@@ -139,6 +154,28 @@ const TeachersTable = () => {
     };
 
     const handleAdd = () => setOpenAddModal(true);
+
+    const handlePersonInputChange = (_, value) => {
+        setPersonInputValue(value);
+    };
+
+    const handleAddNewPerson = (newPerson, error) => {
+        if (error) {
+            showAlert(error, 'error');
+            return;
+        }
+
+        const fullName = `${newPerson.lastName} ${newPerson.firstName} ${newPerson.patronymic || ''}`.trim();
+        const newPersonWithId = {
+            ...newPerson,
+            id: `new-${Date.now()}`,
+            fullName: fullName
+        };
+
+        setPeople(prev => [...prev, newPersonWithId]);
+        showAlert('Человек успешно добавлен!', 'success');
+        setOpenPersonModal(false);
+    };
 
     // Фильтрация данных
     const filteredData = teachersData.filter(teacher => {
@@ -290,6 +327,10 @@ const TeachersTable = () => {
                 positions={positions}
                 onSave={handleSaveAdd}
                 showAlert={showAlert}
+                people={people}
+                personInputValue={personInputValue}
+                onPersonInputChange={handlePersonInputChange}
+                onAddPersonClick={() => setOpenPersonModal(true)}
             />
 
             <EditTeacherModal
@@ -300,6 +341,10 @@ const TeachersTable = () => {
                 positions={positions}
                 onSave={handleSaveEdit}
                 showAlert={showAlert}
+                people={people}
+                personInputValue={personInputValue}
+                onPersonInputChange={handlePersonInputChange}
+                onAddPersonClick={() => setOpenPersonModal(true)}
             />
 
             <DeleteTeacherModal
@@ -307,6 +352,12 @@ const TeachersTable = () => {
                 onClose={() => setOpenDeleteModal(false)}
                 teacher={currentRow}
                 onDelete={handleDeleteConfirm}
+            />
+
+            <PersonModal
+                open={openPersonModal}
+                onClose={() => setOpenPersonModal(false)}
+                onSave={handleAddNewPerson}
             />
 
             <Alert

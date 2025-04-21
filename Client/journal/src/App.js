@@ -1,7 +1,7 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { Route, Routes } from 'react-router-dom';
-import LoginPage from './pages/LoginPage/LoginPage'; // Используем путь из версии main
+import LoginPage from './pages/LoginPage/LoginPage';
 import MainPage from "./pages/MainPage/Main";
 import GroupListPage from "./pages/GroupListPage/GroupListPage";
 import SchedulePage from "./pages/SchedulePage/SchedulePage";
@@ -21,6 +21,9 @@ import GroupTablePage from "./pages/GroupTablePage/GroupTablePage";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import StudentRaitingPage from "./pages/StudentRaitingPage/StudentRaitingPage";
 import InfoLessonPage from "./pages/InfoLessonPage/InfoLessonPage";
+import ContactTablePage from "./pages/ContactPage/ContactPage";
+import PositionTeacherPage from "./pages/PositionTeacherPage/PositionTeacherPage";
+
 
 function App() {
   return (
@@ -44,6 +47,8 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
           <Route path="/curriculum" element={<StudentRaitingPage />} />
           <Route path="/infolesson/:id" element={<InfoLessonPage/>} />
+          <Route path="/personinfo" element={<ContactTablePage/>}/>
+          <Route path={"/positions"} element={<PositionTeacherPage/>}/>
         </Routes>
       </div>
     </Provider>

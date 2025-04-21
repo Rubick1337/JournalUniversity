@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
     Table,
     TableBody,
@@ -25,7 +25,9 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
-import Alert from '../Alert/Alert'; 
+import Alert from '../Alert/Alert';
+import {PersonModal} from '../PersonCreationModal/PersonCreationModal';
+import PersonSelector from '../DepartmentsTable/PersonSelector';
 
 const initialStudentsData = [
     { id: "12345", name: "Иванов Иван Иванович", course: 1, department: "Кафедра информатики", faculty: "Факультет компьютерных наук" },
@@ -36,8 +38,15 @@ const initialStudentsData = [
 const departments = ["Кафедра информатики", "Кафедра математики", "Кафедра физики"];
 const faculties = ["Факультет компьютерных наук", "Факультет прикладной математики", "Факультет физики"];
 
+const initialPeople = [
+    { id: "1", fullName: "Иванов Иван Иванович", lastName: "Иванов", firstName: "Иван", patronymic: "Иванович" },
+    { id: "2", fullName: "Петров Петр Петрович", lastName: "Петров", firstName: "Петр", patronymic: "Петрович" },
+    { id: "3", fullName: "Сидоров Сидор Сидорович", lastName: "Сидоров", firstName: "Сидор", patronymic: "Сидорович" },
+];
+
 const StudentsTable = () => {
     const [studentsData, setStudentsData] = useState(initialStudentsData);
+    const [people, setPeople] = useState(initialPeople);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [searchId, setSearchId] = useState('');
@@ -51,6 +60,7 @@ const StudentsTable = () => {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
+    const [openPersonModal, setOpenPersonModal] = useState(false);
     const [newStudent, setNewStudent] = useState({ id: '', name: '', course: '', department: '', faculty: '' });
     const [editStudent, setEditStudent] = useState({ id: '', name: '', course: '', department: '', faculty: '' });
     const [alertState, setAlertState] = useState({
@@ -58,37 +68,14 @@ const StudentsTable = () => {
         message: '',
         severity: 'success'
     });
+    const [personInputValue, setPersonInputValue] = useState('');
 
     const showAlert = (message, severity = 'success') => {
-        setAlertState({
-            open: true,
-            message,
-            severity
-        });
+        setAlertState({ open: true, message, severity });
     };
 
     const handleCloseAlert = () => {
         setAlertState(prev => ({ ...prev, open: false }));
-    };
-
-    const handleSearchIdChange = (event) => {
-        setSearchId(event.target.value);
-    };
-
-    const handleSearchNameChange = (event) => {
-        setSearchName(event.target.value);
-    };
-
-    const handleSearchCourseChange = (event) => {
-        setSearchCourse(event.target.value);
-    };
-
-    const handleSearchDepartmentChange = (event) => {
-        setSearchDepartment(event.target.value);
-    };
-
-    const handleSearchFacultyChange = (event) => {
-        setSearchFaculty(event.target.value);
     };
 
     const handleMenuClick = (event, row) => {
@@ -110,6 +97,7 @@ const StudentsTable = () => {
 
     const handleEdit = () => {
         setEditStudent(currentRow);
+        setPersonInputValue(currentRow.name);
         setOpenEditModal(true);
         handleMenuClose();
     };
@@ -121,6 +109,7 @@ const StudentsTable = () => {
 
     const handleAdd = () => {
         setNewStudent({ id: '', name: '', course: '', department: '', faculty: '' });
+        setPersonInputValue('');
         setOpenAddModal(true);
     };
 
@@ -128,6 +117,36 @@ const StudentsTable = () => {
         setOpenEditModal(false);
         setOpenDeleteModal(false);
         setOpenAddModal(false);
+        setPersonInputValue('');
+    };
+
+    const handlePersonInputChange = (_, value) => {
+        setPersonInputValue(value);
+    };
+
+    const handleAddNewPerson = (newPerson, error) => {
+        if (error) {
+            showAlert(error, 'error');
+            return;
+        }
+
+        const fullName = `${newPerson.lastName} ${newPerson.firstName} ${newPerson.patronymic || ''}`.trim();
+        const newPersonWithId = {
+            ...newPerson,
+            id: `new-${Date.now()}`,
+            fullName: fullName
+        };
+
+        setPeople(prev => [...prev, newPersonWithId]);
+
+        if (openEditModal) {
+            setEditStudent(prev => ({ ...prev, name: fullName }));
+        } else if (openAddModal) {
+            setNewStudent(prev => ({ ...prev, name: fullName }));
+        }
+
+        showAlert('Человек успешно добавлен!', 'success');
+        setOpenPersonModal(false);
     };
 
     const handleSaveEdit = () => {
@@ -160,15 +179,16 @@ const StudentsTable = () => {
         handleCloseModals();
     };
 
-    const filteredData = studentsData.filter(student => {
-        return (
-            student.id.toLowerCase().includes(searchId.toLowerCase()) &&
-            student.name.toLowerCase().includes(searchName.toLowerCase()) &&
-            student.course.toString().includes(searchCourse) &&
-            student.department.toLowerCase().includes(searchDepartment.toLowerCase()) &&
-            student.faculty.toLowerCase().includes(searchFaculty.toLowerCase())
-        );
-    });
+    const filteredData = useMemo(() =>
+            studentsData.filter(student => (
+                student.id.toLowerCase().includes(searchId.toLowerCase()) &&
+                student.name.toLowerCase().includes(searchName.toLowerCase()) &&
+                student.course.toString().includes(searchCourse) &&
+                student.department.toLowerCase().includes(searchDepartment.toLowerCase()) &&
+                student.faculty.toLowerCase().includes(searchFaculty.toLowerCase())
+            )),
+        [studentsData, searchId, searchName, searchCourse, searchDepartment, searchFaculty]
+    );
 
     return (
         <>
@@ -193,7 +213,7 @@ const StudentsTable = () => {
                                     fullWidth
                                     margin="normal"
                                     value={searchId}
-                                    onChange={handleSearchIdChange}
+                                    onChange={(e) => setSearchId(e.target.value)}
                                     sx={{maxWidth: 270}}
                                 />
                                 <TextField
@@ -203,7 +223,7 @@ const StudentsTable = () => {
                                     fullWidth
                                     margin="normal"
                                     value={searchName}
-                                    onChange={handleSearchNameChange}
+                                    onChange={(e) => setSearchName(e.target.value)}
                                     sx={{maxWidth: 270}}
                                 />
                                 <TextField
@@ -213,14 +233,14 @@ const StudentsTable = () => {
                                     fullWidth
                                     margin="normal"
                                     value={searchCourse}
-                                    onChange={handleSearchCourseChange}
+                                    onChange={(e) => setSearchCourse(e.target.value)}
                                     sx={{maxWidth: 270}}
                                 />
                                 <FormControl variant="outlined" size="small" fullWidth margin="normal">
                                     <InputLabel>Поиск по кафедре</InputLabel>
                                     <Select
                                         value={searchDepartment}
-                                        onChange={handleSearchDepartmentChange}
+                                        onChange={(e) => setSearchDepartment(e.target.value)}
                                         label="Поиск по кафедре"
                                         sx={{maxWidth: 270}}
                                     >
@@ -234,7 +254,7 @@ const StudentsTable = () => {
                                     <InputLabel>Поиск по факультету</InputLabel>
                                     <Select
                                         value={searchFaculty}
-                                        onChange={handleSearchFacultyChange}
+                                        onChange={(e) => setSearchFaculty(e.target.value)}
                                         label="Поиск по факультету"
                                         sx={{maxWidth: 270}}
                                     >
@@ -282,7 +302,7 @@ const StudentsTable = () => {
                     count={filteredData.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
+                    onPageChange={(_, newPage) => setPage(newPage)}
                     onRowsPerPageChange={(e) => {
                         setRowsPerPage(parseInt(e.target.value, 10));
                         setPage(0);
@@ -318,12 +338,13 @@ const StudentsTable = () => {
                                         value={editStudent.id}
                                         onChange={(e) => setEditStudent({ ...editStudent, id: e.target.value })}
                                     />
-                                    <TextField
-                                        label="ФИО"
-                                        fullWidth
-                                        margin="normal"
+                                    <PersonSelector
                                         value={editStudent.name}
-                                        onChange={(e) => setEditStudent({ ...editStudent, name: e.target.value })}
+                                        onChange={(value) => setEditStudent({ ...editStudent, name: value })}
+                                        people={people}
+                                        inputValue={personInputValue}
+                                        onInputChange={handlePersonInputChange}
+                                        onAddPersonClick={() => setOpenPersonModal(true)}
                                     />
                                     <TextField
                                         label="Курс"
@@ -381,12 +402,13 @@ const StudentsTable = () => {
                                         value={newStudent.id}
                                         onChange={(e) => setNewStudent({ ...newStudent, id: e.target.value })}
                                     />
-                                    <TextField
-                                        label="ФИО"
-                                        fullWidth
-                                        margin="normal"
+                                    <PersonSelector
                                         value={newStudent.name}
-                                        onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
+                                        onChange={(value) => setNewStudent({ ...newStudent, name: value })}
+                                        people={people}
+                                        inputValue={personInputValue}
+                                        onInputChange={handlePersonInputChange}
+                                        onAddPersonClick={() => setOpenPersonModal(true)}
                                     />
                                     <TextField
                                         label="Курс"
@@ -436,7 +458,12 @@ const StudentsTable = () => {
                 </Box>
             </TableContainer>
 
-            {/* Компонент Alert для отображения уведомлений */}
+            <PersonModal
+                open={openPersonModal}
+                onClose={() => setOpenPersonModal(false)}
+                onSave={handleAddNewPerson}
+            />
+
             <Alert
                 open={alertState.open}
                 message={alertState.message}
@@ -447,4 +474,4 @@ const StudentsTable = () => {
     );
 };
 
-export default StudentsTable;
+export default React.memo(StudentsTable);
