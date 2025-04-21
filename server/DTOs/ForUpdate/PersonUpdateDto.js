@@ -1,5 +1,5 @@
-class PersonCreationDTO {
-    constructor({ 
+class PersonUpdateDto {
+    constructor({
         surname, 
         name,
         middlename,
@@ -14,4 +14,4 @@ class PersonCreationDTO {
     }
 }
 
-module.exports = PersonCreationDTO;
+module.exports = PersonUpdateDto;
