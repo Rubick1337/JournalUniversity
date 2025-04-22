@@ -1,71 +1,150 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import PersonService from "../../services/PersonService";
-import PersonCreationDTO from "../../DTOs/ForCreation/PersonCreationDto";
-import GetPersonDataForSelect from "../../DTOs/Data/GetPersonDataForSelect";
-//TODO обработчик после создания
-export const createPerson = createAsyncThunk("createPerson", async (data) => {
-  const dataOfDto = new PersonCreationDTO(data);
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import personService from '../../services/PersonService';
 
-  const response = await PersonService.createPerson(dataOfDto);
-  return response;
-});
-export const getPersonsDataForSelect = createAsyncThunk(
-  "getPersonsDataForSelect",
-  async () => {
-    const response = await PersonService.getPersonsDataForSelect();
-
-    const result = response.map((element) => {return new GetPersonDataForSelect(element)})
-
-    return result;
+// Асинхронные действия
+export const fetchPersons = createAsyncThunk(
+  'persons/fetchPersons',
+  async ({ limit, page, sortBy, sortOrder, surnameQuery, nameQuery,middlename, phoneNumberQuery, emailQuery }, { rejectWithValue }) => {
+    try {
+      const response = await personService.getAll(
+        limit,
+        page,
+        sortBy,
+        sortOrder,
+        surnameQuery,
+        nameQuery,
+        middlename,
+        phoneNumberQuery,
+        emailQuery
+      );
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
   }
 );
-const projectSlice = createSlice({
-  name: "person",
+
+export const addPerson = createAsyncThunk(
+  'persons/addPerson',
+  async (personData, { rejectWithValue }) => {
+    try {
+      const response = await personService.create(personData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const updatePerson = createAsyncThunk(
+  'persons/updatePerson',
+  async ({ id, personData }, { rejectWithValue }) => {
+    try {
+      const response = await personService.update(id, personData);
+      return response;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+export const deletePerson = createAsyncThunk(
+  'persons/deletePerson',
+  async (id, { rejectWithValue }) => {
+    try {
+      await personService.delete(id);
+      return id;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+// Создаем слайс
+const personSlice = createSlice({
+  name: 'persons',
   initialState: {
-    personsDataForSelect: {
-      data: [],
-      isLoading: false,
-      errors: [],
-    },
+    data: [],
+    meta: {},
+    isLoading: false,
+    errors: [],
   },
   reducers: {
-    setProjects(state, action) {
-      state.projects = action.payload;
-    },
-    setLoading(state, action) {
-      state.isLoading = action.payload;
+    clearErrors: (state) => {
+      state.errors = [];
     },
   },
   extraReducers: (builder) => {
     builder
-      //GROUP getPersonsDataForSelect
-      .addCase(getPersonsDataForSelect.pending, (state) => {
-        state.personsDataForSelect.isLoading = true;
+      // Загрузка persons
+      .addCase(fetchPersons.pending, (state) => {
+        state.isLoading = true;
+        state.errors = [];
       })
-      .addCase(getPersonsDataForSelect.fulfilled, (state, action) => {
-        // Выводим payload для проверки
-        console.log(action.payload);
-        
-        // Если payload - это объект, который содержит массив в свойстве data
-        if (Array.isArray(action.payload)) {
-          state.personsDataForSelect.data = action.payload;
-        } else if (action.payload && Array.isArray(action.payload.data)) {
-          // Если payload - объект с массивом внутри
-          state.personsDataForSelect.data = action.payload.data;
-        } else {
-          state.personsDataForSelect.data = [];  // Если данных нет
-        }
-
-        state.personsDataForSelect.isLoading = false;
+      .addCase(fetchPersons.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.data = action.payload.data;
+        state.meta = action.payload.meta;
       })
-      .addCase(getPersonsDataForSelect.rejected, (state, action) => {
-        state.personsDataForSelect.isLoading = false;
-        state.personsDataForSelect.errors = action.payload || [];
+      .addCase(fetchPersons.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errors = Array.isArray(action.payload) 
+          ? action.payload 
+          : [{ message: action.payload }];
+      })
+      
+      // Добавление person
+      .addCase(addPerson.pending, (state) => {
+        state.isLoading = true;
+        state.errors = [];
+      })
+      .addCase(addPerson.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.data.unshift(action.payload);
+      })
+      .addCase(addPerson.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errors = Array.isArray(action.payload) 
+          ? action.payload 
+          : [{ message: action.payload }];
+      })
+      
+      // Обновление person
+      .addCase(updatePerson.pending, (state) => {
+        state.isLoading = true;
+        state.errors = [];
+      })
+      .addCase(updatePerson.fulfilled, (state, action) => {
+        state.isLoading = false;
+        const updatedPerson = action.payload;
+        state.data = state.data.map(person =>
+          person.id === updatedPerson.id ? updatedPerson : person
+        );
+      })
+      .addCase(updatePerson.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errors = Array.isArray(action.payload) 
+          ? action.payload 
+          : [{ message: action.payload }];
+      })
+      
+      // Удаление person
+      .addCase(deletePerson.pending, (state) => {
+        state.isLoading = true;
+        state.errors = [];
+      })
+      .addCase(deletePerson.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.data = state.data.filter(person => person.id !== action.payload);
+      })
+      .addCase(deletePerson.rejected, (state, action) => {
+        state.isLoading = false;
+        state.errors = Array.isArray(action.payload) 
+          ? action.payload 
+          : [{ message: action.payload }];
       });
   },
 });
 
-
-// Экспортируем действия и редьюсер
-export const { setProjects, setLoading } = projectSlice.actions;
-export default projectSlice.reducer;
+export const { clearErrors } = personSlice.actions;
+export default personSlice.reducer;

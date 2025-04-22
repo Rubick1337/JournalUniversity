@@ -29,10 +29,10 @@ function App() {
     <Provider store={store}>
       <div className="App">
         <nav>
-        <a href="personinfo">Персональные данные</a>
+          <a href="personinfo">Персональные данные</a>
 
-          <a href="specilization">Факультеты</a>
-          <a href="specilization">Кафедры</a>
+          <a href="faculties">Факультеты</a>
+          <a href="departament">Кафедры</a>
           <a href="specilization">Предметы</a>
           <a href="specilization">Должности преподователей</a>
           <a href="specilization">Преподователи</a>
@@ -44,7 +44,6 @@ function App() {
           <a href="specilization">Группы</a>
           <a href="specilization">Подгруппы</a>
           <a href="specilization">Студенты</a>
-
 
           <a href="specilization">Занятия</a>
           <a href="specilization">Пропуски</a>

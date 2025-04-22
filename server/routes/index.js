@@ -18,6 +18,7 @@ initializeRoute('group', 'group');
 initializeRoute('subgroup', 'subgroup');
 initializeRoute('academicSpecialty', 'academicSpecialty');
 initializeRoute('faculty', 'faculty');
+initializeRoute('department', 'department');
 
 
 module.exports = router;

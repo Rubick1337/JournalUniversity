@@ -1,92 +1,148 @@
+// FacultyService.js
 const ApiError = require("../error/ApiError");
-const { Faculty } = require("../models/index");
-const { dbQuery } = require("../dbUtils");
-const QUERIES = require("../queries/queries");
-const { where } = require("sequelize");
-class FacultyServer {
-  getAll = async () => {
+const { Faculty, Person, Op } = require("../models/index");
+
+class FacultyService {
+  async create(data) {
     try {
-      const params = [];
-      const data = await dbQuery(
-        QUERIES.FACULTY.GET_ALL_FACULTY_WITH_FULL_DATA,
-        params
-      );
-      const extractedData = Object.values(data[0])[0];
-      return extractedData;
-    } catch (err) {
-      throw err;
-    }
-  };
-  getById = async (faculty_id) => {
-    try {
-      const params = [faculty_id];
-      const data = await dbQuery(QUERIES.FACULTY.GET_BY_ID_GULL_DATA, params);
-      const extractedData = Object.values(data[0])[0];
-      return extractedData;
-    } catch (err) {
-      throw err;
-    }
-  };
-  create = async (data) => {
-    try {
-      //TODO validate data
-      const result = await Faculty.create({
+      const faculty = await Faculty.create({
         name: data.name,
         full_name: data.fullName,
-        dean_person_id: data.deanPerson.id,
+        dean_person_id: data.deanPersonId || null
       });
-      return result.dataValues;
-    } catch (err) {
-      throw err;
+      
+      return await this._getFacultyWithAssociations(faculty.id);
+    } catch (error) {
+      throw ApiError.badRequest("Error creating faculty", error);
     }
-  };
-  update = async (id, data) => {
-    try {
-      //TODO validate id
-      //TODO validate data
-      const [affectedCount, updatedFaculty] = await Faculty.update(
-        {
-          name: data.name,
-          full_name: data.fullName,
-          dean_person_id: data.deanPerson?.id || null,
-        },
-        {
-          where: { id }, // Фикс: должен быть объект условия
-          returning: true, // Для PostgreSQL возвращает обновленную запись
-        }
-      );
-  
-      if (affectedCount === 0) {
-        throw ApiError.badRequest('Faculty not found or no changes made');
-      }
-  
-      return updatedFaculty[0].get();
-    } catch (err) {
-      throw err;
-    }
-  };
-  delete = async (id) => {
-    try {
-      //TODO valudate id
+  }
 
-      const deletedCount = await Faculty.destroy({
-        where: { id },
-        limit: 1 // Гарантируем удаление только одной записи
-      });
-  
-      if (deletedCount === 0) {
-        throw ApiError.badRequest('Faculty deletion failed');
+  async update(facultyId, updateData) {
+    try {
+      const faculty = await Faculty.findByPk(facultyId);
+      if (!faculty) {
+        throw ApiError.notFound(`Faculty with ID ${facultyId} not found`);
       }
-  
-      return { 
-        success: true,
-        id: id,
-        message: 'Faculty deleted successfully'
-      };
-    } catch (err) {
-      throw err;
+      
+      await faculty.update({
+        name: updateData.name,
+        full_name: updateData.fullName,
+        dean_person_id: updateData.deanPersonId
+      });
+      
+      return await this._getFacultyWithAssociations(facultyId);
+    } catch (error) {
+      throw ApiError.badRequest("Error updating faculty", error);
     }
-  };
+  }
+
+  async getAll({
+    page = 1,
+    limit = 10,
+    sortBy = "name",
+    sortOrder = "ASC",
+    query = {
+      idQuery: "",
+      nameQuery: "",
+      fullNameQuery: "",
+      deanQuery: ""
+    }
+  }) {
+    try {
+      const offset = (page - 1) * limit;
+
+      const where = {};
+      if (query.idQuery) {
+        where.id = {
+          [Op.like]: `%${query.idQuery}%`,
+        };
+      }
+      if (query.nameQuery) {
+        where.name = { [Op.iLike]: `%${query.nameQuery}%` };
+      }
+      if (query.fullNameQuery) {
+        where.full_name = { [Op.iLike]: `%${query.fullNameQuery}%` };
+      }
+
+      const include = [{
+        model: Person,
+        as: 'dean',
+        attributes: ['id', 'surname', 'name', 'middlename'],
+        required: false
+      }];
+
+      if (query.deanQuery) {
+        include[0].where = {
+          [Op.or]: [
+            { surname: { [Op.iLike]: `%${query.deanQuery}%` }},
+            { name: { [Op.iLike]: `%${query.deanQuery}%` }},
+            { middlename: { [Op.iLike]: `%${query.deanQuery}%` }}
+          ]
+        };
+        include[0].required = true;
+      }
+
+      const { count, rows } = await Faculty.findAndCountAll({
+        where,
+        include,
+        order: [[sortBy, sortOrder]],
+        limit,
+        offset,
+        distinct: true // Important for correct count when using includes
+      });
+
+      return {
+        data: rows,
+        meta: {
+          currentPage: page,
+          perPage: limit,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+          hasNextPage: page * limit < count,
+          hasPreviousPage: page > 1,
+        },
+      };
+    } catch (error) {
+      throw ApiError.internal("Error fetching faculties: " + error.message);
+    }
+  }
+
+  async delete(facultyId) {
+    try {
+      const faculty = await Faculty.findByPk(facultyId);
+      if (!faculty) {
+        return null;
+      }
+      await faculty.destroy();
+      return faculty;
+    } catch (error) {
+      throw ApiError.internal("Error deleting faculty: " + error.message);
+    }
+  }
+
+  async getById(facultyId) {
+    try {
+      const faculty = await this._getFacultyWithAssociations(facultyId);
+      
+      if (!faculty) {
+        throw ApiError.notFound(`Faculty with ID ${facultyId} not found`);
+      }
+      
+      return faculty;
+    } catch (error) {
+      throw ApiError.internal("Error fetching faculty: " + error.message);
+    }
+  }
+
+  async _getFacultyWithAssociations(facultyId) {
+    return await Faculty.findByPk(facultyId, {
+      include: [{
+        model: Person,
+        as: 'dean',
+        attributes: ['id', 'surname', 'name', 'middlename']
+      }]
+    });
+  }
 }
 
-module.exports = new FacultyServer();
+module.exports = new FacultyService();

@@ -1,16 +1,15 @@
-// FacultyController.js
-const FacultyService = require("../services/FacultyServer" );
-const FacultyCreationDTO = require("../DTOs/ForCreation/FacultyDataForCreateDto");
-const FacultyDataDto = require("../DTOs/Data/Faculty/FacultyFullDataDto");
-const FacultyUpdateDto = require("../DTOs/ForUpdate/FacultyDataForUpdateDto");
+const DepartmentService = require("../services/DepartmentService");
+const DepartmentCreationDTO = require("../DTOs/ForCreation/DepartmentDataForCreateDto");
+const DepartmentDataDto = require("../DTOs/Data/Department/DepartmentFullDataDto");
+const DepartmentUpdateDto = require("../DTOs/ForUpdate/DepartmentDataForUpdateDto");
 const MetaDataDto = require("../DTOs/Data/MetaDataDto");
 
-class FacultyController {
+class DepartmentController {
   create = async (req, res, next) => {
     try {
-      const dataDto = new FacultyCreationDTO(req.body);
-      const result = await FacultyService.create(dataDto);
-      const resultDto = new FacultyDataDto(result);
+      const dataDto = new DepartmentCreationDTO(req.body);
+      const result = await DepartmentService.create(dataDto);
+      const resultDto = new DepartmentDataDto(result);
       return res.status(200).json({ message: "created", data: resultDto });
     } catch (err) {
       console.error(err);
@@ -28,10 +27,11 @@ class FacultyController {
         idQuery = "",
         nameQuery = "",
         fullNameQuery = "",
-        deanQuery = ""
+        facultyQuery = "",
+        headQuery = ""
       } = req.query;
 
-      const { data, meta } = await FacultyService.getAll({
+      const { data, meta } = await DepartmentService.getAll({
         page: parseInt(page),
         limit: parseInt(limit),
         sortBy,
@@ -40,11 +40,12 @@ class FacultyController {
           idQuery,
           nameQuery,
           fullNameQuery,
-          deanQuery
+          facultyQuery,
+          headQuery
         },
       });
       
-      const dataDto = data.map((obj) => new FacultyDataDto(obj));
+      const dataDto = data.map((obj) => new DepartmentDataDto(obj));
       const metaDto = new MetaDataDto(meta);
       return res.status(200).json({
         data: dataDto,
@@ -58,9 +59,9 @@ class FacultyController {
 
   getById = async (req, res, next) => {
     try {
-      const { facultyId } = req.params;
-      const data = await FacultyService.getById(facultyId);
-      const dataDto = new FacultyDataDto(data);
+      const { departmentId } = req.params;
+      const data = await DepartmentService.getById(departmentId);
+      const dataDto = new DepartmentDataDto(data);
       return res.status(200).json({
         data: dataDto,
       });
@@ -72,10 +73,10 @@ class FacultyController {
 
   update = async (req, res, next) => {
     try {
-      const { facultyId } = req.params;
-      const dataDto = new FacultyUpdateDto(req.body);
-      const result = await FacultyService.update(facultyId, dataDto);
-      const resultDto = new FacultyDataDto(result);
+      const { departmentId } = req.params;
+      const dataDto = new DepartmentUpdateDto(req.body);
+      const result = await DepartmentService.update(departmentId, dataDto);
+      const resultDto = new DepartmentDataDto(result);
       return res.status(200).json({ message: "updated", data: resultDto });
     } catch (err) {
       console.error(err);
@@ -85,12 +86,12 @@ class FacultyController {
 
   delete = async (req, res, next) => {
     try {
-      const { facultyId } = req.params;
-      const result = await FacultyService.delete(facultyId);
+      const { departmentId } = req.params;
+      const result = await DepartmentService.delete(departmentId);
       if (!result) {
         return res
           .status(404)
-          .json({ message: `Not found faculty by id ${facultyId}` });
+          .json({ message: `Not found department by id ${departmentId}` });
       }
       return res.status(204).send();
     } catch (err) {
@@ -100,4 +101,4 @@ class FacultyController {
   };
 }
 
-module.exports = new FacultyController();
+module.exports = new DepartmentController();

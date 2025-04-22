@@ -8,11 +8,6 @@ class PersonService extends BaseService {
     const response = await BaseService.request("post", endpoint, data);
     return response;
   };
-  getPersonsDataForSelect = async () => {
-    const endpoint = API_ENDPOINTS.GET_PERSONS_DATA_FOR_SELECT;
-    const response = await BaseService.request("get", endpoint);
-    return response.data;
-  };
   getAll = async (
     limit = 10,
     page = 1,
@@ -34,11 +29,11 @@ class PersonService extends BaseService {
     params.append("sortBy", sortBy);
     params.append("sortOrder", sortOrder);
 
-    if (surnameQuery) params.append("surnameQuery", surnameQuery);
-    if (nameQuery) params.append("nameQuery", nameQuery);
-    if (middlenameQuery) params.append("middlenameQuery", middlenameQuery);
-    if (phoneNumberQuery) params.append("phoneNumberQuery", phoneNumberQuery);
-    if (emailQuery) params.append("emailQuery", emailQuery);
+    if (surnameQuery && surnameQuery !== "") params.append("surnameQuery", surnameQuery);
+    if (nameQuery&& nameQuery !== "") params.append("nameQuery", nameQuery);
+    if (middlenameQuery&& middlenameQuery !== "") params.append("middlenameQuery", middlenameQuery);
+    if (phoneNumberQuery&& phoneNumberQuery !== "") params.append("phoneNumberQuery", phoneNumberQuery);
+    if (emailQuery&& emailQuery !== "") params.append("emailQuery", emailQuery);
 
     // Добавляем параметры к endpoint
     const urlWithParams = `${endpoint}?${params.toString()}`;

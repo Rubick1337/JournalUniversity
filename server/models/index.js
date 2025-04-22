@@ -30,26 +30,32 @@ const {
   //   TotalScoreType
 } = require("./entities");
 
-//Faculty
-Person.hasOne(Faculty, { foreignKey: "dean_person_id" });
-Faculty.belongsTo(Person, { foreignKey: "dean_person_id" });
+// Define associations
+Faculty.belongsTo(Person, {
+  foreignKey: 'dean_person_id',
+  as: 'dean'
+});
+
+Person.hasMany(Faculty, {
+  foreignKey: 'dean_person_id',
+  as: 'faculties'
+});
 
 //Department
 Person.hasOne(Department, {
   foreignKey: "chairperson_of_the_department_person_id",
 });
-Department.belongsTo(Person, {
-  foreignKey: "chairperson_of_the_department_person_id",
-});
+Department.belongsTo(Faculty, { foreignKey: 'faculty_id', as: 'faculty' });
+Department.belongsTo(Person, { foreignKey: 'head_person_id', as: 'head' });
+
 Faculty.hasMany(Department, { foreignKey: "faculty_id" });
-Department.belongsTo(Faculty, { foreignKey: "faculty_id" });
+Department.hasMany(Group, { foreignKey: "department_id" });
 
 //Group
 Faculty.hasMany(Group, { foreignKey: "faculty_id" });
 Group.belongsTo(Faculty, { foreignKey: "faculty_id" });
 Person.hasMany(Group, { foreignKey: "class_representative_person_id" });
 Group.belongsTo(Person, { foreignKey: "class_representative_person_id" });
-Department.hasMany(Group, { foreignKey: "department_id" });
 Group.belongsTo(Department, { foreignKey: "department_id" });
 AcademicSpecialty.hasMany(Group, { foreignKey: "specialty_code" });
 Group.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
