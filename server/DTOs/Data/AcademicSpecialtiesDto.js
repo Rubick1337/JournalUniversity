@@ -1,4 +1,4 @@
-class GetAcademicSpecialtiesDto {
+class AcademicSpecialtiesDto {
     constructor({ 
         code,
         name,
@@ -8,4 +8,4 @@ class GetAcademicSpecialtiesDto {
     }
 }
 
-module.exports = GetAcademicSpecialtiesDto;
+module.exports = AcademicSpecialtiesDto;

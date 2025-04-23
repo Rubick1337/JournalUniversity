@@ -3,28 +3,28 @@ import { API_ENDPOINTS } from "../http/apiEnpoints";
 import BaseService from "./BaseService";
 
 class AcademicSpecialtyService extends BaseService {
-    async createFaculty(data) {
-        const response = await BaseService.request("post", API_ENDPOINTS.Faculty.CREATE_Faculty, data);
+    async create(data) {
+        const response = await BaseService.request("post", API_ENDPOINTS.ACADEMIC_SPECIALTY.CREATE, data);
         return response;
     }
 
-    async updateFaculty(id, data) {
-        const response = await BaseService.request("put", `${API_ENDPOINTS.Faculty.UPDATE_Faculty}/${id}`, data);
+    async update(code, data) {
+        const response = await BaseService.request("put", API_ENDPOINTS.ACADEMIC_SPECIALTY.UPDATE.replace(":code", code), data);
         return response;
     }
 
-    async deleteFaculty(id) {
-        const response = await BaseService.request("delete", `${API_ENDPOINTS.Faculty.DELETE_Faculty}/${id}`);
+    async delete(code) {
+        const response = await BaseService.request("delete", API_ENDPOINTS.ACADEMIC_SPECIALTY.DELETE.replace(":code", code));
         return response;
     }
 
-    async getAllFaculties() {
-        const response = await BaseService.request("get", API_ENDPOINTS.Faculty.GETALL_Faculty);
+    async getAll() {
+        const response = await BaseService.request("get", API_ENDPOINTS.ACADEMIC_SPECIALTY.GETALL);
         return response.data;
     }
 
-    async getFacultyById(id) {
-        const response = await BaseService.request("get", `${API_ENDPOINTS.Faculty.GETIDE_Faculty}/${id}`);
+    async getByCode(code) {
+        const response = await BaseService.request("get", API_ENDPOINTS.ACADEMIC_SPECIALTY.GETBYCODE.replace(":code", code));
         return response.data;
     }
 }

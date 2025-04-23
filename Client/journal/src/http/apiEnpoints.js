@@ -46,4 +46,11 @@ export const API_ENDPOINTS = {
     DELETE: '/teacher/delete/:teacherId',
     GETBYID: `/teacher/getById/:teacherId`,
   },
+  ACADEMIC_SPECIALTY: {
+    GETALL: "/academicSpecialty/getAll",
+    CREATE: '/academicSpecialty/create',
+    UPDATE: '/academicSpecialty/update/:code',
+    DELETE: '/academicSpecialty/delete/:code',
+    GETBYCODE: `/academicSpecialty/getByCode/:code`,
+  },
 };

@@ -1,106 +1,111 @@
 const ApiError = require("../error/ApiError");
-const { AcademicSpecialty } = require("../models/index");
-const { dbQuery } = require("../dbUtils");
-const QUERIES = require("../queries/queries");
-const { Sequelize } = require("../db");
-const { Op, where, cast, col } = require("sequelize");
+const { AcademicSpecialty, Op, Sequelize } = require("../models/index");
 
 class AcademicSpecialtyService {
-  create = async (dataForCreate) => {
+  async create(data) {
     try {
-      const result = await AcademicSpecialty.create({
-        code: dataForCreate.code,
-        name: dataForCreate.name,
+      const academicSpecialty = await AcademicSpecialty.create({
+        code: data.code,
+        name: data.name
       });
-      return result;
+      
+      return academicSpecialty;
     } catch (error) {
-      throw error;
+      throw ApiError.badRequest("Error creating academic specialty", error);
     }
-  };
+  }
 
-  getAll = async ({
+  async update(code, updateData) {
+    try {
+      const academicSpecialty = await AcademicSpecialty.findByPk(code);
+      if (!academicSpecialty) {
+        throw ApiError.notFound(`Academic specialty with code ${code} not found`);
+      }
+      
+      await academicSpecialty.update({
+        code: updateData.code,
+        name: updateData.name
+      });
+      
+      return academicSpecialty;
+    } catch (error) {
+      throw ApiError.badRequest("Error updating academic specialty", error);
+    }
+  }
+
+  async getAll({
     page = 1,
     limit = 10,
     sortBy = "code",
-    sortOrder = "asc",
-    query = { codeQuery: "", nameQuery: "" },
-  }) => {
-
-    const where = this.getWhere(query);
-    const order = this.getSortOrder(
-      AcademicSpecialty.rawAttributes,
-      sortBy,
-      sortOrder
-    );
-
-    page = Math.max(1, parseInt(page)) || 1;
-    limit = Math.max(1, Math.min(parseInt(limit), 100)) || 10;
-
-    const result = await AcademicSpecialty.findAndCountAll({
-      where,
-      order,
-      limit,
-      offset: (page - 1) * limit,
-    });
-
-    // Форматирование ответа
-    return {
-      data: result.rows,
-      meta: {
-        total: result.count,
-        page,
-        limit,
-        totalPages: Math.ceil(result.count / limit),
-      },
-    };
-  };
-  /*
-<===================================>
-  Function
-<===================================>
-  */
-
-  addLikeCondition = (field, value, whereConditions = {}) => {
-    if (value !== null && value !== "") {
-      const condition = Sequelize.where(
-        Sequelize.cast(Sequelize.col(field), "TEXT"),
-        {
-          [Op.iLike]: `%${value}%`,
-        }
-      );
-      if (whereConditions[Op.and]) {
-        whereConditions[Op.and].push(condition);
-      } else {
-        whereConditions[Op.and] = [condition];
-      }
+    sortOrder = "ASC",
+    query = {
+      codeQuery: "",
+      nameQuery: ""
     }
-    return whereConditions;
-  };
-  getWhere = (query) => {
-    let where = {};
-    this.addLikeCondition("code", query.codeQuery, where);
-    this.addLikeCondition("name", query.nameQuery, where);
-    return where;
-  };
-  getSortOrder = (modelAttributes, sortBy, sortOrder = "ASC") => {
-    const isValidSortField = modelAttributes.hasOwnProperty(sortBy);
-    const normalizedSortOrder = ["ASC", "DESC"].includes(sortOrder)
-      ? sortOrder
-      : "ASC";
-
-    return isValidSortField ? [[sortBy, normalizedSortOrder]] : [["id", "ASC"]];
-  };
-  delete = async (id) => {
+  }) {
     try {
-      const result = await AcademicSpecialty.destroy({ where: { id } });
-      if (result === 0) {
-        throw ApiError.notFound("Academic specialty not found");
+      const offset = (page - 1) * limit;
+
+      const where = {};
+
+      if (query.codeQuery) {
+        where.code = { [Op.iLike]: `%${query.codeQuery}%` };
       }
-      return result;
+
+      if (query.nameQuery) {
+        where.name = { [Op.iLike]: `%${query.nameQuery}%` };
+      }
+
+      const { count, rows } = await AcademicSpecialty.findAndCountAll({
+        where,
+        order: [[sortBy, sortOrder]],
+        limit,
+        offset,
+        distinct: true
+      });
+
+      return {
+        data: rows,
+        meta: {
+          currentPage: page,
+          perPage: limit,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+          hasNextPage: page * limit < count,
+          hasPreviousPage: page > 1,
+        },
+      };
     } catch (error) {
-      throw error;
+      throw ApiError.internal("Error fetching academic specialties: " + error.message);
     }
-  };
+  }
+
+  async delete(code) {
+    try {
+      const academicSpecialty = await AcademicSpecialty.findByPk(code);
+      if (!academicSpecialty) {
+        return null;
+      }
+      await academicSpecialty.destroy();
+      return academicSpecialty;
+    } catch (error) {
+      throw ApiError.internal("Error deleting academic specialty: " + error.message);
+    }
+  }
+
+  async getByCode(code) {
+    try {
+      const academicSpecialty = await AcademicSpecialty.findByPk(code);
+      
+      if (!academicSpecialty) {
+        throw ApiError.notFound(`Academic specialty with code ${code} not found`);
+      }
+      
+      return academicSpecialty;
+    } catch (error) {
+      throw ApiError.internal("Error fetching academic specialty: " + error.message);
+    }
+  }
 }
 
 module.exports = new AcademicSpecialtyService();
