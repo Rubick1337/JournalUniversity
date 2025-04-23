@@ -16,7 +16,7 @@ h2, h3 {
     margin: 20px 0 15px;
 }
 
-h3 {
+.h3__progress {
     font-size: 1.2em;
     padding-bottom: 8px;
     border-bottom: 1px solid #eee;
