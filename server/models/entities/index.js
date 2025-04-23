@@ -25,6 +25,7 @@ const { Curriculum } = require("./Curriculum");
 const { Teacher } = require("./Teacher");
 const { AcademicBuilding } = require("./AcademicBuilding");
 const { Audience } = require("./Audience");
+const { EducationForm, initializeEducationForm } = require("./EducationForm");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
@@ -45,6 +46,7 @@ const initModels = async () => {
   // await initializeAcademicSpecialty();
   // await initializeSemesterType();
   // await initializeAssessmentType();
+  // await initializeEducationForm();
 };
 module.exports = {
   initModels,
@@ -64,7 +66,8 @@ module.exports = {
   Curriculum,
   Teacher,
   AcademicBuilding,
-  Audience
+  Audience,
+  EducationForm
   // Absenteeism,
   // AcademicPerformance,
   // Grade,

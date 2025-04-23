@@ -53,4 +53,11 @@ export const API_ENDPOINTS = {
     DELETE: '/academicSpecialty/delete/:code',
     GETBYCODE: `/academicSpecialty/getByCode/:code`,
   },
+  EDUCATION_FORM: {
+    GETALL: "/educationForm/getAll",
+    CREATE: '/educationForm/create',
+    UPDATE: '/educationForm/update/:id',
+    DELETE: '/educationForm/delete/:id',
+    GETBYID: `/educationForm/getById/:id`,
+  },
 };

@@ -16,7 +16,8 @@ const {
   Curriculum,
   Teacher,
   AcademicBuilding,
-  Audience
+  Audience,
+  EducationForm,
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
@@ -241,7 +242,8 @@ module.exports = {
   Curriculum,
   Teacher,
   AcademicBuilding,
-  Audience
+  Audience,
+  EducationForm,
 
   //   Absenteeism,
   //   AcademicPerformance,

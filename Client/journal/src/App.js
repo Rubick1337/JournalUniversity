@@ -38,6 +38,8 @@ function App() {
           <a href="teachers">Преподователи</a>
 
           <a href="specilization">Направления подготовки</a>
+          <a href="TODO">Формы подготовки</a>
+
           <a href="specilization">Учебный планы</a>
           <a href="specilization">Рабочие программы</a>
 
