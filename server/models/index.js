@@ -51,6 +51,20 @@ Department.belongsTo(Person, { foreignKey: 'head_person_id', as: 'head' });
 Faculty.hasMany(Department, { foreignKey: "faculty_id" });
 Department.hasMany(Group, { foreignKey: "department_id" });
 
+//Subject
+Department.hasMany(Subject, {
+  foreignKey: "department_id",
+  as: 'subjects', // явно указываем псевдоним для ассоциации
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE'
+});
+
+Subject.belongsTo(Department, {
+  foreignKey: "department_id",
+  as: 'department', // явно указываем псевдоним
+  targetKey: 'id' // явно указываем целевой ключ (опционально)
+});
+
 //Group
 Faculty.hasMany(Group, { foreignKey: "faculty_id" });
 Group.belongsTo(Faculty, { foreignKey: "faculty_id" });
@@ -74,9 +88,6 @@ Student.belongsTo(Subgroup, { foreignKey: "subgroup_id" });
 Person.hasMany(Student, { foreignKey: "perent_person_id" });
 Student.belongsTo(Person, { foreignKey: "perent_person_id" });
 
-//Subject
-Department.hasMany(Subject, { foreignKey: "department_id" });
-Subject.belongsTo(Department, { foreignKey: "department_id" });
 
 //Curriculum
 AcademicSpecialty.hasMany(Curriculum, { foreignKey: "specialty_code" });
