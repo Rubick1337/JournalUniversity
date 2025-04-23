@@ -131,20 +131,25 @@ const AssessmentTypesTable = () => {
         dispatch(clearCurrentType());
     };
 
-    const handleSaveEdit = () => {
-        if (!editType.name) {
+    const handleSaveEdit = async () => {
+        if (!editType.name?.trim()) {
             showAlert('Название типа оценивания должно быть заполнено!', 'error');
             return;
         }
 
-        dispatch(updateAssessmentType({
-            id: editType.id,
-            typeData: { name: editType.name }
-        }))
-            .then(() => {
-                showAlert('Тип оценивания успешно обновлен!', 'success');
-                handleCloseModals();
-            });
+        try {
+            await dispatch(updateAssessmentType({
+                id: editType.id,
+                typeData: { name: editType.name }
+            })).unwrap();
+
+            await dispatch(fetchAssessmentTypes());
+
+            showAlert('Тип оценивания успешно обновлен!', 'success');
+            handleCloseModals();
+        } catch (error) {
+            showAlert(error.message || 'Ошибка при обновлении типа оценивания', 'error');
+        }
     };
 
     const handleSaveAdd = () => {

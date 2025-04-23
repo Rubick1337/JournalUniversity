@@ -126,20 +126,25 @@ const EducationFormsTable = () => {
         dispatch(clearCurrentForm());
     };
 
-    const handleSaveEdit = () => {
-        if (!editForm.name) {
+    const handleSaveEdit = async () => {
+        if (!editForm.name?.trim()) {
             showAlert('Название формы обучения должно быть заполнено!', 'error');
             return;
         }
 
-        dispatch(updateEducationForm({
-            id: editForm.id,
-            formData: { name: editForm.name }
-        }))
-            .then(() => {
-                showAlert('Форма обучения успешно обновлена!', 'success');
-                handleCloseModals();
-            });
+        try {
+            await dispatch(updateEducationForm({
+                id: editForm.id,
+                formData: { name: editForm.name }
+            })).unwrap();
+
+            await dispatch(fetchEducationForms());
+
+            showAlert('Форма обучения успешно обновлена!', 'success');
+            handleCloseModals();
+        } catch (error) {
+            showAlert(error.message || 'Ошибка при обновлении формы обучения', 'error');
+        }
     };
 
     const handleSaveAdd = () => {
