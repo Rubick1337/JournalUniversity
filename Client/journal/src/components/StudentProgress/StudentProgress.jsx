@@ -167,7 +167,7 @@ const StudentProgress = () => {
             </div>
 
             {/* Таблица по предметам */}
-            <h3>Академическая успеваемость</h3>
+            <h3 className="h3__progress">Академическая успеваемость</h3>
             <div className="table-container">
                 <div className="progress-table">
                     <div className="table-header">
@@ -209,7 +209,7 @@ const StudentProgress = () => {
             </div>
 
             {/* Таблица по курсовым */}
-            <h3>Курсовые работы</h3>
+            <h3 className="h3__progress">Курсовые работы</h3>
             <div className="table-container">
                 <div className="progress-table">
                     <div className="table-header">

@@ -24,22 +24,24 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-    fetchTeacherPositions,
-    addTeacherPosition,
-    updateTeacherPosition,
-    deleteTeacherPosition,
+    fetchAssessmentTypes,
+    addAssessmentType,
+    updateAssessmentType,
+    deleteAssessmentType,
+    getAssessmentTypeById,
     clearErrors,
-    clearCurrentPosition
-} from '../../store/slices/teacherPositionSlice';
+    clearCurrentType,
+    setCurrentType
+} from '../../store/slices/assessmentTypeSlice';
 
-const TeacherPositionsTable = () => {
+const AssessmentTypesTable = () => {
     const dispatch = useDispatch();
     const {
-        data: positionsData,
+        data: assessmentTypes,
         isLoading,
         errors,
-        currentPosition
-    } = useSelector(state => state.teacherPositions);
+        currentType
+    } = useSelector(state => state.assessmentTypes);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -50,8 +52,8 @@ const TeacherPositionsTable = () => {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
-    const [newPosition, setNewPosition] = useState({ name: '' });
-    const [editPosition, setEditPosition] = useState({ name: '' });
+    const [newType, setNewType] = useState({ name: '' });
+    const [editType, setEditType] = useState({ name: '' });
     const [alertState, setAlertState] = useState({
         open: false,
         message: '',
@@ -59,7 +61,7 @@ const TeacherPositionsTable = () => {
     });
 
     useEffect(() => {
-        dispatch(fetchTeacherPositions());
+        dispatch(fetchAssessmentTypes());
     }, [dispatch]);
 
     useEffect(() => {
@@ -79,7 +81,7 @@ const TeacherPositionsTable = () => {
             message,
             severity
         });
-        setTimeout(() => setAlertState(prev => ({ ...prev, open: false })), 3000);
+        setTimeout(() => setAlertState(prev => ({ ...prev, open: false }), 3000));
     };
 
     const handleSearchNameChange = (event) => {
@@ -104,9 +106,12 @@ const TeacherPositionsTable = () => {
     };
 
     const handleEdit = () => {
-        setEditPosition(currentRow);
-        setOpenEditModal(true);
-        handleMenuClose();
+        dispatch(getAssessmentTypeById(currentRow.id))
+            .then(() => {
+                setEditType(currentRow);
+                setOpenEditModal(true);
+                handleMenuClose();
+            });
     };
 
     const handleDelete = () => {
@@ -115,7 +120,7 @@ const TeacherPositionsTable = () => {
     };
 
     const handleAdd = () => {
-        setNewPosition({ name: '' });
+        setNewType({ name: '' });
         setOpenAddModal(true);
     };
 
@@ -123,51 +128,51 @@ const TeacherPositionsTable = () => {
         setOpenEditModal(false);
         setOpenDeleteModal(false);
         setOpenAddModal(false);
-        dispatch(clearCurrentPosition());
+        dispatch(clearCurrentType());
     };
 
     const handleSaveEdit = () => {
-        if (!editPosition.name) {
-            showAlert('Название должности должно быть заполнено!', 'error');
+        if (!editType.name) {
+            showAlert('Название типа оценивания должно быть заполнено!', 'error');
             return;
         }
 
-        dispatch(updateTeacherPosition({
-            id: editPosition.id,
-            positionData: { name: editPosition.name }
+        dispatch(updateAssessmentType({
+            id: editType.id,
+            typeData: { name: editType.name }
         }))
             .then(() => {
-                showAlert('Должность успешно обновлена!', 'success');
+                showAlert('Тип оценивания успешно обновлен!', 'success');
                 handleCloseModals();
             });
     };
 
     const handleSaveAdd = () => {
-        if (!newPosition.name) {
-            showAlert('Название должности должно быть заполнено!', 'error');
+        if (!newType.name) {
+            showAlert('Название типа оценивания должно быть заполнено!', 'error');
             return;
         }
 
-        dispatch(addTeacherPosition({ name: newPosition.name }))
+        dispatch(addAssessmentType({ name: newType.name }))
             .then(() => {
-                showAlert('Должность успешно добавлена!', 'success');
+                showAlert('Тип оценивания успешно добавлен!', 'success');
                 handleCloseModals();
             });
     };
 
     const handleDeleteConfirm = () => {
-        dispatch(deleteTeacherPosition(currentRow.id))
+        dispatch(deleteAssessmentType(currentRow.id))
             .then(() => {
-                showAlert('Должность успешно удалена!', 'success');
+                showAlert('Тип оценивания успешно удален!', 'success');
                 handleCloseModals();
             });
     };
 
-    const filteredData = positionsData.filter(position => {
-        return position.name.toLowerCase().includes(searchName.toLowerCase());
+    const filteredData = assessmentTypes.filter(type => {
+        return type.name.toLowerCase().includes(searchName.toLowerCase());
     });
 
-    if (isLoading && positionsData.length === 0) {
+    if (isLoading && assessmentTypes.length === 0) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <CircularProgress />
@@ -179,7 +184,7 @@ const TeacherPositionsTable = () => {
         <>
             <TableContainer component={Paper}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-                    <Typography variant="h6">Должности учителей</Typography>
+                    <Typography variant="h6">Типы оценивания</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <IconButton onClick={handleSearchMenuClick}>
                             <SearchIcon />
@@ -210,11 +215,11 @@ const TeacherPositionsTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(position => (
-                            <TableRow key={position.id}>
-                                <TableCell>{position.name}</TableCell>
+                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(type => (
+                            <TableRow key={type.id}>
+                                <TableCell>{type.name}</TableCell>
                                 <TableCell>
-                                    <IconButton onClick={(e) => handleMenuClick(e, position)}>
+                                    <IconButton onClick={(e) => handleMenuClick(e, type)}>
                                         <MoreVertIcon />
                                     </IconButton>
                                 </TableCell>
@@ -261,9 +266,9 @@ const TeacherPositionsTable = () => {
                             alignItems: 'center'
                         }}>
                             <Typography variant="h6">
-                                {openEditModal && "Редактировать должность"}
-                                {openDeleteModal && "Удалить должность"}
-                                {openAddModal && "Добавить новую должность"}
+                                {openEditModal && "Редактировать тип оценивания"}
+                                {openDeleteModal && "Удалить тип оценивания"}
+                                {openAddModal && "Добавить новый тип оценивания"}
                             </Typography>
                             <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
                                 <CloseIcon />
@@ -273,11 +278,11 @@ const TeacherPositionsTable = () => {
                             {openEditModal && (
                                 <div>
                                     <TextField
-                                        label="Название должности*"
+                                        label="Название типа оценивания*"
                                         fullWidth
                                         margin="normal"
-                                        value={editPosition.name}
-                                        onChange={(e) => setEditPosition({ ...editPosition, name: e.target.value })}
+                                        value={editType.name}
+                                        onChange={(e) => setEditType({ ...editType, name: e.target.value })}
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
@@ -293,7 +298,7 @@ const TeacherPositionsTable = () => {
                             )}
                             {openDeleteModal && (
                                 <div>
-                                    <Typography>Вы уверены, что хотите удалить должность "{currentRow?.name}"?</Typography>
+                                    <Typography>Вы уверены, что хотите удалить тип оценивания "{currentRow?.name}"?</Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
                                         <Button
@@ -309,11 +314,11 @@ const TeacherPositionsTable = () => {
                             {openAddModal && (
                                 <div>
                                     <TextField
-                                        label="Название должности*"
+                                        label="Название типа оценивания*"
                                         fullWidth
                                         margin="normal"
-                                        value={newPosition.name}
-                                        onChange={(e) => setNewPosition({ name: e.target.value })}
+                                        value={newType.name}
+                                        onChange={(e) => setNewType({ name: e.target.value })}
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
@@ -340,7 +345,7 @@ const TeacherPositionsTable = () => {
                     startIcon={<AddCircleOutlineIcon />}
                     disabled={isLoading}
                 >
-                    Добавить должность
+                    Добавить тип оценивания
                 </Button>
             </Box>
 
@@ -363,4 +368,4 @@ const TeacherPositionsTable = () => {
     );
 };
 
-export default TeacherPositionsTable;
+export default AssessmentTypesTable;

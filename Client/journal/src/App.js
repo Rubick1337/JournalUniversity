@@ -23,6 +23,9 @@ import StudentRaitingPage from "./pages/StudentRaitingPage/StudentRaitingPage";
 import InfoLessonPage from "./pages/InfoLessonPage/InfoLessonPage";
 import ContactTablePage from "./pages/ContactPage/ContactPage";
 import PositionTeacherPage from "./pages/PositionTeacherPage/PositionTeacherPage";
+import RoutersPage from "./pages/RoutersPage/RoutersPage";
+import EducationFormPage from "./pages/EducationFormPage/EducationFormPage";
+import TypeAssesmentPage from "./pages/TypeAssmentPage/TypeAssesmentPage";
 
 function App() {
   return (
@@ -74,6 +77,9 @@ function App() {
           <Route path="/infolesson/:id" element={<InfoLessonPage />} />
           <Route path="/personinfo" element={<ContactTablePage />} />
           <Route path={"/positions"} element={<PositionTeacherPage />} />
+          <Route path={"/router"} element={<RoutersPage />} />
+          <Route path={"/educationform"} element={<EducationFormPage />} />
+          <Route path={"/assesmenttype"} element={<TypeAssesmentPage />} />
         </Routes>
       </div>
     </Provider>
