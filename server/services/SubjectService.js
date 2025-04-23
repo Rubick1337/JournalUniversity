@@ -1,5 +1,5 @@
 const ApiError = require("../error/ApiError");
-const { Subject, Department, Op } = require("../models/index");
+const { Subject, Department, Op, Sequelize } = require("../models/index");
 
 class SubjectService {
   async create(data) {
@@ -48,15 +48,21 @@ class SubjectService {
       const offset = (page - 1) * limit;
 
       const where = {};
-      if (query.idQuery) {
-        where.id = {
-          [Op.like]: `%${query.idQuery}%`,
-        };
-      }
+
       if (query.nameQuery) {
         where.name = { [Op.iLike]: `%${query.nameQuery}%` };
       }
-
+      // idQuery с явным приведением типа
+      if (query.idQuery) {
+        where[Op.and] = [
+          Sequelize.where(
+            Sequelize.cast(Sequelize.col("Subject.id"), "TEXT"),
+            {
+              [Op.iLike]: `%${query.idQuery}%`,
+            }
+          ),
+        ];
+      }
       const include = [
         {
           model: Department,

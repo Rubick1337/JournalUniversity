@@ -1,4 +1,4 @@
-const { Op} = require('sequelize')
+const { Op, Sequelize} = require('sequelize')
 const {
   initModels,
   Person,
@@ -207,6 +207,7 @@ Teacher.belongsTo(TeachingPosition, { foreignKey: 'teaching_position_id' });
 module.exports = {
   initModels,
   Op,
+  Sequelize,
   Person,
   TeachingPosition,
   Faculty,

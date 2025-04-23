@@ -1,6 +1,6 @@
 // FacultyService.js
 const ApiError = require("../error/ApiError");
-const { Faculty, Person, Op } = require("../models/index");
+const { Faculty, Person, Op, Sequelize } = require("../models/index");
 
 class FacultyService {
   async create(data) {
@@ -52,18 +52,24 @@ class FacultyService {
       const offset = (page - 1) * limit;
 
       const where = {};
-      if (query.idQuery) {
-        where.id = {
-          [Op.like]: `%${query.idQuery}%`,
-        };
-      }
+
       if (query.nameQuery) {
         where.name = { [Op.iLike]: `%${query.nameQuery}%` };
       }
       if (query.fullNameQuery) {
         where.full_name = { [Op.iLike]: `%${query.fullNameQuery}%` };
       }
-
+      // idQuery с явным приведением типа
+      if (query.idQuery) {
+        where[Op.and] = [
+          Sequelize.where(
+            Sequelize.cast(Sequelize.col("Faculty.id"), "TEXT"),
+            {
+              [Op.iLike]: `%${query.idQuery}%`,
+            }
+          ),
+        ];
+      }
       const include = [{
         model: Person,
         as: 'dean',

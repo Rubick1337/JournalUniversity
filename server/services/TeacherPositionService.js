@@ -1,13 +1,13 @@
 const ApiError = require("../error/ApiError");
-const { TeachingPosition, Op } = require("../models/index");
+const { TeachingPosition, Op, Sequelize } = require("../models/index");
 
 class TeacherPositionService {
   async create(data) {
     try {
       const position = await TeachingPosition.create({
-        name: data.name
+        name: data.name,
       });
-      
+
       return position;
     } catch (error) {
       throw ApiError.badRequest("Error creating teacher position", error);
@@ -18,13 +18,15 @@ class TeacherPositionService {
     try {
       const position = await TeachingPosition.findByPk(positionId);
       if (!position) {
-        throw ApiError.notFound(`Teacher position with ID ${positionId} not found`);
+        throw ApiError.notFound(
+          `Teacher position with ID ${positionId} not found`
+        );
       }
-      
+
       await position.update({
-        name: updateData.name
+        name: updateData.name,
       });
-      
+
       return position;
     } catch (error) {
       throw ApiError.badRequest("Error updating teacher position", error);
@@ -38,28 +40,35 @@ class TeacherPositionService {
     sortOrder = "ASC",
     query = {
       idQuery: "",
-      nameQuery: ""
-    }
+      nameQuery: "",
+    },
   }) {
     try {
       const offset = (page - 1) * limit;
 
       const where = {};
-      if (query.idQuery) {
-        where.id = {
-          [Op.like]: `%${query.idQuery}%`,
-          [Op.cast]: { type: "TEXT" }  // Явное приведение типа к тексту
-        };
-      }
+
       if (query.nameQuery) {
         where.name = { [Op.iLike]: `%${query.nameQuery}%` };
+      }
+
+      // idQuery с явным приведением типа
+      if (query.idQuery) {
+        where[Op.and] = [
+          Sequelize.where(
+            Sequelize.cast(Sequelize.col("TeachingPosition.id"), "TEXT"),
+            {
+              [Op.iLike]: `%${query.idQuery}%`,
+            }
+          ),
+        ];
       }
 
       const { count, rows } = await TeachingPosition.findAndCountAll({
         where,
         order: [[sortBy, sortOrder]],
         limit,
-        offset
+        offset,
       });
 
       return {
@@ -74,7 +83,9 @@ class TeacherPositionService {
         },
       };
     } catch (error) {
-      throw ApiError.internal("Error fetching teacher positions: " + error.message);
+      throw ApiError.internal(
+        "Error fetching teacher positions: " + error.message
+      );
     }
   }
 
@@ -87,21 +98,27 @@ class TeacherPositionService {
       await position.destroy();
       return position;
     } catch (error) {
-      throw ApiError.internal("Error deleting teacher position: " + error.message);
+      throw ApiError.internal(
+        "Error deleting teacher position: " + error.message
+      );
     }
   }
 
   async getById(positionId) {
     try {
       const position = await TeachingPosition.findByPk(positionId);
-      
+
       if (!position) {
-        throw ApiError.notFound(`Teacher position with ID ${positionId} not found`);
+        throw ApiError.notFound(
+          `Teacher position with ID ${positionId} not found`
+        );
       }
-      
+
       return position;
     } catch (error) {
-      throw ApiError.internal("Error fetching teacher position: " + error.message);
+      throw ApiError.internal(
+        "Error fetching teacher position: " + error.message
+      );
     }
   }
 }

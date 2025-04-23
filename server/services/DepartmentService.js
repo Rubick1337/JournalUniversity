@@ -1,17 +1,16 @@
 const ApiError = require("../error/ApiError");
-const { Department, Faculty, Person, Op } = require("../models/index");
+const { Department, Faculty, Person, Op, Sequelize } = require("../models/index");
 
 class DepartmentService {
   async create(data) {
     try {
-
       const department = await Department.create({
         name: data.name,
         full_name: data.full_name,
         faculty_id: data.faculty_id,
-        head_person_id: data.chairperson_of_the_department_person_id || null
+        head_person_id: data.chairperson_of_the_department_person_id || null,
       });
-      
+
       return await this._getDepartmentWithAssociations(department.id);
     } catch (error) {
       throw ApiError.badRequest("Error creating department", error);
@@ -24,14 +23,14 @@ class DepartmentService {
       if (!department) {
         throw ApiError.notFound(`Department with ID ${departmentId} not found`);
       }
-      
+
       await department.update({
         name: updateData.name,
         full_name: updateData.fullName,
         faculty_id: updateData.facultyId,
-        head_person_id: updateData.headPersonId
+        head_person_id: updateData.headPersonId,
       });
-      
+
       return await this._getDepartmentWithAssociations(departmentId);
     } catch (error) {
       throw ApiError.badRequest("Error updating department", error);
@@ -48,51 +47,61 @@ class DepartmentService {
       nameQuery: "",
       fullNameQuery: "",
       facultyQuery: "",
-      headQuery: ""
-    }
+      headQuery: "",
+    },
   }) {
     try {
       const offset = (page - 1) * limit;
 
       const where = {};
-      if (query.idQuery) {
-        where.id = {
-          [Op.like]: `%${query.idQuery}%`,
-        };
-      }
+
       if (query.nameQuery) {
         where.name = { [Op.iLike]: `%${query.nameQuery}%` };
       }
       if (query.fullNameQuery) {
         where.full_name = { [Op.iLike]: `%${query.fullNameQuery}%` };
       }
-
+      // idQuery с явным приведением типа
+      if (query.idQuery) {
+        where[Op.and] = [
+          Sequelize.where(
+            Sequelize.cast(Sequelize.col("Department.id"), "TEXT"),
+            {
+              [Op.iLike]: `%${query.idQuery}%`,
+            }
+          ),
+        ];
+      }
       const include = [
         {
           model: Faculty,
-          as: 'faculty',
-          attributes: ['id', 'name', 'full_name'],
+          as: "faculty",
+          attributes: ["id", "name", "full_name"],
           required: !!query.facultyQuery,
-          where: query.facultyQuery ? {
-            [Op.or]: [
-              { name: { [Op.iLike]: `%${query.facultyQuery}%` }},
-              { full_name: { [Op.iLike]: `%${query.facultyQuery}%` }}
-            ]
-          } : undefined
+          where: query.facultyQuery
+            ? {
+                [Op.or]: [
+                  { name: { [Op.iLike]: `%${query.facultyQuery}%` } },
+                  { full_name: { [Op.iLike]: `%${query.facultyQuery}%` } },
+                ],
+              }
+            : undefined,
         },
         {
           model: Person,
-          as: 'head',
-          attributes: ['id', 'surname', 'name', 'middlename'],
+          as: "head",
+          attributes: ["id", "surname", "name", "middlename"],
           required: !!query.headQuery,
-          where: query.headQuery ? {
-            [Op.or]: [
-              { surname: { [Op.iLike]: `%${query.headQuery}%` }},
-              { name: { [Op.iLike]: `%${query.headQuery}%` }},
-              { middlename: { [Op.iLike]: `%${query.headQuery}%` }}
-            ]
-          } : undefined
-        }
+          where: query.headQuery
+            ? {
+                [Op.or]: [
+                  { surname: { [Op.iLike]: `%${query.headQuery}%` } },
+                  { name: { [Op.iLike]: `%${query.headQuery}%` } },
+                  { middlename: { [Op.iLike]: `%${query.headQuery}%` } },
+                ],
+              }
+            : undefined,
+        },
       ];
 
       const { count, rows } = await Department.findAndCountAll({
@@ -101,9 +110,9 @@ class DepartmentService {
         order: [[sortBy, sortOrder]],
         limit,
         offset,
-        distinct: true
+        distinct: true,
       });
-      console.log("TEST",rows)
+      console.log("TEST", rows);
       return {
         data: rows,
         meta: {
@@ -135,12 +144,14 @@ class DepartmentService {
 
   async getById(departmentId) {
     try {
-      const department = await this._getDepartmentWithAssociations(departmentId);
-      
+      const department = await this._getDepartmentWithAssociations(
+        departmentId
+      );
+
       if (!department) {
         throw ApiError.notFound(`Department with ID ${departmentId} not found`);
       }
-      
+
       return department;
     } catch (error) {
       throw ApiError.internal("Error fetching department: " + error.message);
@@ -152,15 +163,15 @@ class DepartmentService {
       include: [
         {
           model: Faculty,
-          as: 'faculty',
-          attributes: ['id', 'name', 'full_name']
+          as: "faculty",
+          attributes: ["id", "name", "full_name"],
         },
         {
           model: Person,
-          as: 'head',
-          attributes: ['id', 'surname', 'name', 'middlename']
-        }
-      ]
+          as: "head",
+          attributes: ["id", "surname", "name", "middlename"],
+        },
+      ],
     });
   }
 }
