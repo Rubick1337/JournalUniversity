@@ -90,10 +90,6 @@ Person.hasMany(Student, { foreignKey: "perent_person_id" });
 Student.belongsTo(Person, { foreignKey: "perent_person_id" });
 
 
-//Curriculum
-AcademicSpecialty.hasMany(Curriculum, { foreignKey: "specialty_code" });
-Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
-
 //Teacher
 Person.hasMany(Teacher, { 
   foreignKey: 'person_id',
@@ -121,6 +117,28 @@ Teacher.belongsTo(TeachingPosition, {
   foreignKey: 'teaching_position_id',
   as: 'teachingPosition'
 });
+
+
+
+//Curriculum
+AcademicSpecialty.hasMany(Curriculum, { 
+  foreignKey: "specialty_code",
+  as: "AcademicSpecialty"   
+});
+Curriculum.belongsTo(AcademicSpecialty, { 
+  foreignKey: "specialty_code",
+  as: "AcademicSpecialty"   
+});
+
+EducationForm.hasMany(Curriculum, { 
+  foreignKey: "education_form_id",
+  as: "EducationForm"   
+});
+Curriculum.belongsTo(EducationForm, { 
+  foreignKey: "education_form_id",
+  as: "EducationForm"   
+});
+
 // //TODO связи
 // Group.hasMany(Absenteeism, { foreignKey: "group_id" });
 // Absenteeism.belongsTo(Group, { foreignKey: "group_id" });

@@ -23,6 +23,7 @@ initializeRoute('subject', 'subject');
 initializeRoute('teacherPosition', 'teacherPosition');
 initializeRoute('teacher', 'teacher');
 initializeRoute('educationForm', 'educationForm');
+initializeRoute('curriculum', 'curriculum');
 
 
 module.exports = router;

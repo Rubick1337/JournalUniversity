@@ -60,4 +60,11 @@ export const API_ENDPOINTS = {
     DELETE: '/educationForm/delete/:id',
     GETBYID: `/educationForm/getById/:id`,
   },
+  CURRICULUM: {
+    GETALL: "/curriculum/getAll",
+    CREATE: '/curriculum/create',
+    UPDATE: '/curriculum/update/:id',
+    DELETE: '/curriculum/delete/:id',
+    GETBYID: `/curriculum/getById/:id`,
+  },
 };
