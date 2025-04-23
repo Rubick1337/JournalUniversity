@@ -41,7 +41,10 @@ function App() {
 
           <a href="specilization">Направления подготовки</a>
           <a href="TODO">Формы подготовки</a>
+
           <a href="specilization">Учебный планы</a>
+          <a href="TODO">Формы атестации</a>
+
           <a href="curriculum">Рабочие программы</a>
 
           <a href="specilization">Группы</a>
