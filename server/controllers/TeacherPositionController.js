@@ -53,8 +53,8 @@ class TeacherPositionController {
 
   getById = async (req, res, next) => {
     try {
-      const { positionId } = req.params;
-      const data = await TeacherPositionService.getById(positionId);
+      const { teacherPositionId } = req.params;
+      const data = await TeacherPositionService.getById(teacherPositionId);
       const dataDto = new TeacherPositionDataDto(data);
       return res.status(200).json({
         data: dataDto,
@@ -67,9 +67,9 @@ class TeacherPositionController {
 
   update = async (req, res, next) => {
     try {
-      const { positionId } = req.params;
+      const { teacherPositionId } = req.params;
       const dataDto = new TeacherPositionUpdateDto(req.body);
-      const result = await TeacherPositionService.update(positionId, dataDto);
+      const result = await TeacherPositionService.update(teacherPositionId, dataDto);
       const resultDto = new TeacherPositionDataDto(result);
       return res.status(200).json({ message: "updated", data: resultDto });
     } catch (err) {
@@ -80,12 +80,12 @@ class TeacherPositionController {
 
   delete = async (req, res, next) => {
     try {
-      const { positionId } = req.params;
-      const result = await TeacherPositionService.delete(positionId);
+      const { teacherPositionId } = req.params;
+      const result = await TeacherPositionService.delete(teacherPositionId);
       if (!result) {
         return res
           .status(404)
-          .json({ message: `Not found teacher position by id ${positionId}` });
+          .json({ message: `Not found teacher position by id ${teacherPositionId}` });
       }
       return res.status(204).send();
     } catch (err) {

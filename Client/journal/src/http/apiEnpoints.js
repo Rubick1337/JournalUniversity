@@ -31,6 +31,12 @@ export const API_ENDPOINTS = {
     UPDATE: 'subject/update/:subjectId',
     DELETE: 'subject/delete/:subjectId',
     GETBYID: `/subject/getById/:subjectId`,
-
+  },
+  TEACHER_POSITION: {
+    GETALL: "teacherPosition/getAll",
+    CREATE: 'teacherPosition/create',
+    UPDATE: 'teacherPosition/update/:teacherPositionId',
+    DELETE: 'teacherPosition/delete/:teacherPositionId',
+    GETBYID: `/teacherPosition/getById/:teacherPositionId`,
   },
 };
