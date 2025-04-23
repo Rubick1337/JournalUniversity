@@ -4,27 +4,28 @@ import BaseService from "./BaseService";
 
 class FacultyService extends BaseService {
     async createFaculty(data) {
-        const response = await BaseService.request("post", API_ENDPOINTS.Faculty.CREATE_Faculty, data);
+        const response = await BaseService.request("post", API_ENDPOINTS.Faculty.CREATE, data);
         return response;
     }
 
     async updateFaculty(id, data) {
-        const response = await BaseService.request("put", `${API_ENDPOINTS.Faculty.UPDATE_Faculty}/${id}`, data);
+        const response = await BaseService.request("put", API_ENDPOINTS.Faculty.UPDATE.replace(":facultyId",id), data);
         return response;
     }
 
     async deleteFaculty(id) {
-        const response = await BaseService.request("delete", `${API_ENDPOINTS.Faculty.DELETE_Faculty}/${id}`);
+        const response = await BaseService.request("delete",API_ENDPOINTS.Faculty.DELETE.replace(":facultyId",id));
         return response;
     }
 
     async getAllFaculties() {
-        const response = await BaseService.request("get", API_ENDPOINTS.Faculty.GETALL_Faculty);
+        //TODO query params
+        const response = await BaseService.request("get", API_ENDPOINTS.Faculty.GETALL);
         return response.data;
     }
 
     async getFacultyById(id) {
-        const response = await BaseService.request("get", `${API_ENDPOINTS.Faculty.GETIDE_Faculty}/${id}`);
+        const response = await BaseService.request("get", API_ENDPOINTS.Faculty.GETBYID.replace(":facultyId",id));
         return response.data;
     }
 }

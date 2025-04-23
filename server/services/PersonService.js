@@ -1,25 +1,21 @@
 const ApiError = require("../error/ApiError");
-const { Person } = require("../models/index");
-const { dbQuery } = require("../dbUtils");
-const QUERIES = require("../queries/queries");
-class PersonService {
-  create = async (data) => {
-    try {
-      const result = await Person.create(data);
-      return result;
-    } catch (error) {
-      console.error(error);
-      throw ApiError.badRequest("Error", error);
-    }
-  };
+const { Person, Op } = require("../models/index");
 
-  update = async(personId, updateData) => {
+class PersonService {
+  async create(data) {
+    try {
+      return await Person.create(data);
+    } catch (error) {
+      throw ApiError.badRequest("Ошибка при создании пользователя", error);
+    }
+  }
+
+  async update(personId, updateData) {
     const person = await Person.findByPk(personId);
-    if(!person) {
+    if (!person) {
       throw ApiError.notFound(`Person with ID ${personId} not found`);
     }
-    const updatedPerson = await person.update(updateData);
-    return updatedPerson;
+    return await person.update(updateData);
   }
 
   async getAll({
@@ -28,6 +24,7 @@ class PersonService {
     sortBy = "id",
     sortOrder = "ASC",
     query = {
+      idQuery: "",
       surnameQuery: "",
       nameQuery: "",
       middlenameQuery: "",
@@ -36,67 +33,65 @@ class PersonService {
     },
   }) {
     try {
-      const params = [
-        limit,
-        page,
-        sortBy,
-        sortOrder,
-        query.surnameQuery || null,
-        query.nameQuery || null,
-        query.middlenameQuery || null,
-        query.phoneNumberQuery || null,
-        query.emailQuery || null,
-      ];
+      const offset = (page - 1) * limit;
 
-      // Вызываем функцию из PostgreSQL
-      const result = await dbQuery(QUERIES.PEOPLE.GET_ALL, params);
-
-      // Извлекаем данные из результата
-      const fullResult = result[0].get_all_person_full_data;
-
-      if (!fullResult) {
-        throw ApiError.internal("Ошибка при получении данных");
+      const where = {};
+      if (query.idQuery) {
+        where.id = {
+          [Op.like]: `%${query.idQuery}%`,
+        };
       }
+      if (query.surnameQuery)
+        where.surname = { [Op.iLike]: `%${query.surnameQuery}%` };
+      if (query.nameQuery) where.name = { [Op.iLike]: `%${query.nameQuery}%` };
+      if (query.middlenameQuery)
+        where.middlename = { [Op.iLike]: `%${query.middlenameQuery}%` };
+      if (query.phoneNumberQuery)
+        where.phoneNumber = { [Op.iLike]: `%${query.phoneNumberQuery}%` };
+      if (query.emailQuery)
+        where.email = { [Op.iLike]: `%${query.emailQuery}%` };
 
-      // Парсим JSON результат
-      const parsedResult =
-        typeof fullResult === "string" ? JSON.parse(fullResult) : fullResult;
-      console.log("TEST", parsedResult);
+      const { count, rows } = await Person.findAndCountAll({
+        where,
+        order: [[sortBy, sortOrder]],
+
+        limit,
+        offset,
+      });
+
       return {
-        data: parsedResult.data || [],
-        meta: parsedResult.meta || {
+        data: rows,
+        meta: {
           currentPage: page,
           perPage: limit,
-          totalItems: 0,
-          totalPages: 0,
-          hasNextPage: false,
-          hasPreviousPage: false,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+          hasNextPage: page * limit < count,
+          hasPreviousPage: page > 1,
         },
       };
     } catch (error) {
       throw ApiError.internal("Ошибка при получении данных: " + error.message);
     }
   }
-  delete = async (personId) => {
-    
-    const person = await Person.findByPk(personId );
-    console.log("TETTTT", person)
 
+  async delete(personId) {
+    const person = await Person.findByPk(personId);
     if (!person) return null;
     await person.destroy();
     return person;
-  };
-  getById = async (personId) => {
-    return await Specialty.findByPk({ id: personId });
-  };
+  }
 
-  
-  getDataForSelect = async () => {
-    const params = [];
-    const data = await dbQuery(QUERIES.GET_PEOPLE_DATA_FOR_SELECT, params);
-    const extractedData = Object.values(data[0])[0];
-    return extractedData;
-  };
+  async getById(personId) {
+    return await Person.findByPk(personId);
+  }
+
+  async getDataForSelect() {
+    return await Person.findAll({
+      attributes: ["id", ["surname", "label"]], // или другие поля для select
+      order: [["surname", "ASC"]],
+    });
+  }
 }
 
 module.exports = new PersonService();

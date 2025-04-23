@@ -5,15 +5,15 @@ const { Department } = require("./Department");
 
 const Subject = sequelize.define("Subject", {
   id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
-  },
+    autoIncrement: true,
+    },
 
   name: { type: DataTypes.STRING(255), allowNull: false },
 
   department_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Department,
       key: "id",

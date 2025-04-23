@@ -1,91 +1,146 @@
 const ApiError = require("../error/ApiError");
-const { Subject } = require("../models/index");
-const { dbQuery } = require("../dbUtils");
-const QUERIES = require("../queries/queries");
-class FacultyServer {
-  getAll = async () => {
-    try {
-      const params = [];
-      const data = await dbQuery(
-        QUERIES.FACULTY.GET_ALL_FACULTY_WITH_FULL_DATA,
-        params
-      );
-      const extractedData = Object.values(data[0])[0];
-      return extractedData;
-    } catch (err) {
-      throw err;
-    }
-  };
-  getById = async (faculty_id) => {
-    try {
-      const params = [faculty_id];
-      const data = await dbQuery(QUERIES.FACULTY.GET_BY_ID_GULL_DATA, params);
-      const extractedData = Object.values(data[0])[0];
-      return extractedData;
-    } catch (err) {
-      throw err;
-    }
-  };
-  create = async (data) => {
-    try {
-      //TODO validate data
-      const result = await Faculty.create({
-        name: data.name,
-        full_name: data.fullName,
-        dean_person_id: data.deanPerson.id,
-      });
-      return result.dataValues;
-    } catch (err) {
-      throw err;
-    }
-  };
-  update = async (id, data) => {
-    try {
-      //TODO validate id
-      //TODO validate data
-      const [affectedCount, updatedFaculty] = await Faculty.update(
-        {
-          name: data.name,
-          full_name: data.fullName,
-          dean_person_id: data.deanPerson?.id || null,
-        },
-        {
-          where: { id }, // Фикс: должен быть объект условия
-          returning: true, // Для PostgreSQL возвращает обновленную запись
-        }
-      );
-  
-      if (affectedCount === 0) {
-        throw ApiError.badRequest('Faculty not found or no changes made');
-      }
-  
-      return updatedFaculty[0].get();
-    } catch (err) {
-      throw err;
-    }
-  };
-  delete = async (id) => {
-    try {
-      //TODO valudate id
+const { Subject, Department, Op, Sequelize } = require("../models/index");
 
-      const deletedCount = await Faculty.destroy({
-        where: { id },
-        limit: 1 // Гарантируем удаление только одной записи
+class SubjectService {
+  async create(data) {
+    try {
+      const subject = await Subject.create({
+        name: data.name,
+        department_id: data.department_id
       });
-  
-      if (deletedCount === 0) {
-        throw ApiError.badRequest('Faculty deletion failed');
-      }
-  
-      return { 
-        success: true,
-        id: id,
-        message: 'Faculty deleted successfully'
-      };
-    } catch (err) {
-      throw err;
+      
+      return await this._getSubjectWithAssociations(subject.id);
+    } catch (error) {
+      throw ApiError.badRequest("Error creating subject", error);
     }
-  };
+  }
+
+  async update(subjectId, updateData) {
+    try {
+      const subject = await Subject.findByPk(subjectId);
+      if (!subject) {
+        throw ApiError.notFound(`Subject with ID ${subjectId} not found`);
+      }
+      
+      await subject.update({
+        name: updateData.name,
+        department_id: updateData.department_id
+      });
+      
+      return await this._getSubjectWithAssociations(subjectId);
+    } catch (error) {
+      throw ApiError.badRequest("Error updating subject", error);
+    }
+  }
+
+  async getAll({
+    page = 1,
+    limit = 10,
+    sortBy = "name",
+    sortOrder = "ASC",
+    query = {
+      idQuery: "",
+      nameQuery: "",
+      departmentQuery: ""
+    }
+  }) {
+    try {
+      const offset = (page - 1) * limit;
+
+      const where = {};
+
+      if (query.nameQuery) {
+        where.name = { [Op.iLike]: `%${query.nameQuery}%` };
+      }
+      // idQuery с явным приведением типа
+      if (query.idQuery) {
+        where[Op.and] = [
+          Sequelize.where(
+            Sequelize.cast(Sequelize.col("Subject.id"), "TEXT"),
+            {
+              [Op.iLike]: `%${query.idQuery}%`,
+            }
+          ),
+        ];
+      }
+      const include = [
+        {
+          model: Department,
+          as: 'department',
+          attributes: ['id', 'name', 'full_name'],
+          required: !!query.departmentQuery,
+          where: query.departmentQuery ? {
+            [Op.or]: [
+              { name: { [Op.iLike]: `%${query.departmentQuery}%` }},
+              { full_name: { [Op.iLike]: `%${query.departmentQuery}%` }}
+            ]
+          } : undefined
+        }
+      ];
+
+      const { count, rows } = await Subject.findAndCountAll({
+        where,
+        include,
+        order: [[sortBy, sortOrder]],
+        limit,
+        offset,
+        distinct: true
+      });
+
+      return {
+        data: rows,
+        meta: {
+          currentPage: page,
+          perPage: limit,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+          hasNextPage: page * limit < count,
+          hasPreviousPage: page > 1,
+        },
+      };
+    } catch (error) {
+      throw ApiError.internal("Error fetching subjects: " + error.message);
+    }
+  }
+
+  async delete(subjectId) {
+    try {
+      const subject = await Subject.findByPk(subjectId);
+      if (!subject) {
+        return null;
+      }
+      await subject.destroy();
+      return subject;
+    } catch (error) {
+      throw ApiError.internal("Error deleting subject: " + error.message);
+    }
+  }
+
+  async getById(subjectId) {
+    try {
+      const subject = await this._getSubjectWithAssociations(subjectId);
+      
+      if (!subject) {
+        throw ApiError.notFound(`Subject with ID ${subjectId} not found`);
+      }
+      
+      return subject;
+    } catch (error) {
+      throw ApiError.internal("Error fetching subject: " + error.message);
+    }
+  }
+
+  async _getSubjectWithAssociations(subjectId) {
+    return await Subject.findByPk(subjectId, {
+      include: [
+        {
+          model: Department,
+          as: 'department',
+          attributes: ['id', 'name', 'full_name']
+        }
+      ]
+    });
+  }
 }
 
-module.exports = new FacultyServer();
+module.exports = new SubjectService();

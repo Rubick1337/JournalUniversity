@@ -18,6 +18,12 @@ initializeRoute('group', 'group');
 initializeRoute('subgroup', 'subgroup');
 initializeRoute('academicSpecialty', 'academicSpecialty');
 initializeRoute('faculty', 'faculty');
+initializeRoute('department', 'department');
+initializeRoute('subject', 'subject');
+initializeRoute('teacherPosition', 'teacherPosition');
+initializeRoute('teacher', 'teacher');
+initializeRoute('educationForm', 'educationForm');
+initializeRoute('curriculum', 'curriculum');
 
 
 module.exports = router;

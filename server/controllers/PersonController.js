@@ -39,6 +39,7 @@ class PersonController {
         page = 1,
         sortBy = "surname",
         sortOrder = "ASC",
+        idQuery = "",
         surnameQuery = "",
         nameQuery = "",
         middlenameQuery = "",
@@ -53,6 +54,7 @@ class PersonController {
         sortBy,
         sortOrder,
         query: {
+          idQuery,
           surnameQuery,
           nameQuery,
           middlenameQuery,
