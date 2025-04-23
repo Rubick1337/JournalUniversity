@@ -2,6 +2,7 @@ const departmentRouter = require('express').Router();
 const departmentController = require('../controllers/DepartmentController');
 // const authMiddleware = require('../middleware/AuthMiddleware')
 const NAME_OF_ID_DEPARTMENT_PARAM = 'departmentId'
+//TODO validate
 
 departmentRouter.get(`/getAll`, departmentController.getAll);
 departmentRouter.get(`/getById/:${NAME_OF_ID_DEPARTMENT_PARAM}`, departmentController.getById);

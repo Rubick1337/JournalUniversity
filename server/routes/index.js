@@ -20,6 +20,7 @@ initializeRoute('academicSpecialty', 'academicSpecialty');
 initializeRoute('faculty', 'faculty');
 initializeRoute('department', 'department');
 initializeRoute('subject', 'subject');
+initializeRoute('teacherPosition', 'teacherPosition');
 
 
 module.exports = router;

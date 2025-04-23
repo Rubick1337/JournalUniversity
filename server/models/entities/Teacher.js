@@ -7,9 +7,9 @@ const { TeachingPosition } = require("./TeachingPosition");
 
 const Teacher = sequelize.define("Teacher", {
   id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
+    autoIncrement: true
   },
 
   person_id: {
@@ -29,7 +29,7 @@ const Teacher = sequelize.define("Teacher", {
     allowNull: false,
   },
   teaching_position_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: TeachingPosition,
       key: "id",

@@ -34,7 +34,7 @@ function App() {
           <a href="faculties">Факультеты</a>
           <a href="departament">Кафедры</a>
           <a href="discipline">Предметы</a>
-          <a href="specilization">Должности преподователей</a>
+          <a href="positions">Должности преподователей</a>
           <a href="specilization">Преподователи</a>
 
           <a href="specilization">Направления подготовки</a>
