@@ -24,22 +24,22 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-    fetchTeacherPositions,
-    addTeacherPosition,
-    updateTeacherPosition,
-    deleteTeacherPosition,
+    fetchEducationForms,
+    addEducationForm,
+    updateEducationForm,
+    deleteEducationForm,
     clearErrors,
-    clearCurrentPosition
-} from '../../store/slices/teacherPositionSlice';
+    clearCurrentForm
+} from '../../store/slices/educationFormSlice';
 
-const TeacherPositionsTable = () => {
+const EducationFormsTable = () => {
     const dispatch = useDispatch();
     const {
-        data: positionsData,
+        data: formsData,
         isLoading,
         errors,
-        currentPosition
-    } = useSelector(state => state.teacherPositions);
+        currentForm
+    } = useSelector(state => state.educationForms);
 
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
@@ -50,8 +50,8 @@ const TeacherPositionsTable = () => {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
-    const [newPosition, setNewPosition] = useState({ name: '' });
-    const [editPosition, setEditPosition] = useState({ name: '' });
+    const [newForm, setNewForm] = useState({ name: '' });
+    const [editForm, setEditForm] = useState({ name: '' });
     const [alertState, setAlertState] = useState({
         open: false,
         message: '',
@@ -59,7 +59,7 @@ const TeacherPositionsTable = () => {
     });
 
     useEffect(() => {
-        dispatch(fetchTeacherPositions());
+        dispatch(fetchEducationForms());
     }, [dispatch]);
 
     useEffect(() => {
@@ -79,7 +79,7 @@ const TeacherPositionsTable = () => {
             message,
             severity
         });
-        setTimeout(() => setAlertState(prev => ({ ...prev, open: false })), 3000);
+        setTimeout(() => setAlertState(prev => ({ ...prev, open: false }), 3000));
     };
 
     const handleSearchNameChange = (event) => {
@@ -104,7 +104,7 @@ const TeacherPositionsTable = () => {
     };
 
     const handleEdit = () => {
-        setEditPosition(currentRow);
+        setEditForm(currentRow);
         setOpenEditModal(true);
         handleMenuClose();
     };
@@ -115,7 +115,7 @@ const TeacherPositionsTable = () => {
     };
 
     const handleAdd = () => {
-        setNewPosition({ name: '' });
+        setNewForm({ name: '' });
         setOpenAddModal(true);
     };
 
@@ -123,51 +123,51 @@ const TeacherPositionsTable = () => {
         setOpenEditModal(false);
         setOpenDeleteModal(false);
         setOpenAddModal(false);
-        dispatch(clearCurrentPosition());
+        dispatch(clearCurrentForm());
     };
 
     const handleSaveEdit = () => {
-        if (!editPosition.name) {
-            showAlert('Название должности должно быть заполнено!', 'error');
+        if (!editForm.name) {
+            showAlert('Название формы обучения должно быть заполнено!', 'error');
             return;
         }
 
-        dispatch(updateTeacherPosition({
-            id: editPosition.id,
-            positionData: { name: editPosition.name }
+        dispatch(updateEducationForm({
+            id: editForm.id,
+            formData: { name: editForm.name }
         }))
             .then(() => {
-                showAlert('Должность успешно обновлена!', 'success');
+                showAlert('Форма обучения успешно обновлена!', 'success');
                 handleCloseModals();
             });
     };
 
     const handleSaveAdd = () => {
-        if (!newPosition.name) {
-            showAlert('Название должности должно быть заполнено!', 'error');
+        if (!newForm.name) {
+            showAlert('Название формы обучения должно быть заполнено!', 'error');
             return;
         }
 
-        dispatch(addTeacherPosition({ name: newPosition.name }))
+        dispatch(addEducationForm({ name: newForm.name }))
             .then(() => {
-                showAlert('Должность успешно добавлена!', 'success');
+                showAlert('Форма обучения успешно добавлена!', 'success');
                 handleCloseModals();
             });
     };
 
     const handleDeleteConfirm = () => {
-        dispatch(deleteTeacherPosition(currentRow.id))
+        dispatch(deleteEducationForm(currentRow.id))
             .then(() => {
-                showAlert('Должность успешно удалена!', 'success');
+                showAlert('Форма обучения успешно удалена!', 'success');
                 handleCloseModals();
             });
     };
 
-    const filteredData = positionsData.filter(position => {
-        return position.name.toLowerCase().includes(searchName.toLowerCase());
+    const filteredData = formsData.filter(form => {
+        return form.name.toLowerCase().includes(searchName.toLowerCase());
     });
 
-    if (isLoading && positionsData.length === 0) {
+    if (isLoading && formsData.length === 0) {
         return (
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                 <CircularProgress />
@@ -179,7 +179,7 @@ const TeacherPositionsTable = () => {
         <>
             <TableContainer component={Paper}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-                    <Typography variant="h6">Должности учителей</Typography>
+                    <Typography variant="h6">Формы обучения</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <IconButton onClick={handleSearchMenuClick}>
                             <SearchIcon />
@@ -210,11 +210,11 @@ const TeacherPositionsTable = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(position => (
-                            <TableRow key={position.id}>
-                                <TableCell>{position.name}</TableCell>
+                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(form => (
+                            <TableRow key={form.id}>
+                                <TableCell>{form.name}</TableCell>
                                 <TableCell>
-                                    <IconButton onClick={(e) => handleMenuClick(e, position)}>
+                                    <IconButton onClick={(e) => handleMenuClick(e, form)}>
                                         <MoreVertIcon />
                                     </IconButton>
                                 </TableCell>
@@ -261,9 +261,9 @@ const TeacherPositionsTable = () => {
                             alignItems: 'center'
                         }}>
                             <Typography variant="h6">
-                                {openEditModal && "Редактировать должность"}
-                                {openDeleteModal && "Удалить должность"}
-                                {openAddModal && "Добавить новую должность"}
+                                {openEditModal && "Редактировать форму обучения"}
+                                {openDeleteModal && "Удалить форму обучения"}
+                                {openAddModal && "Добавить новую форму обучения"}
                             </Typography>
                             <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
                                 <CloseIcon />
@@ -273,11 +273,11 @@ const TeacherPositionsTable = () => {
                             {openEditModal && (
                                 <div>
                                     <TextField
-                                        label="Название должности*"
+                                        label="Название формы обучения*"
                                         fullWidth
                                         margin="normal"
-                                        value={editPosition.name}
-                                        onChange={(e) => setEditPosition({ ...editPosition, name: e.target.value })}
+                                        value={editForm.name}
+                                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
@@ -293,7 +293,7 @@ const TeacherPositionsTable = () => {
                             )}
                             {openDeleteModal && (
                                 <div>
-                                    <Typography>Вы уверены, что хотите удалить должность "{currentRow?.name}"?</Typography>
+                                    <Typography>Вы уверены, что хотите удалить форму обучения "{currentRow?.name}"?</Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
                                         <Button
@@ -309,11 +309,11 @@ const TeacherPositionsTable = () => {
                             {openAddModal && (
                                 <div>
                                     <TextField
-                                        label="Название должности*"
+                                        label="Название формы обучения*"
                                         fullWidth
                                         margin="normal"
-                                        value={newPosition.name}
-                                        onChange={(e) => setNewPosition({ name: e.target.value })}
+                                        value={newForm.name}
+                                        onChange={(e) => setNewForm({ name: e.target.value })}
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
@@ -340,7 +340,7 @@ const TeacherPositionsTable = () => {
                     startIcon={<AddCircleOutlineIcon />}
                     disabled={isLoading}
                 >
-                    Добавить должность
+                    Добавить форму обучения
                 </Button>
             </Box>
 
@@ -363,4 +363,4 @@ const TeacherPositionsTable = () => {
     );
 };
 
-export default TeacherPositionsTable;
+export default EducationFormsTable;
