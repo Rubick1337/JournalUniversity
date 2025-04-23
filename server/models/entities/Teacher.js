@@ -13,7 +13,7 @@ const Teacher = sequelize.define("Teacher", {
   },
 
   person_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Person,
       key: "id",
@@ -21,7 +21,7 @@ const Teacher = sequelize.define("Teacher", {
     allowNull: false,
   },
   department_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Department,
       key: "id",

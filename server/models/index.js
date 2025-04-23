@@ -94,14 +94,32 @@ AcademicSpecialty.hasMany(Curriculum, { foreignKey: "specialty_code" });
 Curriculum.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
 
 //Teacher
-Person.hasMany(Teacher, { foreignKey: 'person_id' });
-Teacher.belongsTo(Person, { foreignKey: 'person_id' });
-Department.hasMany(Teacher, { foreignKey: 'department_id' });
-Teacher.belongsTo(Department, { foreignKey: 'department_id' });
-TeachingPosition.hasMany(Teacher, { foreignKey: 'teaching_position_id' });
-Teacher.belongsTo(TeachingPosition, { foreignKey: 'teaching_position_id' });
+Person.hasMany(Teacher, { 
+  foreignKey: 'person_id',
+  as: 'teachers'
+});
+Teacher.belongsTo(Person, { 
+  foreignKey: 'person_id',
+  as: 'person'
+});
 
+Department.hasMany(Teacher, { 
+  foreignKey: 'department_id',
+  as: 'teachers' 
+});
+Teacher.belongsTo(Department, { 
+  foreignKey: 'department_id',
+  as: 'department'
+});
 
+TeachingPosition.hasMany(Teacher, { 
+  foreignKey: 'teaching_position_id',
+  as: 'teachers' 
+});
+Teacher.belongsTo(TeachingPosition, { 
+  foreignKey: 'teaching_position_id',
+  as: 'teachingPosition'
+});
 // //TODO связи
 // Group.hasMany(Absenteeism, { foreignKey: "group_id" });
 // Absenteeism.belongsTo(Group, { foreignKey: "group_id" });

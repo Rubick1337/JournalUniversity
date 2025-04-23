@@ -21,6 +21,7 @@ initializeRoute('faculty', 'faculty');
 initializeRoute('department', 'department');
 initializeRoute('subject', 'subject');
 initializeRoute('teacherPosition', 'teacherPosition');
+initializeRoute('teacher', 'teacher');
 
 
 module.exports = router;
