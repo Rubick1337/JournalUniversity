@@ -126,20 +126,25 @@ const TeacherPositionsTable = () => {
         dispatch(clearCurrentPosition());
     };
 
-    const handleSaveEdit = () => {
+    const handleSaveEdit = async () => {
         if (!editPosition.name) {
             showAlert('Название должности должно быть заполнено!', 'error');
             return;
         }
 
-        dispatch(updateTeacherPosition({
-            id: editPosition.id,
-            positionData: { name: editPosition.name }
-        }))
-            .then(() => {
-                showAlert('Должность успешно обновлена!', 'success');
-                handleCloseModals();
-            });
+        try {
+            await dispatch(updateTeacherPosition({
+                id: editPosition.id,
+                positionData: { name: editPosition.name }
+            })).unwrap();
+
+            await dispatch(fetchTeacherPositions());
+
+            showAlert('Должность успешно обновлена!', 'success');
+            handleCloseModals();
+        } catch (error) {
+            showAlert(error.message || 'Ошибка при обновлении', 'error');
+        }
     };
 
     const handleSaveAdd = () => {
