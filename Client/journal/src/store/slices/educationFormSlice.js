@@ -4,10 +4,21 @@ import EducationFormService from '../../services/EducationFormService';
 // Асинхронные действия
 export const fetchEducationForms = createAsyncThunk(
     'educationForms/fetchEducationForms',
-    async (_, { rejectWithValue }) => {
+    async (params = {}, { rejectWithValue }) => {
         try {
-            const response = await EducationFormService.getAlls();
-            return response;
+            const { limit = 10, page = 1, ...otherParams } = params;
+            const response = await EducationFormService.getAlls(
+                limit,
+                page,
+                otherParams.sortBy,
+                otherParams.sortOrder,
+                otherParams.idQuery,
+                otherParams.nameQuery
+            );
+            return {
+                data: response.data,
+                totalCount: response.totalCount // Предполагается, что API возвращает общее количество
+            };
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
@@ -88,7 +99,8 @@ const educationFormSlice = createSlice({
             })
             .addCase(fetchEducationForms.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.data = action.payload;
+                state.data = action.payload.data;
+                state.totalCount = action.payload.totalCount;
             })
             .addCase(fetchEducationForms.rejected, (state, action) => {
                 state.isLoading = false;
