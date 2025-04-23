@@ -39,9 +39,8 @@ function App() {
 
           <a href="specilization">Направления подготовки</a>
           <a href="TODO">Формы подготовки</a>
-
           <a href="specilization">Учебный планы</a>
-          <a href="specilization">Рабочие программы</a>
+          <a href="curriculum">Рабочие программы</a>
 
           <a href="specilization">Группы</a>
           <a href="specilization">Подгруппы</a>
@@ -68,7 +67,7 @@ function App() {
           <Route path="/discipline" element={<DisciplinesTablePage />} />
           <Route path="/tablegroups" element={<GroupTablePage />} />
           <Route path="*" element={<NotFoundPage />} />
-          <Route path="/curriculum" element={<StudentRaitingPage />} />
+          <Route path="/raiting" element={<StudentRaitingPage />} />
           <Route path="/infolesson/:id" element={<InfoLessonPage />} />
           <Route path="/personinfo" element={<ContactTablePage />} />
           <Route path={"/positions"} element={<PositionTeacherPage />} />
