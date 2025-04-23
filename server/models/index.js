@@ -18,6 +18,7 @@ const {
   AcademicBuilding,
   Audience,
   EducationForm,
+  CurriculumSubject
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
@@ -137,6 +138,30 @@ EducationForm.hasMany(Curriculum, {
 Curriculum.belongsTo(EducationForm, { 
   foreignKey: "education_form_id",
   as: "EducationForm"   
+});
+
+// CurriculumSubject associations
+Curriculum.belongsToMany(Subject, {
+  through: CurriculumSubject,
+  foreignKey: 'curriculum_id',
+  as: 'subjects'
+});
+
+Subject.belongsToMany(Curriculum, {
+  through: CurriculumSubject,
+  foreignKey: 'subject_id',
+  as: 'curricula'
+});
+
+// Связь с AssessmentType
+CurriculumSubject.belongsTo(AssessmentType, {
+  foreignKey: 'assessment_type_id',
+  as: 'assessmentType'
+});
+
+AssessmentType.hasMany(CurriculumSubject, {
+  foreignKey: 'assessment_type_id',
+  as: 'curriculumSubjects'
 });
 
 // //TODO связи

@@ -25,6 +25,7 @@ initializeRoute('teacher', 'teacher');
 initializeRoute('educationForm', 'educationForm');
 initializeRoute('curriculum', 'curriculum');
 initializeRoute('assessmentType', 'assessmentType');
+initializeRoute('curriculumSubject', 'curriculumSubject');
 
 
 module.exports = router;

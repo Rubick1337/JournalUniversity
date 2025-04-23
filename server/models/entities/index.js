@@ -22,6 +22,7 @@ const {
 } = require("./AssessmentType");
 
 const { Curriculum } = require("./Curriculum");
+const { CurriculumSubject } = require("./CurriculumSubject");
 const { Teacher } = require("./Teacher");
 const { AcademicBuilding } = require("./AcademicBuilding");
 const { Audience } = require("./Audience");
@@ -67,7 +68,8 @@ module.exports = {
   Teacher,
   AcademicBuilding,
   Audience,
-  EducationForm
+  EducationForm,
+  CurriculumSubject,
   // Absenteeism,
   // AcademicPerformance,
   // Grade,
