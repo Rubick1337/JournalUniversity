@@ -287,7 +287,7 @@ module.exports = {
   AcademicBuilding,
   Audience,
   EducationForm,
-
+  // CurriculumSubject
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
