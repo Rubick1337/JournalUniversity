@@ -11,6 +11,8 @@ const {
 class CurriculumSubjectService {
   async create(curriculumId, data) {
     try {
+      console.log("TESTE", curriculumId);
+      console.log("TESTE", data);
       const curriculumSubject = await CurriculumSubject.create({
         curriculum_id: curriculumId,
         subject_id: data.subject_id,
