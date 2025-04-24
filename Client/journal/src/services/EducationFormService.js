@@ -38,9 +38,9 @@ class EducationFormService extends BaseService {
     return response;
   }
 
-  async getAlls(limit, page,sortBy, sortOrder, idQuery, nameQuery ) {
+  async getAlls({limit, page,sortBy, sortOrder, idQuery, nameQuery} ) {
     //TODO query params
-    
+      console.log("TESTSET")
     let endpoint = API_ENDPOINTS.EDUCATION_FORM.GETALL;
 
     endpoint = addParamInEndpoint(endpoint, "limit", limit);
@@ -49,10 +49,10 @@ class EducationFormService extends BaseService {
     endpoint = addParamInEndpoint(endpoint, "sortOrder", sortOrder);
     endpoint = addParamInEndpoint(endpoint, "idQuery", idQuery);
     endpoint = addParamInEndpoint(endpoint, "nameQuery", nameQuery);
-
+    console.log("TEST",endpoint)
     const response = await BaseService.request(
       "get",
-      API_ENDPOINTS.EDUCATION_FORM.GETALL
+      endpoint
     );
     return response;
   }

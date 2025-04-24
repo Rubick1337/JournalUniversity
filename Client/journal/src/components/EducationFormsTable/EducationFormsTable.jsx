@@ -30,7 +30,9 @@ import {
     updateEducationForm,
     deleteEducationForm,
     clearErrors,
-    clearCurrentForm
+    clearCurrentForm,
+    setPage,
+    setLimit
 } from '../../store/slices/educationFormSlice';
 
 const EducationFormsTable = () => {
@@ -40,11 +42,9 @@ const EducationFormsTable = () => {
         isLoading,
         errors,
         currentForm,
-        totalCount
+        meta
     } = useSelector(state => state.educationForms);
 
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchName, setSearchName] = useState('');
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
     const [anchorEl, setAnchorEl] = useState(null);
@@ -59,19 +59,18 @@ const EducationFormsTable = () => {
         message: '',
         severity: 'success'
     });
-    const [orderBy, setOrderBy] = useState('name');
+    const [orderBy, setOrderBy] = useState('id');
     const [order, setOrder] = useState('asc');
 
     useEffect(() => {
-        console.log(rowsPerPage,page+1,searchName,orderBy,order)
         dispatch(fetchEducationForms({
-            limit: rowsPerPage,
-            page: page + 1,
+            limit: meta.limit,
+            page: meta.page,
             nameQuery: searchName,
             sortBy: orderBy,
             sortOrder: order
         }));
-    }, [dispatch, page, rowsPerPage, searchName, orderBy, order]);
+    }, [dispatch, meta.limit, meta.page, searchName, orderBy, order]);
 
     useEffect(() => {
         if (errors.length > 0) {
@@ -93,6 +92,16 @@ const EducationFormsTable = () => {
         setTimeout(() => setAlertState(prev => ({ ...prev, open: false })), 3000);
     };
 
+    const handleChangePage = (event, newPage) => {
+        dispatch(setPage(newPage + 1)); // MUI pages are 0-based, API is 1-based
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        const newLimit = parseInt(event.target.value, 10);
+        dispatch(setLimit(newLimit));
+        dispatch(setPage(1)); // Reset to first page when changing rows per page
+    };
+
     const handleSearchMenuClick = (event) => {
         setSearchAnchorEl(event.currentTarget);
     };
@@ -105,10 +114,11 @@ const EducationFormsTable = () => {
         setSearchName(event.target.value);
     };
 
-    const handleSortRequest = () => {
-        const isAsc = order === 'asc';
+    const handleSortRequest = (property) => {
+        const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
-        setPage(0);
+        setOrderBy(property);
+        dispatch(setPage(1)); // Reset to first page when changing sort
     };
 
     const handleMenuClick = (event, row) => {
@@ -158,8 +168,8 @@ const EducationFormsTable = () => {
             showAlert('Форма обучения успешно обновлена!', 'success');
             handleCloseModals();
             dispatch(fetchEducationForms({
-                limit: rowsPerPage,
-                page: page + 1,
+                limit: meta.limit,
+                page: meta.page,
                 nameQuery: searchName,
                 sortBy: orderBy,
                 sortOrder: order
@@ -179,9 +189,9 @@ const EducationFormsTable = () => {
             await dispatch(addEducationForm({ name: newForm.name })).unwrap();
             showAlert('Форма обучения успешно добавлена!', 'success');
             handleCloseModals();
-            setPage(0);
+            dispatch(setPage(1)); // Reset to first page after adding
             dispatch(fetchEducationForms({
-                limit: rowsPerPage,
+                limit: meta.limit,
                 page: 1,
                 nameQuery: searchName,
                 sortBy: orderBy,
@@ -197,15 +207,19 @@ const EducationFormsTable = () => {
             await dispatch(deleteEducationForm(currentRow.id)).unwrap();
             showAlert('Форма обучения успешно удалена!', 'success');
             handleCloseModals();
-            const newPage = formsData.length <= 1 && page > 0 ? page - 1 : page;
-            setPage(newPage);
-            dispatch(fetchEducationForms({
-                limit: rowsPerPage,
-                page: newPage + 1,
-                nameQuery: searchName,
-                sortBy: orderBy,
-                sortOrder: order
-            }));
+            
+            // Check if we need to go to previous page
+            if (formsData.length === 1 && meta.page > 1) {
+                dispatch(setPage(meta.page - 1));
+            } else {
+                dispatch(fetchEducationForms({
+                    limit: meta.limit,
+                    page: meta.page,
+                    nameQuery: searchName,
+                    sortBy: orderBy,
+                    sortOrder: order
+                }));
+            }
         } catch (error) {
             showAlert(error.message || 'Ошибка при удалении формы обучения', 'error');
         }
@@ -256,12 +270,20 @@ const EducationFormsTable = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>ID</TableCell>
                             <TableCell>
                                 <TableSortLabel
-                                    active={true}
-                                    direction={order}
-                                    onClick={handleSortRequest}
+                                    active={orderBy === 'id'}
+                                    direction={orderBy === 'id' ? order : 'asc'}
+                                    onClick={() => handleSortRequest('id')}
+                                >
+                                    ID
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'name'}
+                                    direction={orderBy === 'name' ? order : 'asc'}
+                                    onClick={() => handleSortRequest('name')}
                                 >
                                     Наименование
                                 </TableSortLabel>
@@ -287,14 +309,11 @@ const EducationFormsTable = () => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={totalCount || 0}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
-                        setPage(0);
-                    }}
+                    count={meta.total || 0}
+                    rowsPerPage={meta.limit}
+                    page={meta.page - 1} // Convert to 0-based for MUI
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
                     labelRowsPerPage="Записей на странице:"
                     labelDisplayedRows={({ from, to, count }) => `${from}-${to} из ${count}`}
                 />
