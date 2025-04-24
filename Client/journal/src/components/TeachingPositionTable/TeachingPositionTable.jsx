@@ -147,18 +147,24 @@ const TeacherPositionsTable = () => {
         }
     };
 
-    const handleSaveAdd = () => {
+    const handleSaveAdd = async () => {
         if (!newPosition.name) {
             showAlert('Название должности должно быть заполнено!', 'error');
             return;
         }
 
-        dispatch(addTeacherPosition({ name: newPosition.name }))
-            .then(() => {
-                showAlert('Должность успешно добавлена!', 'success');
-                handleCloseModals();
-            });
+        try {
+            await dispatch(addTeacherPosition({ name: newPosition.name })).unwrap();
+
+            await dispatch(fetchTeacherPositions());
+
+            showAlert('Должность успешно добавлена!', 'success');
+            handleCloseModals();
+        } catch (error) {
+            showAlert(error.message || 'Ошибка при добавлении', 'error');
+        }
     };
+
 
     const handleDeleteConfirm = () => {
         dispatch(deleteTeacherPosition(currentRow.id))
@@ -168,8 +174,9 @@ const TeacherPositionsTable = () => {
             });
     };
 
-    const filteredData = positionsData.filter(position => {
-        return position.name.toLowerCase().includes(searchName.toLowerCase());
+    const filteredData = (positionsData || []).filter(position => {
+        const positionName = position?.name || '';
+        return positionName.toLowerCase().includes(searchName.toLowerCase());
     });
 
     if (isLoading && positionsData.length === 0) {

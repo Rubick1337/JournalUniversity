@@ -6,15 +6,14 @@ export const fetchEducationForms = createAsyncThunk(
     'educationForms/fetchEducationForms',
     async (params = {}, { rejectWithValue }) => {
         try {
-            const { limit = 10, page = 1, ...otherParams } = params;
+            const { limit = 10, page = 1,  } = params;
             const response = await EducationFormService.getAlls(
                 limit,
                 page,
-                otherParams.sortBy,
-                otherParams.sortOrder,
-                otherParams.idQuery,
-                otherParams.nameQuery
+                nameQuery,
             );
+            console.log("Redux")
+            console.log(response);
             return {
                 data: response.data,
                 totalCount: response.totalCount // Предполагается, что API возвращает общее количество

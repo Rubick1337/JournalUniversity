@@ -63,6 +63,7 @@ const EducationFormsTable = () => {
     const [order, setOrder] = useState('asc');
 
     useEffect(() => {
+        console.log(rowsPerPage,page+1,searchName,orderBy,order)
         dispatch(fetchEducationForms({
             limit: rowsPerPage,
             page: page + 1,
