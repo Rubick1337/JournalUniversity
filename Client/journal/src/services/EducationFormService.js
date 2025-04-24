@@ -54,7 +54,7 @@ class EducationFormService extends BaseService {
       "get",
       API_ENDPOINTS.EDUCATION_FORM.GETALL
     );
-    return response.data;
+    return response;
   }
 
   async getById(id) {
