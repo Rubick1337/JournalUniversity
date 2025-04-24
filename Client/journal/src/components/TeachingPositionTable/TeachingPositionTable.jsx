@@ -17,7 +17,8 @@ import {
     Modal,
     Box,
     Button,
-    CircularProgress
+    CircularProgress,
+    TableSortLabel
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
@@ -29,7 +30,9 @@ import {
     updateTeacherPosition,
     deleteTeacherPosition,
     clearErrors,
-    clearCurrentPosition
+    clearCurrentPosition,
+    setPage,
+    setLimit
 } from '../../store/slices/teacherPositionSlice';
 
 const TeacherPositionsTable = () => {
@@ -38,14 +41,13 @@ const TeacherPositionsTable = () => {
         data: positionsData,
         isLoading,
         errors,
-        currentPosition
+        currentPosition,
+        meta
     } = useSelector(state => state.teacherPositions);
 
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
     const [searchName, setSearchName] = useState('');
-    const [anchorEl, setAnchorEl] = useState(null);
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
@@ -57,10 +59,18 @@ const TeacherPositionsTable = () => {
         message: '',
         severity: 'success'
     });
+    const [orderBy, setOrderBy] = useState('id');
+    const [order, setOrder] = useState('asc');
 
     useEffect(() => {
-        dispatch(fetchTeacherPositions());
-    }, [dispatch]);
+        dispatch(fetchTeacherPositions({
+            limit: meta?.limit || 5,
+            page: meta?.page || 1,
+            nameQuery: searchName,
+            sortBy: orderBy,
+            sortOrder: order
+        }));
+    }, [dispatch, meta?.limit, meta?.page, searchName, orderBy, order]);
 
     useEffect(() => {
         if (errors.length > 0) {
@@ -82,8 +92,33 @@ const TeacherPositionsTable = () => {
         setTimeout(() => setAlertState(prev => ({ ...prev, open: false })), 3000);
     };
 
+    const handleChangePage = (event, newPage) => {
+        dispatch(setPage(newPage + 1)); // MUI pages are 0-based, API is 1-based
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        const newLimit = parseInt(event.target.value, 10);
+        dispatch(setLimit(newLimit));
+        dispatch(setPage(1)); // Reset to first page when changing rows per page
+    };
+
+    const handleSearchMenuClick = (event) => {
+        setSearchAnchorEl(event.currentTarget);
+    };
+
+    const handleSearchMenuClose = () => {
+        setSearchAnchorEl(null);
+    };
+
     const handleSearchNameChange = (event) => {
         setSearchName(event.target.value);
+    };
+
+    const handleSortRequest = (property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+        dispatch(setPage(1)); // Reset to first page when changing sort
     };
 
     const handleMenuClick = (event, row) => {
@@ -93,14 +128,6 @@ const TeacherPositionsTable = () => {
 
     const handleMenuClose = () => {
         setAnchorEl(null);
-    };
-
-    const handleSearchMenuClick = (event) => {
-        setSearchAnchorEl(event.currentTarget);
-    };
-
-    const handleSearchMenuClose = () => {
-        setSearchAnchorEl(null);
     };
 
     const handleEdit = () => {
@@ -127,7 +154,7 @@ const TeacherPositionsTable = () => {
     };
 
     const handleSaveEdit = async () => {
-        if (!editPosition.name) {
+        if (!editPosition.name?.trim()) {
             showAlert('Название должности должно быть заполнено!', 'error');
             return;
         }
@@ -138,46 +165,65 @@ const TeacherPositionsTable = () => {
                 positionData: { name: editPosition.name }
             })).unwrap();
 
-            await dispatch(fetchTeacherPositions());
-
             showAlert('Должность успешно обновлена!', 'success');
             handleCloseModals();
+            dispatch(fetchTeacherPositions({
+                limit: meta.limit,
+                page: meta.page,
+                nameQuery: searchName,
+                sortBy: orderBy,
+                sortOrder: order
+            }));
         } catch (error) {
-            showAlert(error.message || 'Ошибка при обновлении', 'error');
+            showAlert(error.message || 'Ошибка при обновлении должности', 'error');
         }
     };
 
     const handleSaveAdd = async () => {
-        if (!newPosition.name) {
+        if (!newPosition.name?.trim()) {
             showAlert('Название должности должно быть заполнено!', 'error');
             return;
         }
 
         try {
             await dispatch(addTeacherPosition({ name: newPosition.name })).unwrap();
-
-            await dispatch(fetchTeacherPositions());
-
             showAlert('Должность успешно добавлена!', 'success');
             handleCloseModals();
+            dispatch(setPage(1)); // Reset to first page after adding
+            dispatch(fetchTeacherPositions({
+                limit: meta.limit,
+                page: 1,
+                nameQuery: searchName,
+                sortBy: orderBy,
+                sortOrder: order
+            }));
         } catch (error) {
-            showAlert(error.message || 'Ошибка при добавлении', 'error');
+            showAlert(error.message || 'Ошибка при добавлении должности', 'error');
         }
     };
 
+    const handleDeleteConfirm = async () => {
+        try {
+            await dispatch(deleteTeacherPosition(currentRow.id)).unwrap();
+            showAlert('Должность успешно удалена!', 'success');
+            handleCloseModals();
 
-    const handleDeleteConfirm = () => {
-        dispatch(deleteTeacherPosition(currentRow.id))
-            .then(() => {
-                showAlert('Должность успешно удалена!', 'success');
-                handleCloseModals();
-            });
+            // Check if we need to go to previous page
+            if (positionsData.length === 1 && meta.page > 1) {
+                dispatch(setPage(meta.page - 1));
+            } else {
+                dispatch(fetchTeacherPositions({
+                    limit: meta.limit,
+                    page: meta.page,
+                    nameQuery: searchName,
+                    sortBy: orderBy,
+                    sortOrder: order
+                }));
+            }
+        } catch (error) {
+            showAlert(error.message || 'Ошибка при удалении должности', 'error');
+        }
     };
-
-    const filteredData = (positionsData || []).filter(position => {
-        const positionName = position?.name || '';
-        return positionName.toLowerCase().includes(searchName.toLowerCase());
-    });
 
     if (isLoading && positionsData.length === 0) {
         return (
@@ -200,30 +246,55 @@ const TeacherPositionsTable = () => {
                             anchorEl={searchAnchorEl}
                             open={Boolean(searchAnchorEl)}
                             onClose={handleSearchMenuClose}
+                            PaperProps={{
+                                sx: {
+                                    p: 2,
+                                    width: 300
+                                }
+                            }}
                         >
-                            <Box sx={{ p: 2, width: 300 }}>
-                                <TextField
-                                    label="Поиск по названию"
-                                    variant="outlined"
-                                    size="small"
-                                    fullWidth
-                                    value={searchName}
-                                    onChange={handleSearchNameChange}
-                                />
-                            </Box>
+                            <TextField
+                                label="Поиск по названию"
+                                variant="outlined"
+                                size="small"
+                                fullWidth
+                                value={searchName}
+                                onChange={handleSearchNameChange}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearchMenuClose()}
+                                autoFocus
+                            />
                         </Menu>
                     </Box>
                 </Box>
+
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Наименование</TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'id'}
+                                    direction={orderBy === 'id' ? order : 'asc'}
+                                    onClick={() => handleSortRequest('id')}
+                                >
+                                    ID
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'name'}
+                                    direction={orderBy === 'name' ? order : 'asc'}
+                                    onClick={() => handleSortRequest('name')}
+                                >
+                                    Наименование
+                                </TableSortLabel>
+                            </TableCell>
                             <TableCell>Действия</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(position => (
+                        {positionsData.map(position => (
                             <TableRow key={position.id}>
+                                <TableCell>{position.id}</TableCell>
                                 <TableCell>{position.name}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={(e) => handleMenuClick(e, position)}>
@@ -234,18 +305,19 @@ const TeacherPositionsTable = () => {
                         ))}
                     </TableBody>
                 </Table>
+
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={filteredData.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
-                        setPage(0);
-                    }}
+                    count={meta.total || 0}
+                    rowsPerPage={meta.limit}
+                    page={meta.page - 1} // Convert to 0-based for MUI
+                    onPageChange={handleChangePage}
+                    onRowsPerPageChange={handleChangeRowsPerPage}
+                    labelRowsPerPage="Записей на странице:"
+                    labelDisplayedRows={({ from, to, count }) => `${from}-${to} из ${count}`}
                 />
+
                 <Menu
                     anchorEl={anchorEl}
                     open={Boolean(anchorEl)}
@@ -254,94 +326,6 @@ const TeacherPositionsTable = () => {
                     <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
                     <MenuItem onClick={handleDelete}>Удалить</MenuItem>
                 </Menu>
-                <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
-                    <Box sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: 400,
-                        bgcolor: 'background.paper',
-                        boxShadow: 24
-                    }}>
-                        <Box sx={{
-                            bgcolor: '#1976d2',
-                            color: 'white',
-                            p: 2,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
-                            <Typography variant="h6">
-                                {openEditModal && "Редактировать должность"}
-                                {openDeleteModal && "Удалить должность"}
-                                {openAddModal && "Добавить новую должность"}
-                            </Typography>
-                            <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
-                                <CloseIcon />
-                            </IconButton>
-                        </Box>
-                        <Box sx={{ p: 3 }}>
-                            {openEditModal && (
-                                <div>
-                                    <TextField
-                                        label="Название должности*"
-                                        fullWidth
-                                        margin="normal"
-                                        value={editPosition.name}
-                                        onChange={(e) => setEditPosition({ ...editPosition, name: e.target.value })}
-                                    />
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button
-                                            onClick={handleSaveEdit}
-                                            color="primary"
-                                            disabled={isLoading}
-                                        >
-                                            {isLoading ? <CircularProgress size={24} /> : 'Сохранить'}
-                                        </Button>
-                                    </Box>
-                                </div>
-                            )}
-                            {openDeleteModal && (
-                                <div>
-                                    <Typography>Вы уверены, что хотите удалить должность "{currentRow?.name}"?</Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button
-                                            onClick={handleDeleteConfirm}
-                                            color="error"
-                                            disabled={isLoading}
-                                        >
-                                            {isLoading ? <CircularProgress size={24} /> : 'Удалить'}
-                                        </Button>
-                                    </Box>
-                                </div>
-                            )}
-                            {openAddModal && (
-                                <div>
-                                    <TextField
-                                        label="Название должности*"
-                                        fullWidth
-                                        margin="normal"
-                                        value={newPosition.name}
-                                        onChange={(e) => setNewPosition({ name: e.target.value })}
-                                    />
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button
-                                            onClick={handleSaveAdd}
-                                            color="primary"
-                                            disabled={isLoading}
-                                        >
-                                            {isLoading ? <CircularProgress size={24} /> : 'Добавить'}
-                                        </Button>
-                                    </Box>
-                                </div>
-                            )}
-                        </Box>
-                    </Box>
-                </Modal>
             </TableContainer>
 
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
@@ -356,6 +340,142 @@ const TeacherPositionsTable = () => {
                 </Button>
             </Box>
 
+            {/* Модальное окно редактирования */}
+            <Modal open={openEditModal} onClose={handleCloseModals}>
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 400,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24
+                }}>
+                    <Box sx={{
+                        bgcolor: '#1976d2',
+                        color: 'white',
+                        p: 2,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <Typography variant="h6">Редактировать должность</Typography>
+                        <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+                    <Box sx={{ p: 3 }}>
+                        <TextField
+                            label="Название должности*"
+                            fullWidth
+                            margin="normal"
+                            value={editPosition.name}
+                            onChange={(e) => setEditPosition({ ...editPosition, name: e.target.value })}
+                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                            <Button onClick={handleCloseModals}>Отмена</Button>
+                            <Button
+                                onClick={handleSaveEdit}
+                                color="primary"
+                                disabled={isLoading}
+                                sx={{ ml: 2 }}
+                            >
+                                {isLoading ? <CircularProgress size={24} /> : 'Сохранить'}
+                            </Button>
+                        </Box>
+                    </Box>
+                </Box>
+            </Modal>
+
+            {/* Модальное окно удаления */}
+            <Modal open={openDeleteModal} onClose={handleCloseModals}>
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 400,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24
+                }}>
+                    <Box sx={{
+                        bgcolor: '#1976d2',
+                        color: 'white',
+                        p: 2,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <Typography variant="h6">Удалить должность</Typography>
+                        <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+                    <Box sx={{ p: 3 }}>
+                        <Typography>Вы уверены, что хотите удалить должность "{currentRow?.name}"?</Typography>
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                            <Button onClick={handleCloseModals}>Отмена</Button>
+                            <Button
+                                onClick={handleDeleteConfirm}
+                                color="error"
+                                disabled={isLoading}
+                                sx={{ ml: 2 }}
+                            >
+                                {isLoading ? <CircularProgress size={24} /> : 'Удалить'}
+                            </Button>
+                        </Box>
+                    </Box>
+                </Box>
+            </Modal>
+
+            {/* Модальное окно добавления */}
+            <Modal open={openAddModal} onClose={handleCloseModals}>
+                <Box sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 400,
+                    bgcolor: 'background.paper',
+                    boxShadow: 24
+                }}>
+                    <Box sx={{
+                        bgcolor: '#1976d2',
+                        color: 'white',
+                        p: 2,
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                    }}>
+                        <Typography variant="h6">Добавить новую должность</Typography>
+                        <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+                    <Box sx={{ p: 3 }}>
+                        <TextField
+                            label="Название должности*"
+                            fullWidth
+                            margin="normal"
+                            value={newPosition.name}
+                            onChange={(e) => setNewPosition({ name: e.target.value })}
+                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                            <Button onClick={handleCloseModals}>Отмена</Button>
+                            <Button
+                                onClick={handleSaveAdd}
+                                color="primary"
+                                disabled={isLoading}
+                                sx={{ ml: 2 }}
+                            >
+                                {isLoading ? <CircularProgress size={24} /> : 'Добавить'}
+                            </Button>
+                        </Box>
+                    </Box>
+                </Box>
+            </Modal>
+
+            {/* Уведомления */}
             {alertState.open && (
                 <Box sx={{
                     position: 'fixed',

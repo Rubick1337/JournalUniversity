@@ -4,10 +4,13 @@ import AssessmentTypeService from '../../services/AssessmentTypeService';
 // Асинхронные действия
 export const fetchAssessmentTypes = createAsyncThunk(
     'assessmentTypes/fetchAssessmentTypes',
-    async (_, { rejectWithValue }) => {
+    async (params, { rejectWithValue }) => {
         try {
-            const response = await AssessmentTypeService.getAlls();
-            return response;
+            const response = await AssessmentTypeService.getAlls(params);
+            return {
+                data: response.data,
+                meta: response.meta
+            };
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
@@ -62,7 +65,7 @@ export const getAssessmentTypeById = createAsyncThunk(
     }
 );
 
-// Создаем слайс
+// Slice
 const assessmentTypeSlice = createSlice({
     name: 'assessmentTypes',
     initialState: {
@@ -70,6 +73,12 @@ const assessmentTypeSlice = createSlice({
         currentType: null,
         isLoading: false,
         errors: [],
+        meta: {
+            total: 0,
+            totalPage: 0,
+            limit: 10,
+            page: 1
+        }
     },
     reducers: {
         clearErrors: (state) => {
@@ -78,20 +87,23 @@ const assessmentTypeSlice = createSlice({
         clearCurrentType: (state) => {
             state.currentType = null;
         },
-        setCurrentType: (state, action) => {
-            state.currentType = action.payload;
+        setPage: (state, action) => {
+            state.meta.page = action.payload;
+        },
+        setLimit: (state, action) => {
+            state.meta.limit = action.payload;
         }
     },
     extraReducers: (builder) => {
         builder
-            // Загрузка всех типов оценивания
             .addCase(fetchAssessmentTypes.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
             .addCase(fetchAssessmentTypes.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.data = action.payload;
+                state.data = action.payload.data;
+                state.meta = action.payload.meta;
             })
             .addCase(fetchAssessmentTypes.rejected, (state, action) => {
                 state.isLoading = false;
@@ -100,7 +112,6 @@ const assessmentTypeSlice = createSlice({
                     : [{ message: action.payload }];
             })
 
-            // Добавление типа оценивания
             .addCase(addAssessmentType.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
@@ -108,6 +119,8 @@ const assessmentTypeSlice = createSlice({
             .addCase(addAssessmentType.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data.unshift(action.payload);
+                state.meta.total += 1;
+                state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
             })
             .addCase(addAssessmentType.rejected, (state, action) => {
                 state.isLoading = false;
@@ -116,16 +129,15 @@ const assessmentTypeSlice = createSlice({
                     : [{ message: action.payload }];
             })
 
-            // Обновление типа оценивания
             .addCase(updateAssessmentType.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
             .addCase(updateAssessmentType.fulfilled, (state, action) => {
                 state.isLoading = false;
-                const updatedType = action.payload;
+                const updated = action.payload;
                 state.data = state.data.map(type =>
-                    type.id === updatedType.id ? updatedType : type
+                    type.id === updated.id ? updated : type
                 );
             })
             .addCase(updateAssessmentType.rejected, (state, action) => {
@@ -135,7 +147,6 @@ const assessmentTypeSlice = createSlice({
                     : [{ message: action.payload }];
             })
 
-            // Удаление типа оценивания
             .addCase(deleteAssessmentType.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
@@ -143,6 +154,8 @@ const assessmentTypeSlice = createSlice({
             .addCase(deleteAssessmentType.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data = state.data.filter(type => type.id !== action.payload);
+                state.meta.total -= 1;
+                state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
             })
             .addCase(deleteAssessmentType.rejected, (state, action) => {
                 state.isLoading = false;
@@ -151,7 +164,6 @@ const assessmentTypeSlice = createSlice({
                     : [{ message: action.payload }];
             })
 
-            // Получение типа оценивания по ID
             .addCase(getAssessmentTypeById.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
@@ -166,8 +178,14 @@ const assessmentTypeSlice = createSlice({
                     ? action.payload
                     : [{ message: action.payload }];
             });
-    },
+    }
 });
 
-export const { clearErrors, clearCurrentType, setCurrentType } = assessmentTypeSlice.actions;
+export const {
+    clearErrors,
+    clearCurrentType,
+    setPage,
+    setLimit
+} = assessmentTypeSlice.actions;
+
 export default assessmentTypeSlice.reducer;
