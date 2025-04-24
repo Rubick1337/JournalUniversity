@@ -4,19 +4,12 @@ import EducationFormService from '../../services/EducationFormService';
 // Асинхронные действия
 export const fetchEducationForms = createAsyncThunk(
     'educationForms/fetchEducationForms',
-    async (params = {}, { rejectWithValue }) => {
+    async (params, { rejectWithValue }) => {
         try {
-            const { limit = 10, page = 1,  } = params;
-            const response = await EducationFormService.getAlls(
-                limit,
-                page,
-                nameQuery,
-            );
-            console.log("Redux")
-            console.log(response);
+            const response = await EducationFormService.getAlls(params);
             return {
                 data: response.data,
-                totalCount: response.totalCount // Предполагается, что API возвращает общее количество
+                meta: response.meta // Используем meta из ответа сервера
             };
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -80,6 +73,12 @@ const educationFormSlice = createSlice({
         currentForm: null,
         isLoading: false,
         errors: [],
+        meta: {
+            total: 0,
+            totalPage: 0,
+            limit: 10,
+            page: 1
+        }
     },
     reducers: {
         clearErrors: (state) => {
@@ -87,6 +86,12 @@ const educationFormSlice = createSlice({
         },
         clearCurrentForm: (state) => {
             state.currentForm = null;
+        },
+        setPage: (state, action) => {
+            state.meta.page = action.payload;
+        },
+        setLimit: (state, action) => {
+            state.meta.limit = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -99,7 +104,7 @@ const educationFormSlice = createSlice({
             .addCase(fetchEducationForms.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data = action.payload.data;
-                state.totalCount = action.payload.totalCount;
+                state.meta = action.payload.meta; // Сохраняем метаданные
             })
             .addCase(fetchEducationForms.rejected, (state, action) => {
                 state.isLoading = false;
@@ -116,6 +121,8 @@ const educationFormSlice = createSlice({
             .addCase(addEducationForm.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data.unshift(action.payload);
+                state.meta.total += 1;
+                state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
             })
             .addCase(addEducationForm.rejected, (state, action) => {
                 state.isLoading = false;
@@ -151,6 +158,8 @@ const educationFormSlice = createSlice({
             .addCase(deleteEducationForm.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data = state.data.filter(form => form.id !== action.payload);
+                state.meta.total -= 1;
+                state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
             })
             .addCase(deleteEducationForm.rejected, (state, action) => {
                 state.isLoading = false;
@@ -177,5 +186,11 @@ const educationFormSlice = createSlice({
     },
 });
 
-export const { clearErrors, clearCurrentForm } = educationFormSlice.actions;
+export const { 
+    clearErrors, 
+    clearCurrentForm,
+    setPage,
+    setLimit
+} = educationFormSlice.actions;
+
 export default educationFormSlice.reducer;

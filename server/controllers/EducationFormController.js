@@ -28,7 +28,7 @@ class EducationFormController {
         idQuery = "",
         nameQuery = ""
       } = req.query;
-
+      console.log("TEST", nameQuery)
       const { data, meta } = await EducationFormService.getAll({
         page: parseInt(page),
         limit: parseInt(limit),

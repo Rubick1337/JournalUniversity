@@ -6,34 +6,57 @@ const { AssessmentType } = require("./AssessmentType");
 
 const CurriculumSubject = sequelize.define("CurriculumSubject", {
   curriculum_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
-        model: Curriculum,
-        key: "id",
-      },
+      model: Curriculum,
+      key: "id",
+    },
     primaryKey: true,
   },
   subject_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
-        model: Subject,
-        key: "id",
-      },
+      model: Subject,
+      key: "id",
+    },
     primaryKey: true,
   },
   assessment_type_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: AssessmentType,
-      key: 'id',
+      key: "id",
     },
     primaryKey: true,
   },
   semester: {
     type: DataTypes.INTEGER,
     allowNull: false,
-    primaryKey: true, 
+    primaryKey: true,
   },
+  all_hours: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
+  lecture_hours: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
+  lab_hours: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
+  practice_hours: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
+}, {
+  timestamps: false,
+  tableName: 'CurriculumSubjects',
 });
 
 module.exports = { CurriculumSubject };
