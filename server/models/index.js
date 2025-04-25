@@ -141,130 +141,35 @@ Curriculum.belongsTo(EducationForm, {
 });
 
 // CurriculumSubject associations
-Curriculum.belongsToMany(Subject, {
-  through: CurriculumSubject,
+Curriculum.hasMany(CurriculumSubject, {
   foreignKey: 'curriculum_id',
-  as: 'subjects'
+  as: 'curriculum'
 });
 
-Subject.belongsToMany(Curriculum, {
-  through: CurriculumSubject,
+CurriculumSubject.belongsTo(Curriculum, {
+  foreignKey: 'curriculum_id',
+  as: 'curriculum'
+});
+
+Subject.hasMany(CurriculumSubject, {
   foreignKey: 'subject_id',
-  as: 'curricula'
+  as: 'subject'
 });
 
-// Связь с AssessmentType
-CurriculumSubject.belongsTo(AssessmentType, {
-  foreignKey: 'assessment_type_id',
-  as: 'assessmentType'
+CurriculumSubject.belongsTo(Subject, {
+  foreignKey: 'subject_id',
+  as: 'subject'
 });
 
 AssessmentType.hasMany(CurriculumSubject, {
   foreignKey: 'assessment_type_id',
-  as: 'curriculumSubjects'
+  as: 'assessmentType'
 });
 
-// //TODO связи
-// Group.hasMany(Absenteeism, { foreignKey: "group_id" });
-// Absenteeism.belongsTo(Group, { foreignKey: "group_id" });
-
-// Lesson.hasMany(Absenteeism, { foreignKey: "lesson_id" });
-// Absenteeism.belongsTo(Lesson, { foreignKey: "lesson_id" });
-
-// Student.hasMany(Absenteeism, { foreignKey: "student_id" });
-// Absenteeism.belongsTo(Student, { foreignKey: "student_id" });
-
-// Student.hasMany(AcademicPerformance, { foreignKey: "student_id" });
-// AcademicPerformance.belongsTo(Student, { foreignKey: "student_id" });
-
-// Subject.hasMany(AcademicPerformance, { foreignKey: "subject_id" });
-// AcademicPerformance.belongsTo(Subject, { foreignKey: "subject_id" });
-
-// TotalScoreType.hasMany(AcademicPerformance, { foreignKey: "total_grade_id" });
-// AcademicPerformance.belongsTo(TotalScoreType, { foreignKey: "total_grade_id" });
-
-// Subject.hasMany(Curriculum, { foreignKey: "subject_id" });
-// Curriculum.belongsTo(Subject, { foreignKey: "subject_id" });
-
-// Topic.hasMany(Curriculum, { foreignKey: "topic_id" });
-// Curriculum.belongsTo(Topic, { foreignKey: "topic_id" });
-
-// AssessmentType.hasMany(Curriculum, { foreignKey: "type_of_assessment_id" });
-// Curriculum.belongsTo(AssessmentType, { foreignKey: "type_of_assessment_id" });
-
-// Topic.hasMany(Grade, { foreignKey: "topic_id" });
-// Grade.belongsTo(Topic, { foreignKey: "topic_id" });
-
-// // Student и Grade
-// Student.hasMany(Grade, { foreignKey: "student_id" });
-// Grade.belongsTo(Student, { foreignKey: "student_id" });
-
-// // Lesson и Grade
-// Lesson.hasMany(Grade, { foreignKey: "lesson_id" });
-// Grade.belongsTo(Lesson, { foreignKey: "lesson_id" });
-
-// // Group и Grade
-// Group.hasMany(Grade, { foreignKey: "group_id" });
-// Grade.belongsTo(Group, { foreignKey: "group_id" });
-
-// // PlannedTask и Grade
-// PlannedTask.hasMany(Grade, { foreignKey: "planned_task_id" });
-// Grade.belongsTo(PlannedTask, { foreignKey: "planned_task_id" });
-
-// // Person (учитель-куратор) и Group
-// Person.hasMany(Group, { foreignKey: "teacher_curator_id" });
-// Group.belongsTo(Person, { foreignKey: "teacher_curator_id" });
-
-// Group.belongsToMany(Lesson, { through: 'GroupLesson', foreignKey: 'group_id' });
-// Lesson.belongsToMany(Group, { through: 'GroupLesson', foreignKey: 'lesson_id' });
-
-// Subject.hasMany(Lesson, { foreignKey: 'subject_id' });
-// Lesson.belongsTo(Subject, { foreignKey: 'subject_id' });
-
-// Person.hasMany(Lesson, { foreignKey: 'teacher_person_id' });
-// Lesson.belongsTo(Person, { foreignKey: 'teacher_person_id' });
-
-// Topic.hasMany(Lesson, { foreignKey: 'topic_id' });
-// Lesson.belongsTo(Topic, { foreignKey: 'topic_id' });
-
-// Group.belongsToMany(PlannedTask, { through: 'GroupPlannedTask', foreignKey: 'group_id' });
-// PlannedTask.belongsToMany(Group, { through: 'GroupPlannedTask', foreignKey: 'planned_task_id' });
-
-// Subgroup.belongsToMany(PlannedTask, { through: 'SubgroupPlannedTask', foreignKey: 'subgroup_id' });
-// PlannedTask.belongsToMany(Subgroup, { through: 'SubgroupPlannedTask', foreignKey: 'planned_task_id' });
-
-// // Subject и PlannedTask (ноль или многие ко многим)
-// Subject.belongsToMany(PlannedTask, { through: 'SubjectPlannedTask', foreignKey: 'subject_id' });
-// PlannedTask.belongsToMany(Subject, { through: 'SubjectPlannedTask', foreignKey: 'planned_task_id' });
-
-// // Student и PlannedTask (ноль или многие ко многим)
-// Student.belongsToMany(PlannedTask, { through: 'StudentPlannedTask', foreignKey: 'student_id' });
-// PlannedTask.belongsToMany(Student, { through: 'StudentPlannedTask', foreignKey: 'planned_task_id' });
-
-// // PlannedTask и PlannedTaskTopic
-// PlannedTask.hasMany(PlannedTaskTopic, { foreignKey: 'planned_task_id' });
-// PlannedTaskTopic.belongsTo(PlannedTask, { foreignKey: 'planned_task_id' });
-
-// // Topic и PlannedTaskTopic
-// Topic.hasMany(PlannedTaskTopic, { foreignKey: 'topic_id' });
-// PlannedTaskTopic.belongsTo(Topic, { foreignKey: 'topic_id' });
-
-// // Subject и PlannedTaskTopic
-// Subject.hasMany(PlannedTaskTopic, { foreignKey: 'subject_id' });
-// PlannedTaskTopic.belongsTo(Subject, { foreignKey: 'subject_id' });
-
-// // Student и Subgroup (лидер)
-// Student.hasOne(Subgroup, { foreignKey: 'leader_id' });
-// Subgroup.belongsTo(Student, { foreignKey: 'leader_id' });
-
-
-// // Subject и Topic
-// Subject.hasMany(Topic, { foreignKey: 'subject_id' });
-// Topic.belongsTo(Subject, { foreignKey: 'subject_id' });
-
-// // SubjectType и Topic
-// SubjectType.hasMany(Topic, { foreignKey: 'subject_type_id' });
-// Topic.belongsTo(SubjectType, { foreignKey: 'subject_type_id' })
+CurriculumSubject.belongsTo(AssessmentType, {
+  foreignKey: 'assessment_type_id',
+  as: 'assessmentType'
+});
 
 module.exports = {
   initModels,
@@ -287,7 +192,7 @@ module.exports = {
   AcademicBuilding,
   Audience,
   EducationForm,
-  // CurriculumSubject
+  CurriculumSubject
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,

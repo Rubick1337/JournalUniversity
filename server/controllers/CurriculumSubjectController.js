@@ -8,7 +8,6 @@ class CurriculumSubjectController {
   create = async (req, res, next) => {
     try {
       const { curriculumId } = req.params;
-
       const dataDto = new CurriculumSubjectCreationDTO(req.body);
       const result = await CurriculumSubjectService.create(curriculumId,dataDto);
       const resultDto = new CurriculumSubjectDataDto(result);

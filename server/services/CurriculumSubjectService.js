@@ -4,15 +4,13 @@ const {
   Curriculum,
   Subject,
   AssessmentType,
+  AcademicSpecialty,  // Добавьте эту строку
   Op,
   Sequelize,
 } = require("../models/index");
-
 class CurriculumSubjectService {
   async create(curriculumId, data) {
     try {
-      console.log("TESTE", curriculumId);
-      console.log("TESTE", data);
       const curriculumSubject = await CurriculumSubject.create({
         curriculum_id: curriculumId,
         subject_id: data.subject_id,
@@ -25,7 +23,7 @@ class CurriculumSubjectService {
       });
 
       return await this._getCurriculumSubjectWithAssociations(
-        data.curriculum_id,
+        curriculumId,
         data.subject_id,
         data.assessment_type_id,
         data.semester
@@ -87,27 +85,27 @@ class CurriculumSubjectService {
 
       const where = {};
 
-      if (query.semesterQuery) {
-        where.semester = {
-          [Op.eq]: query.semesterQuery,
-        };
-      }
+      // if (query.semesterQuery) {
+      //   where.semester = {
+      //     [Op.eq]: query.semesterQuery,
+      //   };
+      // }
 
-      if (query.curriculumQuery) {
-        where[Op.and] = [
-          Sequelize.where(
-            Sequelize.cast(Sequelize.col("Curriculum.id"), "TEXT"),
-            {
-              [Op.iLike]: `%${query.curriculumQuery}%`,
-            }
-          ),
-        ];
-      }
+      // if (query.curriculumQuery) {
+      //   where[Op.and] = [
+      //     Sequelize.where(
+      //       Sequelize.cast(Sequelize.col("Curriculum.id"), "TEXT"),
+      //       {
+      //         [Op.iLike]: `%${query.curriculumQuery}%`,
+      //       }
+      //     ),
+      //   ];
+      // }
 
       const include = [
         {
           model: Curriculum,
-          as: "Curriculum",
+          as: "curriculum",
           attributes: ["id", "year_of_specialty_training"],
           required: !!query.curriculumQuery,
           where: query.curriculumQuery
@@ -120,7 +118,7 @@ class CurriculumSubjectService {
         },
         {
           model: Subject,
-          as: "Subject",
+          as: "subject",
           attributes: ["id", "name"],
           required: !!query.subjectQuery,
           where: query.subjectQuery
@@ -131,7 +129,7 @@ class CurriculumSubjectService {
         },
         {
           model: AssessmentType,
-          as: "AssessmentType",
+          as: "assessmentType",
           attributes: ["id", "name"],
           required: !!query.assessmentTypeQuery,
           where: query.assessmentTypeQuery
@@ -141,7 +139,6 @@ class CurriculumSubjectService {
             : undefined,
         },
       ];
-
       const { count, rows } = await CurriculumSubject.findAndCountAll({
         where,
         include,
@@ -150,6 +147,7 @@ class CurriculumSubjectService {
         offset,
         distinct: true,
       });
+      console.log("fewq", rows[0])
 
       return {
         data: rows,
@@ -233,7 +231,7 @@ class CurriculumSubjectService {
       include: [
         {
           model: Curriculum,
-          as: "Curriculum",
+          as: "curriculum",
           attributes: ["id", "year_of_specialty_training"],
           include: [
             {
@@ -245,12 +243,12 @@ class CurriculumSubjectService {
         },
         {
           model: Subject,
-          as: "Subject",
+          as: "subject",
           attributes: ["id", "name"],
         },
         {
           model: AssessmentType,
-          as: "AssessmentType",
+          as: "assessmentType",
           attributes: ["id", "name"],
         },
       ],
