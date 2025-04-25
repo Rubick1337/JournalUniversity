@@ -87,6 +87,7 @@ const facultySlice = createSlice({
                 state.facultiesList.errors = [];
             })
             .addCase(getAllFaculties.fulfilled, (state, action) => {
+                console.log('Received fac:', action.payload);
                 state.facultiesList.data = action.payload;
                 state.facultiesList.isLoading = false;
             })

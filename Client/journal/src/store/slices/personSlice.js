@@ -82,6 +82,7 @@ const personSlice = createSlice({
         state.errors = [];
       })
       .addCase(fetchPersons.fulfilled, (state, action) => {
+        console.log('Received person:', action.payload);
         state.isLoading = false;
         state.data = action.payload.data;
         state.meta = action.payload.meta;

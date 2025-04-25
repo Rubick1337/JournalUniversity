@@ -24,11 +24,14 @@ class DepartmentService {
         throw ApiError.notFound(`Department with ID ${departmentId} not found`);
       }
 
+      // Поддерживаем оба варианта именования
       await department.update({
         name: updateData.name,
-        full_name: updateData.fullName,
-        faculty_id: updateData.facultyId,
-        head_person_id: updateData.headPersonId,
+        full_name: updateData.full_name || updateData.fullName,
+        faculty_id: updateData.faculty_id || updateData.facultyId,
+        head_person_id: updateData.head_person_id ||
+            updateData.chairperson_of_the_department_person_id ||
+            updateData.headPersonId
       });
 
       return await this._getDepartmentWithAssociations(departmentId);
@@ -36,6 +39,7 @@ class DepartmentService {
       throw ApiError.badRequest("Error updating department", error);
     }
   }
+
 
   async getAll({
     page = 1,

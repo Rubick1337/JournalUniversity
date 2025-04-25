@@ -1,15 +1,11 @@
 class DepartmentDataForUpdateDto {
-    constructor({ 
-        name, 
-        full_name,
-        chairperson_of_the_department_person = {},
-        faculty = {},
-    }) {
-        this.name = name;
-        this.full_name = full_name;
-
-        this.chairperson_of_the_department_person_id = chairperson_of_the_department_person? chairperson_of_the_department_person.id: null;
-        this.faculty_id = faculty? faculty.id: null;
+    constructor(data) {
+        this.name = data.name;
+        this.full_name = data.full_name || data.fullName;
+        this.faculty_id = data.faculty_id || data.facultyId;
+        this.head_person_id = data.head_person_id ||
+            data.chairperson_of_the_department_person_id ||
+            data.headPersonId;
     }
 }
 

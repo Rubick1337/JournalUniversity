@@ -1,6 +1,5 @@
 import React from 'react';
-import { Modal, Box, Typography, Button, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import { Modal, Box, Typography, Button } from '@mui/material';
 
 const DepartmentDeleteModal = ({
                                    open,
@@ -17,31 +16,30 @@ const DepartmentDeleteModal = ({
                 transform: 'translate(-50%, -50%)',
                 width: 400,
                 bgcolor: 'background.paper',
-                boxShadow: 24
+                boxShadow: 24,
+                p: 4
             }}>
-                <Box sx={{
-                    bgcolor: '#1976d2',
-                    color: 'white',
-                    p: 2,
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
-                    <Typography variant="h6">Удалить запись</Typography>
-                    <IconButton onClick={onClose} sx={{ color: 'white' }}>
-                        <CloseIcon />
-                    </IconButton>
-                </Box>
-                <Box sx={{ p: 3 }}>
-                    <Typography>Вы уверены, что хотите удалить запись {department?.shortName}?</Typography>
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                        <Button onClick={onClose} sx={{ mr: 1 }}>Отмена</Button>
-                        <Button onClick={onConfirm} color="error">Удалить</Button>
-                    </Box>
+                <Typography variant="h6" gutterBottom>
+                    Подтверждение удаления
+                </Typography>
+                <Typography sx={{ mb: 3 }}>
+                    Вы уверены, что хотите удалить кафедру "{department?.name}"?
+                </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                    <Button variant="outlined" onClick={onClose}>
+                        Отмена
+                    </Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={onConfirm}
+                    >
+                        Удалить
+                    </Button>
                 </Box>
             </Box>
         </Modal>
     );
 };
 
-export default React.memo(DepartmentDeleteModal);
+export default DepartmentDeleteModal;

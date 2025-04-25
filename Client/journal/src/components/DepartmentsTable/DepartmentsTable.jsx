@@ -1,274 +1,258 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { debounce } from 'lodash';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Typography,
-    TablePagination,
-    TextField,
-    IconButton,
-    Menu,
-    MenuItem,
-    Box,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem as SelectMenuItem
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Paper, Typography, TablePagination, TextField, IconButton,
+    Menu, MenuItem, Box, InputAdornment, Button, TableSortLabel
 } from '@mui/material';
+import { AddCircleOutline, MoreVert, Search, Refresh } from '@mui/icons-material'; // Добавлен иконка Refresh
 import {
-    MoreVert as MoreVertIcon,
-    AddCircleOutline as AddCircleOutlineIcon,
-    Search as SearchIcon
-} from '@mui/icons-material';
+    fetchDepartments,
+    setPage,
+    setLimit,
+    setSearchParams,
+    deleteDepartment,
+    updateDepartment,
+    createDepartment
+} from '../../store/slices/departmentSlice';
+import { fetchPersons } from '../../store/slices/personSlice';
+import { getAllFaculties } from '../../store/slices/facultySlice';
 import DepartmentEditModal from './DepartmentEditModal';
 import DepartmentAddModal from './DepartmentAddModal';
 import DepartmentDeleteModal from './DepartmentDeleteModal';
-import {PersonModal} from '../PersonCreationModal/PersonCreationModal';
 import Alert from '../Alert/Alert';
-const initialDepartmentsData = [
-    {
-        id: "1",
-        shortName: "ИВТ",
-        fullName: "Информационные вычислительные технологии",
-        head: "Иванов Иван Иванович",
-        faculty: "Факультет компьютерных наук",
-    },
-    {
-        id: "2",
-        shortName: "МОП ЭВМ",
-        fullName: "Математическое обеспечение и применение ЭВМ",
-        head: "Петров Петр Петрович",
-        faculty: "Факультет прикладной математики",
-    },
-    {
-        id: "3",
-        shortName: "ОФ",
-        fullName: "Общая физика",
-        head: "Сидоров Сидор Сидорович",
-        faculty: "Факультет физики",
-    },
-    {
-        id: "4",
-        shortName: "ТП",
-        fullName: "Теоретическая физика",
-        head: "Кузнецов Алексей Владимирович",
-        faculty: "Факультет физики",
-    },
-    {
-        id: "5",
-        shortName: "КГ",
-        fullName: "Компьютерная графика",
-        head: "Смирнова Елена Александровна",
-        faculty: "Факультет компьютерных наук",
-    },
-    {
-        id: "6",
-        shortName: "МИ",
-        fullName: "Математическая информатика",
-        head: "Федоров Дмитрий Сергеевич",
-        faculty: "Факультет прикладной математики",
-    },
-    {
-        id: "7",
-        shortName: "САПР",
-        fullName: "Системы автоматизированного проектирования",
-        head: "Николаева Ольга Ивановна",
-        faculty: "Факультет компьютерных наук",
-    },
-    {
-        id: "8",
-        shortName: "ТВ",
-        fullName: "Теория вероятностей",
-        head: "Волков Андрей Николаевич",
-        faculty: "Факультет прикладной математики",
-    },
-];
 
-// Мок-данные для факультетов
-const faculties = [
-    "Факультет компьютерных наук",
-    "Факультет прикладной математики",
-    "Факультет физики",
-    "Факультет химии",
-    "Факультет биологии"
-];
 const DepartmentsTable = () => {
-    const [departmentsData, setDepartmentsData] = useState(initialDepartmentsData);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [searchParams, setSearchParams] = useState({
-        shortName: '',
-        fullName: '',
-        head: '',
-        faculty: ''
-    });
+    const dispatch = useDispatch();
+    const {
+        data: departmentsData = [],
+        isLoading,
+        errors = [],
+        meta = { page: 1, limit: 10, total: 0 },
+        searchParams: reduxSearchParams = {}
+    } = useSelector(state => state.departments || {});
+
+    const persons = useSelector(state => state.person?.data || []);
+    const faculties = useSelector(state => state.faculty.facultiesList.data);
+
     const [anchorEl, setAnchorEl] = useState(null);
-    const [searchAnchorEl, setSearchAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
-    const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
-    const [openPersonModal, setOpenPersonModal] = useState(false);
-    const [newDepartment, setNewDepartment] = useState({
-        shortName: '',
-        fullName: '',
-        head: '',
-        faculty: ''
-    });
-    const [editDepartment, setEditDepartment] = useState({
-        shortName: '',
-        fullName: '',
-        head: '',
-        faculty: ''
-    });
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [alertState, setAlertState] = useState({
         open: false,
         message: '',
         severity: 'success'
     });
-    const [people, setPeople] = useState([
-        { id: "1", fullName: "Иванов Иван Иванович", lastName: "Иванов", firstName: "Иван", patronymic: "Иванович" },
-        { id: "2", fullName: "Петров Петр Петрович", lastName: "Петров", firstName: "Петр", patronymic: "Петрович" },
-        { id: "3", fullName: "Сидоров Сидор Сидорович", lastName: "Сидоров", firstName: "Сидор", patronymic: "Сидорович" },
-    ]);
+    const [searchValues, setSearchValues] = useState({
+        nameQuery: '',
+        fullNameQuery: '',
+        facultyQuery: ''
+    });
+    const [orderBy, setOrderBy] = useState('name');
+    const [order, setOrder] = useState('asc');
+    const [searchMenuOpen, setSearchMenuOpen] = useState(false);
+    const searchAnchorRef = useRef(null);
 
-    const [personInputValue, setPersonInputValue] = useState('');
+    useEffect(() => {
+        dispatch(fetchDepartments({
+            page: meta.page,
+            limit: meta.limit,
+            sortBy: orderBy,
+            sortOrder: order,
+            ...reduxSearchParams
+        }));
+        dispatch(fetchPersons({}));
+        dispatch(getAllFaculties());
+    }, [dispatch, meta.page, meta.limit, orderBy, order, reduxSearchParams]);
 
-    const filteredPeopleOptions = useMemo(() =>
-            people
-                .filter(person => person.fullName.toLowerCase().includes(personInputValue.toLowerCase()))
-                .slice(0, 8),
-        [people, personInputValue]
-    );
+    useEffect(() => {
+        if (errors.length > 0) {
+            setAlertState({
+                open: true,
+                message: errors[0].message || 'Произошла ошибка',
+                severity: 'error'
+            });
+        }
+    }, [errors]);
+    useEffect(() => {
+        if (alertState.open) {
+            const timer = setTimeout(() => {
+                setAlertState((prev) => ({ ...prev, open: false }));
+            }, 1000);
 
-    const filteredData = useMemo(() =>
-            departmentsData.filter(department => (
-                department.shortName.toLowerCase().includes(searchParams.shortName.toLowerCase()) &&
-                department.fullName.toLowerCase().includes(searchParams.fullName.toLowerCase()) &&
-                department.head.toLowerCase().includes(searchParams.head.toLowerCase()) &&
-                department.faculty.toLowerCase().includes(searchParams.faculty.toLowerCase())
-            )),
-        [departmentsData, searchParams]
-    );
+            return () => clearTimeout(timer);
+        }
+    }, [alertState.open]);
 
-    const showAlert = useCallback((message, severity = 'success') => {
-        setAlertState({ open: true, message, severity });
+
+    const toggleSearchMenu = () => {
+        setSearchMenuOpen(!searchMenuOpen);
+    };
+
+    const debouncedSearch = debounce((params) => {
+        dispatch(setSearchParams(params));
+    }, 300);
+
+    const handleSearchChange = (field) => (e) => {
+        const newSearchValues = {
+            ...searchValues,
+            [field]: e.target.value
+        };
+        setSearchValues(newSearchValues);
+    };
+
+    useEffect(() => {
+        return () => {
+            debouncedSearch.cancel();
+        };
     }, []);
 
-    const handleCloseAlert = useCallback(() => {
+    const handleSearch = () => {
+        debouncedSearch(searchValues);
+        setSearchMenuOpen(false); // Закрыть меню поиска после выполнения поиска
+    };
+
+    const handleSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
+
+    const handlePageChange = (_, newPage) => {
+        dispatch(setPage(newPage + 1));
+    };
+
+    const handleRowsPerPageChange = (e) => {
+        const newLimit = parseInt(e.target.value, 10);
+        dispatch(setLimit(newLimit));
+        dispatch(setPage(1));
+    };
+
+    const formatHeadName = (head) => {
+        if (!head) return 'Не указан';
+        return `${head.surname} ${head.name} ${head.middlename || ''}`.trim();
+    };
+
+    const handleDeleteConfirm = () => {
+        dispatch(deleteDepartment(currentRow.id))
+            .then(() => {
+                setAlertState({
+                    open: true,
+                    message: 'Кафедра успешно удалена',
+                    severity: 'success'
+                });
+                setOpenDeleteModal(false);
+                refreshData();
+            });
+    };
+
+    const handleSave = (values) => {
+        if (currentRow) {
+            // Получаем ID из значений или из объекта
+            const headId = values.chairperson_of_the_department_person_id || values.head?.id;
+            const facultyId = values.faculty_id || values.faculty?.id;
+
+            const updateData = {
+                name: values.name,
+                full_name: values.full_name,
+                head_person_id: headId, // Используем имя, которое ожидает сервер
+                faculty_id: facultyId
+            };
+
+            console.log('Update data:', updateData);
+
+            dispatch(updateDepartment({
+                id: currentRow.id,
+                data: updateData
+            })).then(() => {
+                refreshData();
+                setOpenEditModal(false);
+            });
+        } else {
+            dispatch(createDepartment(values)).then(() => {
+                refreshData();
+                setOpenAddModal(false);
+            });
+        }
+    };
+
+    const refreshData = () => {
+        dispatch(fetchDepartments({
+            page: meta.page,
+            limit: meta.limit,
+            sortBy: orderBy,
+            sortOrder: order,
+            ...reduxSearchParams
+        }));
+    };
+
+    const handleCloseAlert = () => {
         setAlertState(prev => ({ ...prev, open: false }));
-    }, []);
+    };
 
-    const handleSearchChange = useCallback((field) => (event) => {
-        setSearchParams(prev => ({ ...prev, [field]: event.target.value }));
-    }, []);
-
-    const handleMenuClick = useCallback((event, row) => {
+    const handleMenuClick = (event, row) => {
         setAnchorEl(event.currentTarget);
         setCurrentRow(row);
-    }, []);
+    };
 
-    const handleMenuClose = useCallback(() => {
+    const handleMenuClose = () => {
         setAnchorEl(null);
-    }, []);
+    };
 
-    const handleSearchMenuClick = useCallback((event) => {
-        setSearchAnchorEl(event.currentTarget);
-    }, []);
-
-    const handleSearchMenuClose = useCallback(() => {
-        setSearchAnchorEl(null);
-    }, []);
-
-    const handleEdit = useCallback(() => {
-        setEditDepartment(currentRow);
+    const handleEdit = () => {
         setOpenEditModal(true);
         handleMenuClose();
-    }, [currentRow, handleMenuClose]);
+    };
 
-    const handleDelete = useCallback(() => {
+    const handleDelete = () => {
         setOpenDeleteModal(true);
         handleMenuClose();
-    }, [handleMenuClose]);
+    };
 
-    const handleAdd = useCallback(() => {
-        setNewDepartment({ shortName: '', fullName: '', head: '', faculty: '' });
-        setPersonInputValue('');
+    const handleAdd = () => {
+        setCurrentRow(null);
         setOpenAddModal(true);
-    }, []);
+    };
 
-    const handleCloseModals = useCallback(() => {
-        setOpenEditModal(false);
-        setOpenDeleteModal(false);
-        setOpenAddModal(false);
-        setPersonInputValue('');
-    }, []);
-
-    const handlePersonInputChange = useCallback((event, value) => {
-        setPersonInputValue(value);
-    }, []);
-
-    const handleAddNewPerson = useCallback((newPerson, error) => {
-        if (error) {
-            showAlert(error, 'error');
-            return;
-        }
-
-        const fullName = `${newPerson.lastName} ${newPerson.firstName} ${newPerson.patronymic || ''}`.trim();
-        const newPersonWithId = {
-            ...newPerson,
-            id: `new-${Date.now()}`,
-            fullName: fullName
+    const resetSearch = () => {
+        const newSearchValues = {
+            nameQuery: '',
+            fullNameQuery: '',
+            facultyQuery: ''
         };
+        setSearchValues(newSearchValues);
+        dispatch(setSearchParams(newSearchValues));
+        setOrderBy('name');  // Сброс сортировки
+        setOrder('asc');     // Сброс сортировки
+        setSearchMenuOpen(false); // Закрыть меню поиска после сброса
+    };
 
-        setPeople(prev => [...prev, newPersonWithId]);
+    const renderTableHeader = (property, label) => (
+        <TableCell sx={{ fontWeight: 'bold' }}>
+            <TableSortLabel
+                active={orderBy === property}
+                direction={orderBy === property ? order : 'asc'}
+                onClick={() => handleSort(property)}
+            >
+                {label}
+            </TableSortLabel>
+        </TableCell>
+    );
 
-        if (openEditModal) {
-            setEditDepartment(prev => ({ ...prev, head: fullName }));
-        } else if (openAddModal) {
-            setNewDepartment(prev => ({ ...prev, head: fullName }));
-        }
+    if (isLoading) {
+        return <Box sx={{ p: 3, textAlign: 'center' }}>Загрузка данных...</Box>;
+    }
 
-        showAlert('Человек успешно добавлен!', 'success');
-        setOpenPersonModal(false);
-    }, [openEditModal, openAddModal, showAlert]);
-
-    const handleSaveEdit = useCallback(() => {
-        if (!editDepartment.shortName || !editDepartment.fullName ||
-            !editDepartment.head || !editDepartment.faculty) {
-            showAlert('Все обязательные поля должны быть заполнены!', 'error');
-            return;
-        }
-
-        setDepartmentsData(departmentsData.map(dept =>
-            dept.id === currentRow.id ? { ...editDepartment, id: currentRow.id } : dept
-        ));
-        showAlert('Кафедра успешно обновлена!', 'success');
-        handleCloseModals();
-    }, [editDepartment, currentRow, departmentsData, showAlert, handleCloseModals]);
-
-    const handleSaveAdd = useCallback(() => {
-        if (!newDepartment.shortName || !newDepartment.fullName ||
-            !newDepartment.head || !newDepartment.faculty) {
-            showAlert('Все обязательные поля должны быть заполнены!', 'error');
-            return;
-        }
-
-        const newId = Math.max(...departmentsData.map(dept => parseInt(dept.id))) + 1;
-        setDepartmentsData([...departmentsData, { ...newDepartment, id: newId.toString() }]);
-        showAlert('Кафедра успешно добавлена!', 'success');
-        handleCloseModals();
-    }, [newDepartment, departmentsData, showAlert, handleCloseModals]);
-
-    const handleDeleteConfirm = useCallback(() => {
-        setDepartmentsData(departmentsData.filter(dept => dept.id !== currentRow.id));
-        showAlert('Кафедра успешно удалена!', 'success');
-        handleCloseModals();
-    }, [currentRow, departmentsData, showAlert, handleCloseModals]);
+    if (errors.length > 0) {
+        return (
+            <Box sx={{ p: 3, color: 'error.main' }}>
+                Ошибка загрузки: {errors[0].message}
+            </Box>
+        );
+    }
 
     return (
         <>
@@ -276,25 +260,47 @@ const DepartmentsTable = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
                     <Typography variant="h6">Список кафедр</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <IconButton onClick={handleSearchMenuClick}>
-                            <SearchIcon />
+                        <IconButton
+                            onClick={toggleSearchMenu}
+                            ref={searchAnchorRef}
+                        >
+                            <Search />
+                        </IconButton>
+                        <IconButton
+                            onClick={resetSearch} // Кнопка сброса
+                        >
+                            <Refresh />
                         </IconButton>
                         <Menu
-                            anchorEl={searchAnchorEl}
-                            open={Boolean(searchAnchorEl)}
-                            onClose={handleSearchMenuClose}
+                            anchorEl={searchAnchorRef.current}
+                            open={searchMenuOpen}
+                            onClose={toggleSearchMenu}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'right',
+                            }}
+                            transformOrigin={{
+                                vertical: 'top',
+                                horizontal: 'right',
+                            }}
                             sx={{ maxWidth: 320 }}
                         >
-                            <Box sx={{ p: 1, width: 320 }}>
+                            <Box sx={{ p: 2, width: 280 }}>
                                 <TextField
                                     label="Поиск по сокращенному названию"
                                     variant="outlined"
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchParams.shortName}
-                                    onChange={handleSearchChange('shortName')}
-                                    sx={{ maxWidth: 270 }}
+                                    value={searchValues.nameQuery}
+                                    onChange={handleSearchChange('nameQuery')}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Search fontSize="small" />
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                 />
                                 <TextField
                                     label="Поиск по полному названию"
@@ -302,77 +308,107 @@ const DepartmentsTable = () => {
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchParams.fullName}
-                                    onChange={handleSearchChange('fullName')}
-                                    sx={{ maxWidth: 270 }}
+                                    value={searchValues.fullNameQuery}
+                                    onChange={handleSearchChange('fullNameQuery')}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Search fontSize="small" />
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                 />
                                 <TextField
-                                    label="Поиск по ФИО заведующего"
+                                    label="Поиск по факультету"
                                     variant="outlined"
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchParams.head}
-                                    onChange={handleSearchChange('head')}
-                                    sx={{ maxWidth: 270 }}
+                                    value={searchValues.facultyQuery}
+                                    onChange={handleSearchChange('facultyQuery')}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Search fontSize="small" />
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                 />
-                                <FormControl variant="outlined" size="small" fullWidth margin="normal">
-                                    <InputLabel>Поиск по факультету</InputLabel>
-                                    <Select
-                                        value={searchParams.faculty}
-                                        onChange={handleSearchChange('faculty')}
-                                        label="Поиск по факультету"
-                                        sx={{ maxWidth: 270 }}
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                                    <Button
+                                        size="small"
+                                        onClick={resetSearch}
+                                        disabled={!searchValues.nameQuery && !searchValues.fullNameQuery && !searchValues.facultyQuery}
                                     >
-                                        <SelectMenuItem value="">Все факультеты</SelectMenuItem>
-                                        {faculties.map((faculty) => (
-                                            <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
+                                        Сбросить
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        onClick={handleSearch}
+                                        disabled={!searchValues.nameQuery && !searchValues.fullNameQuery && !searchValues.facultyQuery}
+                                    >
+                                        Поиск
+                                    </Button>
+                                </Box>
                             </Box>
                         </Menu>
                     </Box>
                 </Box>
 
-                <Table>
+                <Table sx={{ minWidth: 650 }} aria-label="Таблица кафедр">
                     <TableHead>
                         <TableRow>
-                            <TableCell>Сокращенное название</TableCell>
-                            <TableCell>Полное название</TableCell>
-                            <TableCell>ФИО заведующего</TableCell>
-                            <TableCell>Факультет</TableCell>
-                            <TableCell>Действия</TableCell>
+                            {renderTableHeader('name', 'Сокращенное название')}
+                            {renderTableHeader('full_name', 'Полное название')}
+                            <TableCell sx={{ fontWeight: 'bold' }}>Заведующий</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Факультет</TableCell>
+                            <TableCell sx={{ fontWeight: 'bold' }}>Действия</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(department => (
-                            <TableRow key={department.id}>
-                                <TableCell>{department.shortName}</TableCell>
-                                <TableCell>{department.fullName}</TableCell>
-                                <TableCell>{department.head}</TableCell>
-                                <TableCell>{department.faculty}</TableCell>
-                                <TableCell>
-                                    <IconButton onClick={(e) => handleMenuClick(e, department)}>
-                                        <MoreVertIcon />
-                                    </IconButton>
+                        {departmentsData.length > 0 ? (
+                            departmentsData.map(department => (
+                                <TableRow
+                                    key={department.id}
+                                    hover
+                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                >
+                                    <TableCell>{department.name}</TableCell>
+                                    <TableCell>{department.full_name}</TableCell>
+                                    <TableCell>{formatHeadName(department.head)}</TableCell>
+                                    <TableCell>{department.faculty?.name || department.faculty}</TableCell>
+                                    <TableCell>
+                                        <IconButton
+                                            onClick={(e) => handleMenuClick(e, department)}
+                                            aria-label="Действия"
+                                        >
+                                            <MoreVert />
+                                        </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={5} align="center">
+                                    Нет данных о кафедрах
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )}
                     </TableBody>
                 </Table>
 
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={filteredData.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
-                        setPage(0);
-                    }}
+                    count={meta.total}
+                    rowsPerPage={meta.limit}
+                    page={meta.page - 1}
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                    labelRowsPerPage="Строк на странице:"
+                    labelDisplayedRows={({ from, to, count }) =>
+                        `${from}-${to} из ${count !== -1 ? count : `более ${to}`}`
+                    }
                 />
 
                 <Menu
@@ -384,60 +420,49 @@ const DepartmentsTable = () => {
                     <MenuItem onClick={handleDelete}>Удалить</MenuItem>
                 </Menu>
 
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                    <IconButton onClick={handleAdd} color="primary">
-                        <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
-                    </IconButton>
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddCircleOutline />}
+                        onClick={handleAdd}
+                    >
+                        Добавить кафедру
+                    </Button>
                 </Box>
             </TableContainer>
 
             <DepartmentEditModal
                 open={openEditModal}
-                onClose={handleCloseModals}
-                department={editDepartment}
-                onDepartmentChange={(field, value) => setEditDepartment(prev => ({ ...prev, [field]: value }))}
-                onSave={handleSaveEdit}
-                people={people}
-                personInputValue={personInputValue}
-                onPersonInputChange={handlePersonInputChange}
-                onAddPersonClick={() => setOpenPersonModal(true)}
+                onClose={() => setOpenEditModal(false)}
+                department={currentRow}
+                people={persons}
                 faculties={faculties}
+                onSave={handleSave}
             />
 
             <DepartmentAddModal
                 open={openAddModal}
-                onClose={handleCloseModals}
-                department={newDepartment}
-                onDepartmentChange={(field, value) => setNewDepartment(prev => ({ ...prev, [field]: value }))}
-                onSave={handleSaveAdd}
-                people={people}
-                personInputValue={personInputValue}
-                onPersonInputChange={handlePersonInputChange}
-                onAddPersonClick={() => setOpenPersonModal(true)}
+                onClose={() => setOpenAddModal(false)}
+                people={persons}
                 faculties={faculties}
+                onSave={handleSave}
             />
 
             <DepartmentDeleteModal
                 open={openDeleteModal}
-                onClose={handleCloseModals}
+                onClose={() => setOpenDeleteModal(false)}
                 department={currentRow}
                 onConfirm={handleDeleteConfirm}
-            />
-
-            <PersonModal
-                open={openPersonModal}
-                onClose={() => setOpenPersonModal(false)}
-                onSave={handleAddNewPerson}
             />
 
             <Alert
                 open={alertState.open}
                 message={alertState.message}
                 severity={alertState.severity}
-                handleClose={handleCloseAlert}
+                onClose={handleCloseAlert}
             />
         </>
     );
 };
 
-export default React.memo(DepartmentsTable);
+export default DepartmentsTable;
