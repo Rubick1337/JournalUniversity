@@ -7,11 +7,13 @@ export const fetchTeacherPositions = createAsyncThunk(
     async (params, { rejectWithValue }) => {
         try {
             const response = await TeacherPositionService.getAllTeacherPositions(params);
+            console.log('Teachingposition API response:', response); // Добавьте это
             return {
                 data: response.data,
                 meta: response.meta
             };
         } catch (error) {
+            console.error('Teachingposition API error:', error); // И это
             return rejectWithValue(error.response?.data || error.message);
         }
     }

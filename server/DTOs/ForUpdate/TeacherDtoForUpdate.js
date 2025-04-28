@@ -1,8 +1,8 @@
 class TeacherDtoForUpdate {
-  constructor({  department = {}, person = {}, teacherPosition = {} }) {
-    this.department_id = department?department.id: null;
-    this.person_id = person?person.id: null;
-    this.teacher_position_id = teacherPosition?teacherPosition.id: null;
+  constructor(data) {
+    this.department_id = data.department_id || data.department?.id || null;
+    this.person_id = data.person_id || data.person?.id || null;
+    this.teaching_position_id = data.teaching_position_id || data.teacher_position_id || data.position || null;
   }
 }
 

@@ -6,6 +6,7 @@ import educationFormReducer from './slices/educationFormSlice';
 import assessmentTypeReducer from './slices/assessmentTypeSlice';
 import academicReducer from './slices/academicSpecialtySlice';
 import departmentSlice from "./slices/departmentSlice";
+import teacherSlice from "./slices/teacherSlice";
 
 const store = configureStore({
     reducer: {
@@ -16,6 +17,7 @@ const store = configureStore({
         assessmentTypes: assessmentTypeReducer,
         academicSpecialties: academicReducer,
         departments: departmentSlice,
+        teachers:teacherSlice,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({ serializableCheck: false }),

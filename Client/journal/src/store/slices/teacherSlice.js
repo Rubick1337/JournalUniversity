@@ -1,55 +1,53 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import DepartmentService from '../../services/DepartmentService';
+import TeacherService from '../../services/TeacherService';
 
 // Асинхронные действия
-export const fetchDepartments = createAsyncThunk(
-    'departments/fetchAll',
+export const fetchTeachers = createAsyncThunk(
+    'teachers/fetchAll',
     async (params, { rejectWithValue }) => {
         try {
-            const response = await DepartmentService.getAll(params);
-            console.log('Departments API response:', response); // Добавьте это
+            const response = await TeacherService.getAll(params);
             return {
                 data: response.data,
                 meta: response.meta
             };
         } catch (error) {
-            console.error('Departments API error:', error); // И это
             return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
 
-export const createDepartment = createAsyncThunk(
-    'departments/create',
-    async (departmentData, { rejectWithValue }) => {
+export const createTeacher = createAsyncThunk(
+    'teachers/create',
+    async (teacherData, { rejectWithValue }) => {
+        console.log('Data before API call:', teacherData);
         try {
-
-            const response = await DepartmentService.create(departmentData);
-            console.log("saqweqweq" + departmentData.faculty_id);
-            return response.data;
+            const response = await TeacherService.create(teacherData);
+            console.log('API response:', response);
+            return response;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
 
-export const updateDepartment = createAsyncThunk(
-    'departments/update',
+export const updateTeacher = createAsyncThunk(
+    'teachers/update',
     async ({ id, data }, { rejectWithValue }) => {
         try {
-            const response = await DepartmentService.update(id, data);
-            return response.data;
+            const response = await TeacherService.update(id, data);
+            return response;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
 
-export const deleteDepartment = createAsyncThunk(
-    'departments/delete',
+export const deleteTeacher = createAsyncThunk(
+    'teachers/delete',
     async (id, { rejectWithValue }) => {
         try {
-            await DepartmentService.delete(id);
+            await TeacherService.delete(id);
             return id;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -57,12 +55,24 @@ export const deleteDepartment = createAsyncThunk(
     }
 );
 
-export const getDepartmentById = createAsyncThunk(
-    'departments/getById',
+export const getTeacherById = createAsyncThunk(
+    'teachers/getById',
     async (id, { rejectWithValue }) => {
         try {
-            const response = await DepartmentService.getById(id);
-            return response.data;
+            const response = await TeacherService.getById(id);
+            return response;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || error.message);
+        }
+    }
+);
+
+export const getTeacherWithDetails = createAsyncThunk(
+    'teachers/getWithDetails',
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await TeacherService.getTeacherWithDetails(id);
+            return response;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
@@ -70,11 +80,11 @@ export const getDepartmentById = createAsyncThunk(
 );
 
 // Slice
-const departmentSlice = createSlice({
-    name: 'departments',
+const teacherSlice = createSlice({
+    name: 'teachers',
     initialState: {
         data: [],
-        currentDepartment: null,
+        currentTeacher: null,
         isLoading: false,
         errors: [],
         meta: {
@@ -84,18 +94,18 @@ const departmentSlice = createSlice({
             page: 1
         },
         searchParams: {
-            nameQuery: '',
-            fullNameQuery: '',
-            facultyQuery: '',
-            headQuery: ''
+            idQuery: '',
+            personQuery: '',
+            departmentQuery: '',
+            positionQuery: ''
         }
     },
     reducers: {
         clearErrors: (state) => {
             state.errors = [];
         },
-        clearCurrentDepartment: (state) => {
-            state.currentDepartment = null;
+        clearCurrentTeacher: (state) => {
+            state.currentTeacher = null;
         },
         setPage: (state, action) => {
             state.meta.page = action.payload;
@@ -109,12 +119,11 @@ const departmentSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchDepartments.pending, (state) => {
+            .addCase(fetchTeachers.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(fetchDepartments.fulfilled, (state, action) => {
-                console.log('Received departments:', action.payload);
+            .addCase(fetchTeachers.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data = action.payload.data;
                 state.meta = {
@@ -123,77 +132,92 @@ const departmentSlice = createSlice({
                     totalPages: Math.ceil(action.payload.meta.total / state.meta.limit)
                 };
             })
-            .addCase(fetchDepartments.rejected, (state, action) => {
+            .addCase(fetchTeachers.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(createDepartment.pending, (state) => {
+            .addCase(createTeacher.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(createDepartment.fulfilled, (state, action) => {
+            .addCase(createTeacher.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data.unshift(action.payload);
                 state.meta.total += 1;
                 state.meta.totalPages = Math.ceil(state.meta.total / state.meta.limit);
             })
-            .addCase(createDepartment.rejected, (state, action) => {
+            .addCase(createTeacher.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(updateDepartment.pending, (state) => {
+            .addCase(updateTeacher.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(updateDepartment.fulfilled, (state, action) => {
+            .addCase(updateTeacher.fulfilled, (state, action) => {
                 state.isLoading = false;
                 const updated = action.payload;
-                state.data = state.data.map(department =>
-                    department.id === updated.id ? updated : department
+                state.data = state.data.map(teacher =>
+                    teacher.id === updated.id ? updated : teacher
                 );
-                if (state.currentDepartment?.id === updated.id) {
-                    state.currentDepartment = updated;
+                if (state.currentTeacher?.id === updated.id) {
+                    state.currentTeacher = updated;
                 }
             })
-            .addCase(updateDepartment.rejected, (state, action) => {
+            .addCase(updateTeacher.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(deleteDepartment.pending, (state) => {
+            .addCase(deleteTeacher.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(deleteDepartment.fulfilled, (state, action) => {
+            .addCase(deleteTeacher.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.data = state.data.filter(department => department.id !== action.payload);
+                state.data = state.data.filter(teacher => teacher.id !== action.payload);
                 state.meta.total -= 1;
                 state.meta.totalPages = Math.ceil(state.meta.total / state.meta.limit);
             })
-            .addCase(deleteDepartment.rejected, (state, action) => {
+            .addCase(deleteTeacher.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(getDepartmentById.pending, (state) => {
+            .addCase(getTeacherById.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(getDepartmentById.fulfilled, (state, action) => {
+            .addCase(getTeacherById.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.currentDepartment = action.payload;
+                state.currentTeacher = action.payload;
             })
-            .addCase(getDepartmentById.rejected, (state, action) => {
+            .addCase(getTeacherById.rejected, (state, action) => {
+                state.isLoading = false;
+                state.errors = Array.isArray(action.payload)
+                    ? action.payload
+                    : [{ message: action.payload }];
+            })
+
+            .addCase(getTeacherWithDetails.pending, (state) => {
+                state.isLoading = true;
+                state.errors = [];
+            })
+            .addCase(getTeacherWithDetails.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.currentTeacher = action.payload;
+            })
+            .addCase(getTeacherWithDetails.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
@@ -204,10 +228,10 @@ const departmentSlice = createSlice({
 
 export const {
     clearErrors,
-    clearCurrentDepartment,
+    clearCurrentTeacher,
     setPage,
     setLimit,
     setSearchParams
-} = departmentSlice.actions;
+} = teacherSlice.actions;
 
-export default departmentSlice.reducer;
+export default teacherSlice.reducer;

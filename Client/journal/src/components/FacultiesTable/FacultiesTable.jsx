@@ -17,19 +17,30 @@ import {
     Modal,
     Box,
     Button,
+    TableSortLabel,
 } from '@mui/material';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import Alert from '../Alert/Alert';
+import PersonSelector from '../DepartmentsTable/PersonSelector';
+import {
+    getAllFaculties,
+    setFacultyPage,
+    setFacultyLimit,
+    setFacultySearchParams,
+    createFaculty,
+    updateFaculty,
+    deleteFaculty,
+    clearFacultyErrors
+} from '../../store/slices/facultySlice';
+import { fetchPersons } from '../../store/slices/personSlice';
+import './FacultiesTable.css';
 
 const FacultiesTable = () => {
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [searchShortName, setSearchShortName] = useState('');
-    const [searchFullName, setSearchFullName] = useState('');
-    const [searchDean, setSearchDean] = useState('');
+    const dispatch = useDispatch();
     const [anchorEl, setAnchorEl] = useState(null);
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
@@ -37,20 +48,70 @@ const FacultiesTable = () => {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
     const [newFaculty, setNewFaculty] = useState({
-        shortName: '',
-        fullName: '',
-        dean: ''
+        name: '',
+        full_name: '',
+        dean_person_id: null
     });
     const [editFaculty, setEditFaculty] = useState({
-        shortName: '',
-        fullName: '',
-        dean: ''
+        id: '',
+        name: '',
+        full_name: '',
+        dean_person_id: null
     });
     const [alertState, setAlertState] = useState({
         open: false,
         message: '',
         severity: 'success'
     });
+    const [orderBy, setOrderBy] = useState('name');
+    const [order, setOrder] = useState('asc');
+    const [rowsMounted, setRowsMounted] = useState(false);
+
+    const {
+        data: facultiesData = [],
+        isLoading,
+        errors = [],
+        meta = { page: 1, limit: 10, total: 0 }
+    } = useSelector(state => state.faculty.facultiesList || {});
+    const searchParams = useSelector(state => state.faculty.searchParams || {});
+    const people = useSelector(state => state.person?.data || []);
+
+    const [searchValues, setSearchValues] = useState({
+        nameQuery: '',
+        fullNameQuery: '',
+        deanQuery: ''
+    });
+
+    useEffect(() => {
+        dispatch(getAllFaculties({
+            page: meta.page,
+            limit: meta.limit,
+            sortBy: orderBy,
+            sortOrder: order,
+            ...searchParams
+        }));
+        dispatch(fetchPersons({}));
+    }, [dispatch, meta.page, meta.limit, searchParams, orderBy, order]);
+
+    useEffect(() => {
+        if (errors.length > 0) {
+            setAlertState({
+                open: true,
+                message: errors[0].message || 'Произошла ошибка',
+                severity: 'error'
+            });
+            dispatch(clearFacultyErrors());
+        }
+    }, [errors, dispatch]);
+
+    useEffect(() => {
+        // Активируем анимацию строк после загрузки данных
+        if (facultiesData.length > 0 && !rowsMounted) {
+            setTimeout(() => {
+                setRowsMounted(true);
+            }, 100);
+        }
+    }, [facultiesData, rowsMounted]);
 
     const showAlert = (message, severity = 'success') => {
         setAlertState({
@@ -64,37 +125,54 @@ const FacultiesTable = () => {
         setAlertState(prev => ({ ...prev, open: false }));
     };
 
-    const dispatch = useDispatch();
-    const facultiesData = useSelector(state => state.faculty.facultiesList.data);
-    const loading = useSelector(state => state.faculty.facultiesList.isLoading);
-    const error = useSelector(state => state.faculty.facultiesList.errors);
-
-    if(loading) {
-        return <div>Загрузка данных...</div>;
-    }
-    if (error?.length > 0) {
-        return (
-            <div>
-                Ошибка загрузки данных:
-                <ul>
-                    {error.map((err, index) => (
-                        <li key={index}>{err.message || err.toString()}</li>
-                    ))}
-                </ul>
-            </div>
-        );
-    }
-    const handleSearchShortNameChange = (event) => {
-        setSearchShortName(event.target.value);
+    const handleSearchChange = (field) => (e) => {
+        const newSearchValues = {
+            ...searchValues,
+            [field]: e.target.value
+        };
+        setSearchValues(newSearchValues);
     };
 
-    const handleSearchFullNameChange = (event) => {
-        setSearchFullName(event.target.value);
+    const handleSearch = () => {
+        dispatch(setFacultySearchParams(searchValues));
+        setSearchAnchorEl(null);
+        setRowsMounted(false);
     };
 
-    const handleSearchDeanChange = (event) => {
-        setSearchDean(event.target.value);
+    const handleResetSearch = () => {
+        setSearchValues({
+            nameQuery: '',
+            fullNameQuery: '',
+            deanQuery: ''
+        });
+        dispatch(setFacultySearchParams({
+            nameQuery: '',
+            fullNameQuery: '',
+            deanQuery: ''
+        }));
+        setSearchAnchorEl(null);
+        setOrderBy('name');
+        setOrder('asc');
+        setRowsMounted(false);
     };
+
+    const handleSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
+
+    const renderSortableHeader = (property, label) => (
+        <TableCell>
+            <TableSortLabel
+                active={orderBy === property}
+                direction={orderBy === property ? order : 'asc'}
+                onClick={() => handleSort(property)}
+            >
+                {label}
+            </TableSortLabel>
+        </TableCell>
+    );
 
     const handleMenuClick = (event, row) => {
         setAnchorEl(event.currentTarget);
@@ -114,7 +192,12 @@ const FacultiesTable = () => {
     };
 
     const handleEdit = () => {
-        setEditFaculty(currentRow);
+        setEditFaculty({
+            id: currentRow.id,
+            name: currentRow.name,
+            full_name: currentRow.full_name,
+            dean_person_id: currentRow.dean?.id || null
+        });
         setOpenEditModal(true);
         handleMenuClose();
     };
@@ -125,7 +208,11 @@ const FacultiesTable = () => {
     };
 
     const handleAdd = () => {
-        setNewFaculty({ shortName: '', fullName: '', dean: '' });
+        setNewFaculty({
+            name: '',
+            full_name: '',
+            dean_person_id: null
+        });
         setOpenAddModal(true);
     };
 
@@ -135,43 +222,93 @@ const FacultiesTable = () => {
         setOpenAddModal(false);
     };
 
+    const handleDeanChangeEdit = (person) => {
+        setEditFaculty(prev => ({
+            ...prev,
+            dean_person_id: person ? person.id : null
+        }));
+    };
+
+    const handleDeanChangeAdd = (person) => {
+        setNewFaculty(prev => ({
+            ...prev,
+            dean_person_id: person ? person.id : null
+        }));
+    };
+
     const handleSaveEdit = () => {
-        //TODO update data
-        if (!editFaculty.shortName || !editFaculty.fullName || !editFaculty.dean) {
-            showAlert('Все поля должны быть заполнены!', 'error');
+        if (!editFaculty.name || !editFaculty.full_name) {
+            showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
 
-
-        showAlert('Факультет успешно обновлен!', 'success');
-        handleCloseModals();
+        dispatch(updateFaculty({
+            id: editFaculty.id,
+            data: {
+                name: editFaculty.name,
+                full_name: editFaculty.full_name,
+                dean_person_id: editFaculty.dean_person_id
+            }
+        }))
+            .then(() => {
+                showAlert('Факультет успешно обновлен!', 'success');
+                handleCloseModals();
+            });
     };
 
     const handleSaveAdd = () => {
-        //TODO hnaldesave add faculty
-        if (!newFaculty.shortName || !newFaculty.fullName || !newFaculty.dean) {
-            showAlert('Все поля должны быть заполнены!', 'error');
+        if (!newFaculty.name || !newFaculty.full_name) {
+            showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
 
-        const newId = Math.max(...facultiesData.map(faculty => parseInt(faculty.id))) + 1;
-        showAlert('Факультет успешно добавлен!', 'success');
-        handleCloseModals();
+        dispatch(createFaculty({
+            name: newFaculty.name,
+            full_name: newFaculty.full_name,
+            dean_person_id: newFaculty.dean_person_id
+        }))
+            .then(() => {
+                showAlert('Факультет успешно добавлен!', 'success');
+                handleCloseModals();
+            });
     };
 
     const handleDeleteConfirm = () => {
-        //TODO handle delete faculty
-        showAlert('Факультет успешно удален!', 'success');
-        handleCloseModals();
+        dispatch(deleteFaculty(currentRow.id))
+            .then(() => {
+                showAlert('Факультет успешно удален!', 'success');
+                handleCloseModals();
+            });
     };
 
-    const filteredData = facultiesData.filter(faculty => {
+    const handlePageChange = (_, newPage) => {
+        dispatch(setFacultyPage(newPage + 1));
+        setRowsMounted(false);
+    };
+
+    const handleRowsPerPageChange = (e) => {
+        const newLimit = parseInt(e.target.value, 10);
+        dispatch(setFacultyLimit(newLimit));
+        dispatch(setFacultyPage(1));
+        setRowsMounted(false);
+    };
+
+    if (isLoading) {
+        return <div>Загрузка данных...</div>;
+    }
+
+    if (errors.length > 0) {
         return (
-            faculty.shortName.toLowerCase().includes(searchShortName.toLowerCase()) &&
-            faculty.fullName.toLowerCase().includes(searchFullName.toLowerCase()) &&
-            faculty.dean.toLowerCase().includes(searchDean.toLowerCase())
+            <div>
+                Ошибка загрузки данных:
+                <ul>
+                    {errors.map((err, index) => (
+                        <li key={index}>{err.message || err.toString()}</li>
+                    ))}
+                </ul>
+            </div>
         );
-    });
+    }
 
     return (
         <>
@@ -179,8 +316,11 @@ const FacultiesTable = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
                     <Typography variant="h6">Список факультетов</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <IconButton onClick={handleSearchMenuClick}>
+                        <IconButton onClick={handleSearchMenuClick} className="action-button">
                             <SearchIcon />
+                        </IconButton>
+                        <IconButton onClick={handleResetSearch} className="action-button">
+                            <RefreshIcon />
                         </IconButton>
                         <Menu
                             anchorEl={searchAnchorEl}
@@ -188,16 +328,15 @@ const FacultiesTable = () => {
                             onClose={handleSearchMenuClose}
                             sx={{ maxWidth: 320 }}
                         >
-                            <Box sx={{ p: 1, width: 320 }}>
+                            <Box sx={{ p: 2, width: 280 }}>
                                 <TextField
-                                    label="Поиск по сокращенному названию"
+                                    label="Поиск по названию"
                                     variant="outlined"
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchShortName}
-                                    onChange={handleSearchShortNameChange}
-                                    sx={{ maxWidth: 270 }}
+                                    value={searchValues.nameQuery}
+                                    onChange={handleSearchChange('nameQuery')}
                                 />
                                 <TextField
                                     label="Поиск по полному названию"
@@ -205,20 +344,36 @@ const FacultiesTable = () => {
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchFullName}
-                                    onChange={handleSearchFullNameChange}
-                                    sx={{ maxWidth: 270 }}
+                                    value={searchValues.fullNameQuery}
+                                    onChange={handleSearchChange('fullNameQuery')}
                                 />
                                 <TextField
-                                    label="Поиск по ФИО декана"
+                                    label="Поиск по декану"
                                     variant="outlined"
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchDean}
-                                    onChange={handleSearchDeanChange}
-                                    sx={{ maxWidth: 270 }}
+                                    value={searchValues.deanQuery}
+                                    onChange={handleSearchChange('deanQuery')}
                                 />
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
+                                    <Button
+                                        size="small"
+                                        onClick={handleResetSearch}
+                                        disabled={!searchValues.nameQuery && !searchValues.fullNameQuery && !searchValues.deanQuery}
+                                        className="action-button"
+                                    >
+                                        Сбросить
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        variant="contained"
+                                        onClick={handleSearch}
+                                        className="action-button"
+                                    >
+                                        Поиск
+                                    </Button>
+                                </Box>
                             </Box>
                         </Menu>
                     </Box>
@@ -226,20 +381,35 @@ const FacultiesTable = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Сокращенное название</TableCell>
-                            <TableCell>Полное название</TableCell>
-                            <TableCell>ФИО декана</TableCell>
+                            {renderSortableHeader('name', 'Название')}
+                            {renderSortableHeader('full_name', 'Полное название')}
+                            <TableCell>Декан</TableCell>
                             <TableCell>Действия</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(faculty => (
-                            <TableRow key={faculty.id}>
-                                <TableCell>{faculty.shortName}</TableCell>
-                                <TableCell>{faculty.fullName}</TableCell>
-                                <TableCell>{faculty.dean}</TableCell>
+                        {facultiesData.map((faculty, index) => (
+                            <TableRow
+                                key={faculty.id}
+                                className={`table-row ${rowsMounted ? 'show' : ''}`}
+                                style={{ transitionDelay: `${index * 50}ms` }}
+                            >
+                                <TableCell>{faculty.name}</TableCell>
+                                <TableCell>{faculty.full_name}</TableCell>
                                 <TableCell>
-                                    <IconButton onClick={(e) => handleMenuClick(e, faculty)}>
+                                    {faculty.dean_person ? (
+                                        `${faculty.dean_person.surname} ${faculty.dean_person.name} ${faculty.dean_person.middlename || ''}`.trim()
+                                    ) : faculty.dean_person_id ? (
+                                        `ID: ${faculty.dean_person_id} (данные не загружены)`
+                                    ) : (
+                                        'Не указан'
+                                    )}
+                                </TableCell>
+                                <TableCell>
+                                    <IconButton
+                                        onClick={(e) => handleMenuClick(e, faculty)}
+                                        className="action-button"
+                                    >
                                         <MoreVertIcon />
                                     </IconButton>
                                 </TableCell>
@@ -250,14 +420,15 @@ const FacultiesTable = () => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={filteredData.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
-                        setPage(0);
-                    }}
+                    count={meta.total}
+                    rowsPerPage={meta.limit}
+                    page={meta.page - 1}
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                    labelRowsPerPage="Строк на странице:"
+                    labelDisplayedRows={({ from, to, count }) =>
+                        `${from}-${to} из ${count !== -1 ? count : `более ${to}`}`
+                    }
                 />
                 <Menu
                     anchorEl={anchorEl}
@@ -268,27 +439,33 @@ const FacultiesTable = () => {
                     <MenuItem onClick={handleDelete}>Удалить</MenuItem>
                 </Menu>
                 <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
-                    <Box sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: 400,
-                        bgcolor: 'background.paper',
-                        boxShadow: 24
-                    }}>
+                    <Box
+                        className={`modal-fade ${(openEditModal || openDeleteModal || openAddModal) ? 'active' : ''}`}
+                        sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: '50%',
+                            width: 400,
+                            bgcolor: 'background.paper',
+                            boxShadow: 24,
+                            borderRadius: 1,
+                            p: 0
+                        }}
+                    >
                         <Box sx={{
                             bgcolor: '#1976d2',
                             color: 'white',
                             p: 2,
                             display: 'flex',
                             justifyContent: 'space-between',
-                            alignItems: 'center'
+                            alignItems: 'center',
+                            borderTopLeftRadius: 1,
+                            borderTopRightRadius: 1
                         }}>
                             <Typography variant="h6">
-                                {openEditModal && "Редактировать запись"}
-                                {openDeleteModal && "Удалить запись"}
-                                {openAddModal && "Добавить новую запись"}
+                                {openEditModal && "Редактировать факультет"}
+                                {openDeleteModal && "Удалить факультет"}
+                                {openAddModal && "Добавить факультет"}
                             </Typography>
                             <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
                                 <CloseIcon />
@@ -298,87 +475,92 @@ const FacultiesTable = () => {
                             {openEditModal && (
                                 <div>
                                     <TextField
-                                        label="Сокращенное название"
+                                        label="Название"
                                         fullWidth
                                         margin="normal"
-                                        value={editFaculty.shortName}
-                                        onChange={(e) => setEditFaculty({ ...editFaculty, shortName: e.target.value })}
+                                        value={editFaculty.name}
+                                        onChange={(e) => setEditFaculty({ ...editFaculty, name: e.target.value })}
                                     />
                                     <TextField
                                         label="Полное название"
                                         fullWidth
                                         margin="normal"
-                                        value={editFaculty.fullName}
-                                        onChange={(e) => setEditFaculty({ ...editFaculty, fullName: e.target.value })}
+                                        value={editFaculty.full_name}
+                                        onChange={(e) => setEditFaculty({ ...editFaculty, full_name: e.target.value })}
                                     />
-                                    <TextField
-                                        label="ФИО декана"
-                                        fullWidth
-                                        margin="normal"
-                                        value={editFaculty.dean}
-                                        onChange={(e) => setEditFaculty({ ...editFaculty, dean: e.target.value })}
+                                    <PersonSelector
+                                        value={editFaculty.dean_person_id}
+                                        onChange={handleDeanChangeEdit}
+                                        options={people}
+                                        label="Декан факультета"
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
+                                        <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
+                                        <Button onClick={handleSaveEdit} color="primary" className="action-button">Сохранить</Button>
                                     </Box>
                                 </div>
                             )}
                             {openDeleteModal && (
                                 <div>
-                                    <Typography>Вы уверены, что хотите удалить запись {currentRow?.shortName}?</Typography>
+                                    <Typography>Вы уверены, что хотите удалить факультет "{currentRow?.name}"?</Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button onClick={handleDeleteConfirm} color="error">Удалить</Button>
+                                        <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
+                                        <Button onClick={handleDeleteConfirm} color="error" className="action-button">Удалить</Button>
                                     </Box>
                                 </div>
                             )}
                             {openAddModal && (
                                 <div>
                                     <TextField
-                                        label="Сокращенное название"
+                                        label="Название"
                                         fullWidth
                                         margin="normal"
-                                        value={newFaculty.shortName}
-                                        onChange={(e) => setNewFaculty({ ...newFaculty, shortName: e.target.value })}
+                                        value={newFaculty.name}
+                                        onChange={(e) => setNewFaculty({ ...newFaculty, name: e.target.value })}
                                     />
                                     <TextField
                                         label="Полное название"
                                         fullWidth
                                         margin="normal"
-                                        value={newFaculty.fullName}
-                                        onChange={(e) => setNewFaculty({ ...newFaculty, fullName: e.target.value })}
+                                        value={newFaculty.full_name}
+                                        onChange={(e) => setNewFaculty({ ...newFaculty, full_name: e.target.value })}
                                     />
-                                    <TextField
-                                        label="ФИО декана"
-                                        fullWidth
-                                        margin="normal"
-                                        value={newFaculty.dean}
-                                        onChange={(e) => setNewFaculty({ ...newFaculty, dean: e.target.value })}
+                                    <PersonSelector
+                                        value={newFaculty.dean_person_id}
+                                        onChange={handleDeanChangeAdd}
+                                        options={people}
+                                        label="Декан факультета"
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals}>Отмена</Button>
-                                        <Button onClick={handleSaveAdd} color="primary">Добавить</Button>
+                                        <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
+                                        <Button onClick={handleSaveAdd} color="primary" className="action-button">Добавить</Button>
                                     </Box>
                                 </div>
                             )}
                         </Box>
                     </Box>
                 </Modal>
-                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                    <IconButton onClick={handleAdd} color="primary">
-                        <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
-                    </IconButton>
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddCircleOutlineIcon />}
+                            onClick={handleAdd}
+                        >
+                            Добавить факультет
+                        </Button>
+                    </Box>
                 </Box>
             </TableContainer>
 
-            {/* Компонент Alert для отображения уведомлений */}
-            <Alert
-                open={alertState.open}
-                message={alertState.message}
-                severity={alertState.severity}
-                handleClose={handleCloseAlert}
-            />
+            <div className={`alert-slide ${alertState.open ? 'active' : ''}`}>
+                <Alert
+                    open={alertState.open}
+                    message={alertState.message}
+                    severity={alertState.severity}
+                    onClose={handleCloseAlert}
+                />
+            </div>
         </>
     );
 };

@@ -11,11 +11,23 @@ class PersonService {
   }
 
   async update(personId, updateData) {
+    console.log('Сервер получил запрос на обновление:', {
+      personId,
+      updateData
+    });
+
     const person = await Person.findByPk(personId);
     if (!person) {
       throw ApiError.notFound(`Person with ID ${personId} not found`);
     }
-    return await person.update(updateData);
+
+    console.log('Текущие данные в БД до обновления:', person.toJSON());
+
+    const result = await person.update(updateData);
+
+    console.log('Обновленные данные в БД:', result.toJSON());
+
+    return result;
   }
 
   async getAll({
