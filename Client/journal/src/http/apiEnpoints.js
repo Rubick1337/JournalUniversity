@@ -1,8 +1,6 @@
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export const API_ENDPOINTS = {
-  // CREATE_PERSON: '/person/create',
-  // GET_PERSONS_DATA_FOR_SELECT: '/person/getDataForSelect',
   Faculty: {
     CREATE: `/faculty/create`,
     UPDATE: `/faculty/update/:facultyId`,
@@ -73,5 +71,12 @@ export const API_ENDPOINTS = {
     UPDATE: '/assessmentType/update/:id',
     DELETE: '/assessmentType/delete/:id',
     GETBYID: `/assessmentType/getById/:id`,
+  },
+  CURRICULUM_SUBJECT: {
+    GETALL: "/curriculumSubject/getAll",
+    CREATE: '/curriculumSubject/create/:curriculumId',
+    UPDATE: '/curriculumSubject/update/:curriculumId/:subjectId/:assessmentTypeId/:semester',
+    DELETE: '/curriculumSubject/delete/:curriculumId/:subjectId/:assessmentTypeId/:semester',
+    GET_BY_COMPOSITED_ID: `/curriculumSubject/getByCompositeId/:curriculumId/:subjectId/:assessmentTypeId/:semester`,
   },
 };

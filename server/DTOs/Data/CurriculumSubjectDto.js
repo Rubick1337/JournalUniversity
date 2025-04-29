@@ -1,6 +1,5 @@
 class CurriculumSubjectDto {
   constructor({
-    curriculum = {},
     subject = {},
     assessmentType = {},
     semester,
@@ -9,12 +8,7 @@ class CurriculumSubjectDto {
     lab_hours,
     practice_hours,
   }) {
-    this.curriculum = curriculum
-      ? {
-          id: curriculum.id,
-          year_of_specialty_training: curriculum.year_of_specialty_training,
-        }
-      : null;
+
     this.subject = subject
       ? {
           id: subject.id,

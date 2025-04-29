@@ -30,8 +30,10 @@ class CurriculumSubjectController {
         assessmentTypeQuery = "",
         semesterQuery = ""
       } = req.query;
+      const { curriculumId } = req.params;
 
       const { data, meta } = await CurriculumSubjectService.getAll({
+        curriculumId,
         page: parseInt(page),
         limit: parseInt(limit),
         sortBy,

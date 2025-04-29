@@ -4,6 +4,7 @@ import facultyReducer from './slices/facultySlice';
 import teacherPositionReducer from './slices/teacherPositionSlice';
 import educationFormReducer from './slices/educationFormSlice';
 import assessmentTypeReducer from './slices/assessmentTypeSlice';
+import curriculumReducer from './slices/curriculumSlice';
 
 
 const store = configureStore({
@@ -13,6 +14,7 @@ const store = configureStore({
         teacherPositions: teacherPositionReducer,
         educationForms: educationFormReducer,
         assessmentTypes: assessmentTypeReducer,
+        curriculum: curriculumReducer,
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({ serializableCheck: false }),

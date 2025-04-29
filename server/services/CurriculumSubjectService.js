@@ -69,6 +69,7 @@ class CurriculumSubjectService {
   }
 
   async getAll({
+    curriculumId,
     page = 1,
     limit = 10,
     sortBy = "semester",
@@ -84,6 +85,10 @@ class CurriculumSubjectService {
       const offset = (page - 1) * limit;
 
       const where = {};
+
+      if (curriculumId) {
+        where.curriculum_id = curriculumId;
+      }
 
       // if (query.semesterQuery) {
       //   where.semester = {
@@ -107,13 +112,16 @@ class CurriculumSubjectService {
           model: Curriculum,
           as: "curriculum",
           attributes: ["id", "year_of_specialty_training"],
-          required: !!query.curriculumQuery,
+          required: !!query.curriculumQuery || !!curriculumId,
           where: query.curriculumQuery
             ? {
                 year_of_specialty_training: {
                   [Op.iLike]: `%${query.curriculumQuery}%`,
                 },
+                ...(curriculumId && { id: curriculumId }),
               }
+            : curriculumId
+            ? { id: curriculumId }
             : undefined,
         },
         {
