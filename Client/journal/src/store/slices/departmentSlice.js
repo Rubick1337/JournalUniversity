@@ -1,51 +1,55 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import AssessmentTypeService from '../../services/AssessmentTypeService';
+import DepartmentService from '../../services/DepartmentService';
 
 // Асинхронные действия
-export const fetchAssessmentTypes = createAsyncThunk(
-    'assessmentTypes/fetchAssessmentTypes',
+export const fetchDepartments = createAsyncThunk(
+    'departments/fetchAll',
     async (params, { rejectWithValue }) => {
         try {
-            const response = await AssessmentTypeService.getAlls(params);
+            const response = await DepartmentService.getAll(params);
+            console.log('Departments API response:', response); // Добавьте это
             return {
                 data: response.data,
                 meta: response.meta
             };
         } catch (error) {
+            console.error('Departments API error:', error); // И это
             return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
 
-export const addAssessmentType = createAsyncThunk(
-    'assessmentTypes/addAssessmentType',
-    async (typeData, { rejectWithValue }) => {
+export const createDepartment = createAsyncThunk(
+    'departments/create',
+    async (departmentData, { rejectWithValue }) => {
         try {
-            const response = await AssessmentTypeService.create(typeData);
-            return response;
+
+            const response = await DepartmentService.create(departmentData);
+            console.log("saqweqweq" + departmentData.faculty_id);
+            return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
 
-export const updateAssessmentType = createAsyncThunk(
-    'assessmentTypes/updateAssessmentType',
-    async ({ id, typeData }, { rejectWithValue }) => {
+export const updateDepartment = createAsyncThunk(
+    'departments/update',
+    async ({ id, data }, { rejectWithValue }) => {
         try {
-            const response = await AssessmentTypeService.update(id, typeData);
-            return response;
+            const response = await DepartmentService.update(id, data);
+            return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
 
-export const deleteAssessmentType = createAsyncThunk(
-    'assessmentTypes/deleteAssessmentType',
+export const deleteDepartment = createAsyncThunk(
+    'departments/delete',
     async (id, { rejectWithValue }) => {
         try {
-            await AssessmentTypeService.delete(id);
+            await DepartmentService.delete(id);
             return id;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -53,12 +57,12 @@ export const deleteAssessmentType = createAsyncThunk(
     }
 );
 
-export const getAssessmentTypeById = createAsyncThunk(
-    'assessmentTypes/getAssessmentTypeById',
+export const getDepartmentById = createAsyncThunk(
+    'departments/getById',
     async (id, { rejectWithValue }) => {
         try {
-            const response = await AssessmentTypeService.getById(id);
-            return response;
+            const response = await DepartmentService.getById(id);
+            return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
@@ -66,27 +70,32 @@ export const getAssessmentTypeById = createAsyncThunk(
 );
 
 // Slice
-const assessmentTypeSlice = createSlice({
-    name: 'assessmentTypes',
+const departmentSlice = createSlice({
+    name: 'departments',
     initialState: {
         data: [],
-        currentType: null,
+        currentDepartment: null,
         isLoading: false,
         errors: [],
         meta: {
             total: 0,
-            totalPage: 0,
+            totalPages: 0,
             limit: 10,
             page: 1
         },
-        searchParams: {}
+        searchParams: {
+            nameQuery: '',
+            fullNameQuery: '',
+            facultyQuery: '',
+            headQuery: ''
+        }
     },
     reducers: {
         clearErrors: (state) => {
             state.errors = [];
         },
-        clearCurrentType: (state) => {
-            state.currentType = null;
+        clearCurrentDepartment: (state) => {
+            state.currentDepartment = null;
         },
         setPage: (state, action) => {
             state.meta.page = action.payload;
@@ -94,89 +103,97 @@ const assessmentTypeSlice = createSlice({
         setLimit: (state, action) => {
             state.meta.limit = action.payload;
         },
-        setSearchParams: (state, action) => { // Добавляем новый редюсер
-            state.searchParams = action.payload;
+        setSearchParams: (state, action) => {
+            state.searchParams = { ...state.searchParams, ...action.payload };
         }
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchAssessmentTypes.pending, (state) => {
+            .addCase(fetchDepartments.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(fetchAssessmentTypes.fulfilled, (state, action) => {
+            .addCase(fetchDepartments.fulfilled, (state, action) => {
+                console.log('Received departments:', action.payload);
                 state.isLoading = false;
                 state.data = action.payload.data;
-                state.meta = action.payload.meta;
+                state.meta = {
+                    ...state.meta,
+                    ...action.payload.meta,
+                    totalPages: Math.ceil(action.payload.meta.total / state.meta.limit)
+                };
             })
-            .addCase(fetchAssessmentTypes.rejected, (state, action) => {
+            .addCase(fetchDepartments.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(addAssessmentType.pending, (state) => {
+            .addCase(createDepartment.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(addAssessmentType.fulfilled, (state, action) => {
+            .addCase(createDepartment.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data.unshift(action.payload);
                 state.meta.total += 1;
-                state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
+                state.meta.totalPages = Math.ceil(state.meta.total / state.meta.limit);
             })
-            .addCase(addAssessmentType.rejected, (state, action) => {
+            .addCase(createDepartment.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(updateAssessmentType.pending, (state) => {
+            .addCase(updateDepartment.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(updateAssessmentType.fulfilled, (state, action) => {
+            .addCase(updateDepartment.fulfilled, (state, action) => {
                 state.isLoading = false;
                 const updated = action.payload;
-                state.data = state.data.map(type =>
-                    type.id === updated.id ? updated : type
+                state.data = state.data.map(department =>
+                    department.id === updated.id ? updated : department
                 );
+                if (state.currentDepartment?.id === updated.id) {
+                    state.currentDepartment = updated;
+                }
             })
-            .addCase(updateAssessmentType.rejected, (state, action) => {
+            .addCase(updateDepartment.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(deleteAssessmentType.pending, (state) => {
+            .addCase(deleteDepartment.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(deleteAssessmentType.fulfilled, (state, action) => {
+            .addCase(deleteDepartment.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.data = state.data.filter(type => type.id !== action.payload);
+                state.data = state.data.filter(department => department.id !== action.payload);
                 state.meta.total -= 1;
-                state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
+                state.meta.totalPages = Math.ceil(state.meta.total / state.meta.limit);
             })
-            .addCase(deleteAssessmentType.rejected, (state, action) => {
+            .addCase(deleteDepartment.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(getAssessmentTypeById.pending, (state) => {
+            .addCase(getDepartmentById.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(getAssessmentTypeById.fulfilled, (state, action) => {
+            .addCase(getDepartmentById.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.currentType = action.payload;
+                state.currentDepartment = action.payload;
             })
-            .addCase(getAssessmentTypeById.rejected, (state, action) => {
+            .addCase(getDepartmentById.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
@@ -187,10 +204,10 @@ const assessmentTypeSlice = createSlice({
 
 export const {
     clearErrors,
-    clearCurrentType,
+    clearCurrentDepartment,
     setPage,
     setLimit,
     setSearchParams
-} = assessmentTypeSlice.actions;
+} = departmentSlice.actions;
 
-export default assessmentTypeSlice.reducer;
+export default departmentSlice.reducer;

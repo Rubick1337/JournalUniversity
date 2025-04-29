@@ -2,6 +2,15 @@ import $api from "../http/index";
 import { API_ENDPOINTS } from "../http/apiEnpoints";
 import BaseService from "./BaseService";
 
+const addParamInEndpoint = (endpoint, paramName, paramValue) => {
+  if (paramValue === undefined || paramValue === null || paramValue === "") {
+    return endpoint; // Не добавляем пустые параметры
+  }
+
+  const separator = endpoint.includes("?") ? "&" : "?";
+  return `${endpoint}${separator}${paramName}=${encodeURIComponent(paramValue)}`;
+};
+
 class TeacherPositionService extends BaseService {
   async createTeacherPosition(data) {
     const response = await BaseService.request(
@@ -29,13 +38,21 @@ class TeacherPositionService extends BaseService {
     return response;
   }
 
-  async getAllTeacherPositions() {
-    //TODO query params
+  async getAllTeacherPositions({limit, page, sortBy, sortOrder, idQuery, nameQuery}) {
+    let endpoint = API_ENDPOINTS.TEACHER_POSITION.GETALL;
+
+    endpoint = addParamInEndpoint(endpoint, "limit", limit);
+    endpoint = addParamInEndpoint(endpoint, "page", page);
+    endpoint = addParamInEndpoint(endpoint, "sortBy", sortBy);
+    endpoint = addParamInEndpoint(endpoint, "sortOrder", sortOrder);
+    endpoint = addParamInEndpoint(endpoint, "idQuery", idQuery);
+    endpoint = addParamInEndpoint(endpoint, "nameQuery", nameQuery);
+
     const response = await BaseService.request(
-      "get",
-      API_ENDPOINTS.TEACHER_POSITION.GETALL
+        "get",
+        endpoint
     );
-    return response.data;
+    return response;
   }
 
   async getTeacherPositionById(id) {

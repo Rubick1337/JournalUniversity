@@ -38,12 +38,19 @@ export const PersonModal = React.memo(({ open, onClose, onSave, initialData = {}
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!personData.lastName || !personData.firstName) {
-      // Передаем ошибку через onSave
+    e.stopPropagation(); // Добавлено для предотвращения всплытия
+
+    if (!personData.lastName.trim() || !personData.firstName.trim()) {
       onSave(null, 'Фамилия и имя обязательны для заполнения!');
       return;
     }
-    onSave(personData);
+
+    onSave({
+      ...personData,
+      lastName: personData.lastName.trim(),
+      firstName: personData.firstName.trim(),
+      patronymic: personData.patronymic.trim()
+    });
   };
 
   return (

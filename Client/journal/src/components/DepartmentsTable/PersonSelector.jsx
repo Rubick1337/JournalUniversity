@@ -1,55 +1,147 @@
-import React from 'react';
-import { Autocomplete, TextField, Box, Button, Typography } from '@mui/material';
-import { PersonAdd as PersonAddIcon } from '@mui/icons-material';
-import { FormControl } from '@mui/material';
+import React, { useState } from 'react';
+import { Autocomplete, TextField, IconButton, Box, Typography, Stack } from '@mui/material';
+import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import { PersonModal } from '../PersonCreationModal/PersonCreationModal';
+import { useDispatch } from 'react-redux';
+import { addPerson, fetchPersons } from '../../store/slices/personSlice';
 
-const PersonSelector = ({
-                            value,
-                            onChange,
-                            people,
-                            inputValue,
-                            onInputChange,
-                            onAddPersonClick
-                        }) => {
+const PersonSelector = ({ value, onChange, options = [] }) => {
+    const dispatch = useDispatch();
+    const [modalOpen, setModalOpen] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+    const [showAddOption, setShowAddOption] = useState(false);
+
+    const getPersonLabel = (person) => {
+        if (!person) return '';
+        if (typeof person === 'object') {
+            return `${person.surname} ${person.name} ${person.middlename || ''}`.trim();
+        }
+        const foundPerson = options.find(opt => opt.id === person);
+        return foundPerson ? `${foundPerson.surname} ${foundPerson.name} ${foundPerson.middlename || ''}`.trim() : '';
+    };
+
+    const normalizeValue = () => {
+        if (!value) return null;
+        if (typeof value === 'object') return value;
+        return options.find(opt => opt.id === value) || null;
+    };
+
+    const handleInputChange = (event, newInputValue) => {
+        setInputValue(newInputValue);
+        // Проверяем, есть ли введенное значение в списке options
+        const exists = options.some(option =>
+            getPersonLabel(option).toLowerCase().includes(newInputValue.toLowerCase())
+        );
+        setShowAddOption(newInputValue.length > 0 && !exists);
+    };
+
+    const filterOptions = (options, { inputValue }) => {
+        return options.filter(option =>
+            getPersonLabel(option).toLowerCase().includes(inputValue.toLowerCase())
+        );
+    };
+
+    const handleAddNewPerson = (newPersonData, error) => {
+        if (error) {
+            alert(error);
+            return;
+        }
+
+        const personToAdd = {
+            surname: newPersonData.lastName,
+            name: newPersonData.firstName,
+            middlename: newPersonData.patronymic,
+            phoneNumber: newPersonData.phone,
+            email: newPersonData.email
+        };
+
+        dispatch(addPerson(personToAdd))
+            .unwrap()
+            .then((addedPerson) => {
+                onChange(addedPerson);
+                setModalOpen(false);
+                setInputValue('');
+                setShowAddOption(false);
+                dispatch(fetchPersons({}));
+            })
+            .catch((err) => {
+                alert(`Ошибка при добавлении: ${err.message}`);
+            });
+    };
+
     return (
-        <FormControl fullWidth margin="normal">
+        <Box sx={{ width: '100%' }}>
             <Autocomplete
-                options={people}
-                getOptionLabel={(option) => option.fullName}
-                value={people.find(p => p.fullName === value) || null}
+                options={options}
+                getOptionLabel={getPersonLabel}
+                value={normalizeValue()}
                 onChange={(_, newValue) => {
-                    onChange(newValue ? newValue.fullName : '');
+                    onChange(newValue);
+                    setShowAddOption(false);
                 }}
                 inputValue={inputValue}
-                onInputChange={(_, value) => onInputChange(_, value)}
+                onInputChange={handleInputChange}
+                isOptionEqualToValue={(option, value) => option?.id === value?.id}
+                filterOptions={filterOptions} // Используем нашу функцию фильтрации
+                noOptionsText={
+                    showAddOption ? (
+                        <Stack
+                            direction="row"
+                            alignItems="center"
+                            spacing={1}
+                            sx={{ p: 1, cursor: 'pointer' }}
+                            onClick={() => setModalOpen(true)}
+                        >
+                            <PersonAddAltIcon color="primary" />
+                            <Typography>
+                                Добавить "{inputValue}" как нового заведующего
+                            </Typography>
+                        </Stack>
+                    ) : (
+                        'Не найдено'
+                    )
+                }
                 renderInput={(params) => (
                     <TextField
                         {...params}
-                        label="ФИО"
+                        label="Заведующий кафедрой"
                         margin="normal"
-                        required
+                        fullWidth
+                        InputProps={{
+                            ...params.InputProps,
+                            endAdornment: (
+                                <>
+                                    {params.InputProps.endAdornment}
+                                    {showAddOption && (
+                                        <IconButton
+                                            onClick={() => setModalOpen(true)}
+                                            color="primary"
+                                            sx={{ mr: -1 }}
+                                        >
+                                            <PersonAddAltIcon />
+                                        </IconButton>
+                                    )}
+                                </>
+                            )
+                        }}
                     />
                 )}
-                noOptionsText={
-                    <Box sx={{ p: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Typography variant="body2">Не найдено</Typography>
-                        <Button
-                            startIcon={<PersonAddIcon />}
-                            onClick={onAddPersonClick}
-                            size="small"
-                        >
-                            Добавить нового
-                        </Button>
-                    </Box>
-                }
-                renderOption={(props, option) => (
-                    <li {...props} key={option.id}>
-                        {option.fullName}
-                    </li>
-                )}
             />
-        </FormControl>
+
+            <PersonModal
+                open={modalOpen}
+                onClose={() => {
+                    setModalOpen(false);
+                    setShowAddOption(false);
+                }}
+                onSave={handleAddNewPerson}
+                initialData={{
+                    lastName: inputValue.split(' ')[0] || '',
+                    firstName: inputValue.split(' ')[1] || '',
+                }}
+            />
+        </Box>
     );
 };
 
-export default React.memo(PersonSelector);
+export default PersonSelector;

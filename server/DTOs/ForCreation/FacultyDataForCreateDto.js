@@ -1,19 +1,25 @@
 class FacultyDataForCreateDto {
-    constructor({ 
-        name, 
-        full_name,
-        dean_person = null, // явно указываем дефолтное значение null
-    }) {
+    constructor({
+                    name,
+                    full_name,
+                    dean_person_id, // принимаем ID напрямую
+                    dean_person = null // оставляем для обратной совместимости
+                }) {
         this.name = name;
         this.fullName = full_name;
 
-        // Обрабатываем случай, когда декан не указан
-        this.deanPerson = dean_person ? {
-            id: dean_person.id,
-            surname: dean_person.surname,
-            name: dean_person.name,
-            middlename: dean_person.middlename,  
-        } : null; // или undefined, в зависимости от требований      
+        // Если передали ID, используем его
+        if (dean_person_id) {
+            this.deanPersonId = dean_person_id;
+        }
+        // Иначе пытаемся взять ID из объекта
+        else if (dean_person) {
+            this.deanPersonId = dean_person.id;
+        }
+        // Если ничего не передано
+        else {
+            this.deanPersonId = null;
+        }
     }
 }
 

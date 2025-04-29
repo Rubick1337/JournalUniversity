@@ -6,14 +6,9 @@ import DepartmentForm from './DepartmentForm';
 const DepartmentAddModal = ({
                                 open,
                                 onClose,
-                                department,
-                                onDepartmentChange,
-                                onSave,
-                                people,
-                                personInputValue,
-                                onPersonInputChange,
-                                onAddPersonClick,
-                                faculties
+                                people = [],
+                                faculties = [],
+                                onSave
                             }) => {
     return (
         <Modal open={open} onClose={onClose}>
@@ -41,15 +36,11 @@ const DepartmentAddModal = ({
                 </Box>
                 <Box sx={{ p: 3 }}>
                     <DepartmentForm
-                        department={department}
-                        onDepartmentChange={onDepartmentChange}
-                        people={people}
-                        personInputValue={personInputValue}
-                        onPersonInputChange={onPersonInputChange}
-                        onAddPersonClick={onAddPersonClick}
-                        faculties={faculties}
+                        department={{}}
+                        onSave={onSave}
                         onCancel={onClose}
-                        onSubmit={onSave}
+                        people={people}
+                        faculties={faculties}
                         submitText="Добавить"
                     />
                 </Box>
@@ -58,4 +49,4 @@ const DepartmentAddModal = ({
     );
 };
 
-export default React.memo(DepartmentAddModal);
+export default DepartmentAddModal;

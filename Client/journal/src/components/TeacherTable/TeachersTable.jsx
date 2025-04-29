@@ -1,76 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { debounce } from 'lodash';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Typography,
-    TablePagination,
-    TextField,
-    IconButton,
-    Menu,
-    MenuItem,
-    Box,
-    FormControl,
-    InputLabel,
-    Select,
-    Autocomplete,
-    Button
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+    Paper, Typography, TablePagination, TextField, IconButton,
+    Menu, MenuItem, Box, InputAdornment, Button, TableSortLabel
 } from '@mui/material';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import SearchIcon from '@mui/icons-material/Search';
-import { PersonAdd as PersonAddIcon } from '@mui/icons-material';
+import { AddCircleOutline, MoreVert, Search, Refresh } from '@mui/icons-material';
+import {
+    fetchTeachers,
+    createTeacher,
+    updateTeacher,
+    deleteTeacher,
+    getTeacherById,
+    clearCurrentTeacher,
+    setPage,
+    setLimit,
+    setSearchParams
+} from '../../store/slices/teacherSlice';
 import Alert from '../Alert/Alert';
 import AddTeacherModal from './AddTeacherModal';
 import EditTeacherModal from './EditTeacherModal';
 import DeleteTeacherModal from './DeleteTeacherModal';
-import {PersonModal} from '../PersonCreationModal/PersonCreationModal';
-
-// Mock данные
-const mockTeachers = [
-    { id: 1, name: 'Иванов Иван Иванович', department: 'Кафедра информатики', position: 'Доцент' },
-    { id: 2, name: 'Петров Петр Петрович', department: 'Кафедра математики', position: 'Профессор' },
-    { id: 3, name: 'Сидорова Анна Михайловна', department: 'Кафедра физики', position: 'Старший преподаватель' },
-    { id: 4, name: 'Кузнецов Дмитрий Сергеевич', department: 'Кафедра информатики', position: 'Ассистент' },
-    { id: 5, name: 'Смирнова Елена Владимировна', department: 'Кафедра экономики', position: 'Доцент' },
-];
-
-const mockDepartments = [
-    { id: 1, name: 'Кафедра информатики' },
-    { id: 2, name: 'Кафедра математики' },
-    { id: 3, name: 'Кафедра физики' },
-    { id: 4, name: 'Кафедра экономики' },
-];
-
-const mockPositions = [
-    { id: 1, name: 'Профессор' },
-    { id: 2, name: 'Доцент' },
-    { id: 3, name: 'Старший преподаватель' },
-    { id: 4, name: 'Ассистент' },
-];
-
-// Mock данные для людей
-const mockPeople = [
-    { id: 1, fullName: 'Иванов Иван Иванович', lastName: 'Иванов', firstName: 'Иван', patronymic: 'Иванович' },
-    { id: 2, fullName: 'Петров Петр Петрович', lastName: 'Петров', firstName: 'Петр', patronymic: 'Петрович' },
-    { id: 3, fullName: 'Сидорова Анна Михайловна', lastName: 'Сидорова', firstName: 'Анна', patronymic: 'Михайловна' },
-    { id: 4, fullName: 'Кузнецов Дмитрий Сергеевич', lastName: 'Кузнецов', firstName: 'Дмитрий', patronymic: 'Сергеевич' },
-    { id: 5, fullName: 'Смирнова Елена Владимировна', lastName: 'Смирнова', firstName: 'Елена', patronymic: 'Владимировна' },
-];
+import { PersonModal } from '../PersonCreationModal/PersonCreationModal';
+import { fetchPersons } from "../../store/slices/personSlice";
+import { fetchDepartments } from "../../store/slices/departmentSlice";
+import { fetchTeacherPositions } from "../../store/slices/teacherPositionSlice";
 
 const TeachersTable = () => {
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [searchName, setSearchName] = useState('');
-    const [searchDepartment, setSearchDepartment] = useState('');
-    const [searchPosition, setSearchPosition] = useState('');
+    const dispatch = useDispatch();
+    const {
+        data: teachersData,
+        currentTeacher,
+        isLoading,
+        errors,
+        meta,
+        searchParams
+    } = useSelector(state => state.teachers);
+
+    const departments = useSelector(state => state.departments?.data || []);
+    const positions = useSelector(state => state.teacherPositions?.data || []);
+    const persons = useSelector(state => state.person.data || []);
+
     const [anchorEl, setAnchorEl] = useState(null);
-    const [searchAnchorEl, setSearchAnchorEl] = useState(null);
-    const [currentRow, setCurrentRow] = useState(null);
+    const [selectedTeacher, setSelectedTeacher] = useState(null);
     const [alertState, setAlertState] = useState({
         open: false,
         message: '',
@@ -78,37 +51,163 @@ const TeachersTable = () => {
     });
     const [openPersonModal, setOpenPersonModal] = useState(false);
     const [personInputValue, setPersonInputValue] = useState('');
-
-    // Modal states
     const [openAddModal, setOpenAddModal] = useState(false);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [orderBy, setOrderBy] = useState('id');
+    const [order, setOrder] = useState('asc');
+    const [searchMenuOpen, setSearchMenuOpen] = useState(false);
+    const [localSearchValues, setLocalSearchValues] = useState({
+        personQuery: '',
+        departmentQuery: '',
+        positionQuery: ''
+    });
+    const searchAnchorRef = useRef(null);
 
-    // Используем mock данные
-    const [teachersData, setTeachersData] = useState(mockTeachers);
-    const [people, setPeople] = useState(mockPeople);
-    const departments = mockDepartments;
-    const positions = mockPositions;
-    const loading = false;
-    const error = null;
+    const fetchData = useCallback(() => {
+        dispatch(fetchTeachers({
+            page: meta.page,
+            limit: meta.limit,
+            sortBy: orderBy,
+            sortOrder: order,
+            ...searchParams
+        }));
+    }, [dispatch, meta.page, meta.limit, orderBy, order, searchParams]);
 
-    // Обработчики для модальных окон
-    const handleSaveAdd = (newTeacher) => {
-        const newId = Math.max(...teachersData.map(teacher => teacher.id)) + 1;
-        setTeachersData([...teachersData, { ...newTeacher, id: newId }]);
-        showAlert('Преподаватель успешно добавлен!', 'success');
+    useEffect(() => {
+        fetchData();
+        dispatch(fetchPersons({}));
+        dispatch(fetchDepartments({}));
+        dispatch(fetchTeacherPositions({}));
+    }, [fetchData, dispatch]);
+
+    useEffect(() => {
+        if (errors.length > 0) {
+            setAlertState({
+                open: true,
+                message: errors[0].message || 'Произошла ошибка',
+                severity: 'error'
+            });
+        }
+    }, [errors]);
+
+    const toggleSearchMenu = () => {
+        setSearchMenuOpen(!searchMenuOpen);
     };
 
-    const handleSaveEdit = (updatedTeacher) => {
-        setTeachersData(teachersData.map(teacher =>
-            teacher.id === currentRow.id ? updatedTeacher : teacher
-        ));
-        showAlert('Преподаватель успешно обновлен!', 'success');
+    const debouncedSearch = useRef(
+        debounce((params) => {
+            dispatch(setSearchParams(params));
+        }, 300)
+    ).current;
+
+    const handleSearchChange = (field) => (e) => {
+        const newSearchValues = {
+            ...localSearchValues,
+            [field]: e.target.value
+        };
+        setLocalSearchValues(newSearchValues);
     };
 
-    const handleDeleteConfirm = () => {
-        setTeachersData(teachersData.filter(teacher => teacher.id !== currentRow.id));
-        showAlert('Преподаватель успешно удален!', 'success');
+    const handleSearch = () => {
+        debouncedSearch(localSearchValues);
+        setSearchMenuOpen(false);
+    };
+
+    const resetSearch = () => {
+        const newSearchValues = {
+            personQuery: '',
+            departmentQuery: '',
+            positionQuery: ''
+        };
+        setLocalSearchValues(newSearchValues);
+        dispatch(setSearchParams(newSearchValues));
+        setSearchMenuOpen(false);
+    };
+
+    const handleSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
+
+    const handlePageChange = (_, newPage) => {
+        dispatch(setPage(newPage + 1));
+    };
+
+    const handleRowsPerPageChange = (e) => {
+        dispatch(setLimit(parseInt(e.target.value, 10)));
+        dispatch(setPage(1));
+    };
+
+    const handleCloseAlert = () => {
+        setAlertState(prev => ({ ...prev, open: false }));
+    };
+
+    const handleMenuClick = (event, teacher) => {
+        setAnchorEl(event.currentTarget);
+        setSelectedTeacher(teacher);
+    };
+
+    const handleMenuClose = () => {
+        setAnchorEl(null);
+    };
+
+    const handleEdit = () => {
+        if (selectedTeacher) {
+            dispatch(getTeacherById(selectedTeacher.id))
+                .then(() => {
+                    setOpenEditModal(true);
+                    handleMenuClose();
+                });
+        }
+    };
+
+    const handleDelete = () => {
+        if (selectedTeacher) {
+            dispatch(getTeacherById(selectedTeacher.id))
+                .then(() => {
+                    setOpenDeleteModal(true);
+                    handleMenuClose();
+                });
+        }
+    };
+
+    const handleAdd = () => {
+        setOpenAddModal(true);
+    };
+
+    const handleSaveAdd = async (newTeacher) => {
+        try {
+            await dispatch(createTeacher(newTeacher));
+            showAlert('Преподаватель успешно добавлен!', 'success');
+            fetchData();
+        } catch (error) {
+            showAlert('Ошибка при добавлении преподавателя', 'error');
+        }
+    };
+
+    const handleSaveEdit = async (updatedTeacher) => {
+        try {
+            await dispatch(updateTeacher({
+                id: currentTeacher.id,
+                data: updatedTeacher
+            }));
+            showAlert('Преподаватель успешно обновлен!', 'success');
+            fetchData();
+        } catch (error) {
+            showAlert('Ошибка при обновлении преподавателя', 'error');
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        try {
+            await dispatch(deleteTeacher(currentTeacher.id));
+            showAlert('Преподаватель успешно удален!', 'success');
+            fetchData();
+        } catch (error) {
+            showAlert('Ошибка при удалении преподавателя', 'error');
+        }
     };
 
     const showAlert = (message, severity = 'success') => {
@@ -119,42 +218,6 @@ const TeachersTable = () => {
         });
     };
 
-    const handleCloseAlert = () => {
-        setAlertState(prev => ({ ...prev, open: false }));
-    };
-
-    // Обработчики поиска
-    const handleSearchNameChange = (event) => setSearchName(event.target.value);
-
-    const handleSearchDepartmentChange = (event, newValue) => {
-        setSearchDepartment(newValue || '');
-    };
-
-    const handleSearchPositionChange = (event, newValue) => {
-        setSearchPosition(newValue || '');
-    };
-
-    const handleMenuClick = (event, row) => {
-        setAnchorEl(event.currentTarget);
-        setCurrentRow(row);
-    };
-
-    const handleMenuClose = () => setAnchorEl(null);
-    const handleSearchMenuClick = (event) => setSearchAnchorEl(event.currentTarget);
-    const handleSearchMenuClose = () => setSearchAnchorEl(null);
-
-    const handleEdit = () => {
-        setOpenEditModal(true);
-        handleMenuClose();
-    };
-
-    const handleDelete = () => {
-        setOpenDeleteModal(true);
-        handleMenuClose();
-    };
-
-    const handleAdd = () => setOpenAddModal(true);
-
     const handlePersonInputChange = (_, value) => {
         setPersonInputValue(value);
     };
@@ -164,30 +227,24 @@ const TeachersTable = () => {
             showAlert(error, 'error');
             return;
         }
-
-        const fullName = `${newPerson.lastName} ${newPerson.firstName} ${newPerson.patronymic || ''}`.trim();
-        const newPersonWithId = {
-            ...newPerson,
-            id: `new-${Date.now()}`,
-            fullName: fullName
-        };
-
-        setPeople(prev => [...prev, newPersonWithId]);
         showAlert('Человек успешно добавлен!', 'success');
         setOpenPersonModal(false);
     };
 
-    // Фильтрация данных
-    const filteredData = teachersData.filter(teacher => {
-        const nameMatch = teacher.name.toLowerCase().includes(searchName.toLowerCase());
-        const departmentMatch = searchDepartment === '' || teacher.department === searchDepartment;
-        const positionMatch = searchPosition === '' || teacher.position === searchPosition;
+    const renderTableHeader = (property, label) => (
+        <TableCell sx={{ fontWeight: 'bold' }}>
+            <TableSortLabel
+                active={orderBy === property}
+                direction={orderBy === property ? order : 'asc'}
+                onClick={() => handleSort(property)}
+            >
+                {label}
+            </TableSortLabel>
+        </TableCell>
+    );
 
-        return nameMatch && departmentMatch && positionMatch;
-    });
-
-    if (loading) return <div>Загрузка данных...</div>;
-    if (error) return <div>Ошибка загрузки данных: {error}</div>;
+    if (isLoading) return <div>Загрузка данных...</div>;
+    if (errors.length > 0) return <div>Ошибка загрузки данных: {errors[0].message}</div>;
 
     return (
         <>
@@ -195,13 +252,19 @@ const TeachersTable = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
                     <Typography variant="h6">Список преподавателей</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <IconButton onClick={handleSearchMenuClick}>
-                            <SearchIcon />
+                        <IconButton
+                            onClick={toggleSearchMenu}
+                            ref={searchAnchorRef}
+                        >
+                            <Search />
+                        </IconButton>
+                        <IconButton onClick={resetSearch}>
+                            <Refresh />
                         </IconButton>
                         <Menu
-                            anchorEl={searchAnchorEl}
-                            open={Boolean(searchAnchorEl)}
-                            onClose={handleSearchMenuClose}
+                            anchorEl={searchAnchorRef.current}
+                            open={searchMenuOpen}
+                            onClose={toggleSearchMenu}
                             sx={{ maxWidth: 400 }}
                         >
                             <Box sx={{ p: 2, width: 350 }}>
@@ -211,59 +274,68 @@ const TeachersTable = () => {
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchName}
-                                    onChange={handleSearchNameChange}
+                                    value={localSearchValues.personQuery}
+                                    onChange={handleSearchChange('personQuery')}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Search fontSize="small" />
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                 />
-
-                                <Autocomplete
-                                    options={['', ...departments.map(dept => dept.name)]}
-                                    value={searchDepartment}
-                                    onChange={handleSearchDepartmentChange}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            label="Кафедра"
-                                            margin="normal"
-                                            fullWidth
-                                            size="small"
-                                        />
-                                    )}
-                                    freeSolo
-                                    clearOnBlur
-                                    selectOnFocus
-                                    handleHomeEndKeys
-                                    renderOption={(props, option) => (
-                                        <MenuItem {...props}>
-                                            {option === '' ? 'Все кафедры' : option}
-                                        </MenuItem>
-                                    )}
-                                    getOptionLabel={(option) => option === '' ? 'Все кафедры' : option}
+                                <TextField
+                                    label="Поиск по кафедре"
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    margin="normal"
+                                    value={localSearchValues.departmentQuery}
+                                    onChange={handleSearchChange('departmentQuery')}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Search fontSize="small" />
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                 />
-
-                                <Autocomplete
-                                    options={['', ...positions.map(pos => pos.name)]}
-                                    value={searchPosition}
-                                    onChange={handleSearchPositionChange}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            label="Должность"
-                                            margin="normal"
-                                            fullWidth
-                                            size="small"
-                                        />
-                                    )}
-                                    freeSolo
-                                    clearOnBlur
-                                    selectOnFocus
-                                    handleHomeEndKeys
-                                    renderOption={(props, option) => (
-                                        <MenuItem {...props}>
-                                            {option === '' ? 'Все должности' : option}
-                                        </MenuItem>
-                                    )}
-                                    getOptionLabel={(option) => option === '' ? 'Все должности' : option}
+                                <TextField
+                                    label="Поиск по должности"
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    margin="normal"
+                                    value={localSearchValues.positionQuery}
+                                    onChange={handleSearchChange('positionQuery')}
+                                    InputProps={{
+                                        startAdornment: (
+                                            <InputAdornment position="start">
+                                                <Search fontSize="small" />
+                                            </InputAdornment>
+                                        ),
+                                    }}
                                 />
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
+                                    <Button
+                                        size="small"
+                                        onClick={resetSearch}
+                                        disabled={!localSearchValues.personQuery &&
+                                            !localSearchValues.departmentQuery &&
+                                            !localSearchValues.positionQuery}
+                                    >
+                                        Сбросить
+                                    </Button>
+                                    <Button
+                                        size="small"
+                                        onClick={handleSearch}
+                                        disabled={!localSearchValues.personQuery &&
+                                            !localSearchValues.departmentQuery &&
+                                            !localSearchValues.positionQuery}
+                                    >
+                                        Поиск
+                                    </Button>
+                                </Box>
                             </Box>
                         </Menu>
                     </Box>
@@ -271,21 +343,21 @@ const TeachersTable = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>ФИО</TableCell>
-                            <TableCell>Кафедра</TableCell>
-                            <TableCell>Должность</TableCell>
-                            <TableCell>Действия</TableCell>
+                            {renderTableHeader('person.surname', 'ФИО')}
+                            {renderTableHeader('department.name', 'Кафедра')}
+                            {renderTableHeader('teachingPosition.name', 'Должность')}
+                            <TableCell sx={{ fontWeight: 'bold' }}>Действия</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(teacher => (
+                        {teachersData.map(teacher => (
                             <TableRow key={teacher.id}>
-                                <TableCell>{teacher.name}</TableCell>
-                                <TableCell>{teacher.department}</TableCell>
-                                <TableCell>{teacher.position}</TableCell>
+                                <TableCell>{teacher.person?.surname} {teacher.person?.name} {teacher.person?.middlename}</TableCell>
+                                <TableCell>{teacher.department?.name}</TableCell>
+                                <TableCell>{teacher.teachingPosition?.name}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={(e) => handleMenuClick(e, teacher)}>
-                                        <MoreVertIcon />
+                                        <MoreVert />
                                     </IconButton>
                                 </TableCell>
                             </TableRow>
@@ -295,14 +367,11 @@ const TeachersTable = () => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={filteredData.length}
-                    rowsPerPage={rowsPerPage}
-                    page={page}
-                    onPageChange={(e, newPage) => setPage(newPage)}
-                    onRowsPerPageChange={(e) => {
-                        setRowsPerPage(parseInt(e.target.value, 10));
-                        setPage(0);
-                    }}
+                    count={meta.total || 0}
+                    rowsPerPage={meta.limit}
+                    page={meta.page - 1}
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
                 />
                 <Menu
                     anchorEl={anchorEl}
@@ -314,20 +383,19 @@ const TeachersTable = () => {
                 </Menu>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
                     <IconButton onClick={handleAdd} color="primary">
-                        <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
+                        <AddCircleOutline sx={{ fontSize: 40 }} />
                     </IconButton>
                 </Box>
             </TableContainer>
 
-            {/* Модальные окна */}
             <AddTeacherModal
                 open={openAddModal}
                 onClose={() => setOpenAddModal(false)}
                 departments={departments}
+                people={persons}
                 positions={positions}
                 onSave={handleSaveAdd}
                 showAlert={showAlert}
-                people={people}
                 personInputValue={personInputValue}
                 onPersonInputChange={handlePersonInputChange}
                 onAddPersonClick={() => setOpenPersonModal(true)}
@@ -335,13 +403,16 @@ const TeachersTable = () => {
 
             <EditTeacherModal
                 open={openEditModal}
-                onClose={() => setOpenEditModal(false)}
-                teacher={currentRow}
+                onClose={() => {
+                    setOpenEditModal(false);
+                    dispatch(clearCurrentTeacher());
+                }}
+                teacher={currentTeacher}
                 departments={departments}
+                people={persons}
                 positions={positions}
                 onSave={handleSaveEdit}
                 showAlert={showAlert}
-                people={people}
                 personInputValue={personInputValue}
                 onPersonInputChange={handlePersonInputChange}
                 onAddPersonClick={() => setOpenPersonModal(true)}
@@ -349,8 +420,11 @@ const TeachersTable = () => {
 
             <DeleteTeacherModal
                 open={openDeleteModal}
-                onClose={() => setOpenDeleteModal(false)}
-                teacher={currentRow}
+                onClose={() => {
+                    setOpenDeleteModal(false);
+                    dispatch(clearCurrentTeacher());
+                }}
+                teacher={currentTeacher}
                 onDelete={handleDeleteConfirm}
             />
 
@@ -364,10 +438,10 @@ const TeachersTable = () => {
                 open={alertState.open}
                 message={alertState.message}
                 severity={alertState.severity}
-                handleClose={handleCloseAlert}
+                onClose={handleCloseAlert}
             />
         </>
     );
 };
 
-export default TeachersTable;
+export default React.memo(TeachersTable);

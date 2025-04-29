@@ -1,15 +1,15 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import EducationFormService from '../../services/EducationFormService';
+import AcademicSpecialtyService from '../../services/AcademicSpecialtyService';
 
 // Асинхронные действия
-export const fetchEducationForms = createAsyncThunk(
-    'educationForms/fetchEducationForms',
+export const fetchAcademicSpecialties = createAsyncThunk(
+    'academicSpecialties/fetchAcademicSpecialties',
     async (params, { rejectWithValue }) => {
         try {
-            const response = await EducationFormService.getAlls(params);
+            const response = await AcademicSpecialtyService.getAlls(params);
             return {
                 data: response.data,
-                meta: response.meta // Используем meta из ответа сервера
+                meta: response.meta
             };
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -17,11 +17,11 @@ export const fetchEducationForms = createAsyncThunk(
     }
 );
 
-export const addEducationForm = createAsyncThunk(
-    'educationForms/addEducationForm',
-    async (formData, { rejectWithValue }) => {
+export const addAcademicSpecialty = createAsyncThunk(
+    'academicSpecialties/addAcademicSpecialty',
+    async (specialtyData, { rejectWithValue }) => {
         try {
-            const response = await EducationFormService.create(formData);
+            const response = await AcademicSpecialtyService.create(specialtyData);
             return response;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -29,11 +29,11 @@ export const addEducationForm = createAsyncThunk(
     }
 );
 
-export const updateEducationForm = createAsyncThunk(
-    'educationForms/updateEducationForm',
-    async ({ id, formData }, { rejectWithValue }) => {
+export const updateAcademicSpecialty = createAsyncThunk(
+    'academicSpecialties/updateAcademicSpecialty',
+    async ({ code, specialtyData }, { rejectWithValue }) => {
         try {
-            const response = await EducationFormService.update(id, formData);
+            const response = await AcademicSpecialtyService.update(code, specialtyData);
             return response;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -41,23 +41,23 @@ export const updateEducationForm = createAsyncThunk(
     }
 );
 
-export const deleteEducationForm = createAsyncThunk(
-    'educationForms/deleteEducationForm',
-    async (id, { rejectWithValue }) => {
+export const deleteAcademicSpecialty = createAsyncThunk(
+    'academicSpecialties/deleteAcademicSpecialty',
+    async (code, { rejectWithValue }) => {
         try {
-            await EducationFormService.delete(id);
-            return id;
+            await AcademicSpecialtyService.delete(code);
+            return code;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }
     }
 );
 
-export const getEducationFormById = createAsyncThunk(
-    'educationForms/getEducationFormById',
-    async (id, { rejectWithValue }) => {
+export const getAcademicSpecialtyByCode = createAsyncThunk(
+    'academicSpecialties/getAcademicSpecialtyByCode',
+    async (code, { rejectWithValue }) => {
         try {
-            const response = await EducationFormService.getById(id);
+            const response = await AcademicSpecialtyService.getByCode(code);
             return response;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -65,12 +65,12 @@ export const getEducationFormById = createAsyncThunk(
     }
 );
 
-// Создаем слайс
-const educationFormSlice = createSlice({
-    name: 'educationForms',
+// Slice
+const academicSpecialtySlice = createSlice({
+    name: 'academicSpecialties',
     initialState: {
         data: [],
-        currentForm: null,
+        currentSpecialty: null,
         isLoading: false,
         errors: [],
         meta: {
@@ -85,8 +85,8 @@ const educationFormSlice = createSlice({
         clearErrors: (state) => {
             state.errors = [];
         },
-        clearCurrentForm: (state) => {
-            state.currentForm = null;
+        clearCurrentSpecialty: (state) => {
+            state.currentSpecialty = null;
         },
         setPage: (state, action) => {
             state.meta.page = action.payload;
@@ -94,108 +94,103 @@ const educationFormSlice = createSlice({
         setLimit: (state, action) => {
             state.meta.limit = action.payload;
         },
-        setSearchParams: (state, action) => { // Добавляем новый редюсер
+        setSearchParams: (state, action) => {
             state.searchParams = action.payload;
         }
     },
     extraReducers: (builder) => {
         builder
-            // Загрузка всех форм обучения
-            .addCase(fetchEducationForms.pending, (state) => {
+            .addCase(fetchAcademicSpecialties.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(fetchEducationForms.fulfilled, (state, action) => {
+            .addCase(fetchAcademicSpecialties.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data = action.payload.data;
-                state.meta = action.payload.meta; // Сохраняем метаданные
+                state.meta = action.payload.meta;
             })
-            .addCase(fetchEducationForms.rejected, (state, action) => {
+            .addCase(fetchAcademicSpecialties.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            // Добавление формы обучения
-            .addCase(addEducationForm.pending, (state) => {
+            .addCase(addAcademicSpecialty.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(addEducationForm.fulfilled, (state, action) => {
+            .addCase(addAcademicSpecialty.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data.unshift(action.payload);
                 state.meta.total += 1;
                 state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
             })
-            .addCase(addEducationForm.rejected, (state, action) => {
+            .addCase(addAcademicSpecialty.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            // Обновление формы обучения
-            .addCase(updateEducationForm.pending, (state) => {
+            .addCase(updateAcademicSpecialty.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(updateEducationForm.fulfilled, (state, action) => {
+            .addCase(updateAcademicSpecialty.fulfilled, (state, action) => {
                 state.isLoading = false;
-                const updatedForm = action.payload;
-                state.data = state.data.map(form =>
-                    form.id === updatedForm.id ? updatedForm : form
+                const updated = action.payload;
+                state.data = state.data.map(specialty =>
+                    specialty.code === updated.code ? updated : specialty
                 );
             })
-            .addCase(updateEducationForm.rejected, (state, action) => {
+            .addCase(updateAcademicSpecialty.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            // Удаление формы обучения
-            .addCase(deleteEducationForm.pending, (state) => {
+            .addCase(deleteAcademicSpecialty.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(deleteEducationForm.fulfilled, (state, action) => {
+            .addCase(deleteAcademicSpecialty.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.data = state.data.filter(form => form.id !== action.payload);
+                state.data = state.data.filter(specialty => specialty.code !== action.payload);
                 state.meta.total -= 1;
                 state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
             })
-            .addCase(deleteEducationForm.rejected, (state, action) => {
+            .addCase(deleteAcademicSpecialty.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            // Получение формы обучения по ID
-            .addCase(getEducationFormById.pending, (state) => {
+            .addCase(getAcademicSpecialtyByCode.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(getEducationFormById.fulfilled, (state, action) => {
+            .addCase(getAcademicSpecialtyByCode.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.currentForm = action.payload;
+                state.currentSpecialty = action.payload;
             })
-            .addCase(getEducationFormById.rejected, (state, action) => {
+            .addCase(getAcademicSpecialtyByCode.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             });
-    },
+    }
 });
 
-export const { 
-    clearErrors, 
-    clearCurrentForm,
+export const {
+    clearErrors,
+    clearCurrentSpecialty,
     setPage,
     setLimit,
     setSearchParams
-} = educationFormSlice.actions;
+} = academicSpecialtySlice.actions;
 
-export default educationFormSlice.reducer;
+export default academicSpecialtySlice.reducer;

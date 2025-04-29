@@ -4,11 +4,16 @@ import TeacherPositionService from '../../services/TeacherPositionService';
 // Асинхронные действия
 export const fetchTeacherPositions = createAsyncThunk(
     'teacherPositions/fetchTeacherPositions',
-    async (_, { rejectWithValue }) => {
+    async (params, { rejectWithValue }) => {
         try {
-            const response = await TeacherPositionService.getAllTeacherPositions();
-            return response;
+            const response = await TeacherPositionService.getAllTeacherPositions(params);
+            console.log('Teachingposition API response:', response); // Добавьте это
+            return {
+                data: response.data,
+                meta: response.meta
+            };
         } catch (error) {
+            console.error('Teachingposition API error:', error); // И это
             return rejectWithValue(error.response?.data || error.message);
         }
     }
@@ -70,6 +75,13 @@ const teacherPositionSlice = createSlice({
         currentPosition: null,
         isLoading: false,
         errors: [],
+        meta: {
+            total: 0,
+            totalPage: 0,
+            limit: 10,
+            page: 1
+        },
+        searchParams: {} // Добавляем searchParams в initialState
     },
     reducers: {
         clearErrors: (state) => {
@@ -77,18 +89,28 @@ const teacherPositionSlice = createSlice({
         },
         clearCurrentPosition: (state) => {
             state.currentPosition = null;
+        },
+        setPage: (state, action) => {
+            state.meta.page = action.payload;
+        },
+        setLimit: (state, action) => {
+            state.meta.limit = action.payload;
+        },
+        setSearchParams: (state, action) => {
+            state.searchParams = action.payload;
         }
     },
     extraReducers: (builder) => {
         builder
-            // Загрузка всех должностей
+            // Загрузка всех позиций
             .addCase(fetchTeacherPositions.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
             .addCase(fetchTeacherPositions.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.data = action.payload;
+                state.data = action.payload.data;
+                state.meta = action.payload.meta;
             })
             .addCase(fetchTeacherPositions.rejected, (state, action) => {
                 state.isLoading = false;
@@ -97,7 +119,7 @@ const teacherPositionSlice = createSlice({
                     : [{ message: action.payload }];
             })
 
-            // Добавление должности
+            // Добавление позиции
             .addCase(addTeacherPosition.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
@@ -105,6 +127,8 @@ const teacherPositionSlice = createSlice({
             .addCase(addTeacherPosition.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data.unshift(action.payload);
+                state.meta.total += 1;
+                state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
             })
             .addCase(addTeacherPosition.rejected, (state, action) => {
                 state.isLoading = false;
@@ -113,16 +137,16 @@ const teacherPositionSlice = createSlice({
                     : [{ message: action.payload }];
             })
 
-            // Обновление должности
+            // Обновление позиции
             .addCase(updateTeacherPosition.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
             .addCase(updateTeacherPosition.fulfilled, (state, action) => {
                 state.isLoading = false;
-                const updatedPosition = action.payload;
-                state.data = state.data.map(position =>
-                    position.id === updatedPosition.id ? updatedPosition : position
+                const updated = action.payload;
+                state.data = state.data.map(pos =>
+                    pos.id === updated.id ? updated : pos
                 );
             })
             .addCase(updateTeacherPosition.rejected, (state, action) => {
@@ -132,14 +156,16 @@ const teacherPositionSlice = createSlice({
                     : [{ message: action.payload }];
             })
 
-            // Удаление должности
+            // Удаление позиции
             .addCase(deleteTeacherPosition.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
             .addCase(deleteTeacherPosition.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.data = state.data.filter(position => position.id !== action.payload);
+                state.data = state.data.filter(pos => pos.id !== action.payload);
+                state.meta.total -= 1;
+                state.meta.totalPage = Math.ceil(state.meta.total / state.meta.limit);
             })
             .addCase(deleteTeacherPosition.rejected, (state, action) => {
                 state.isLoading = false;
@@ -148,7 +174,7 @@ const teacherPositionSlice = createSlice({
                     : [{ message: action.payload }];
             })
 
-            // Получение должности по ID
+            // Получение по ID
             .addCase(getTeacherPositionById.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
@@ -163,8 +189,15 @@ const teacherPositionSlice = createSlice({
                     ? action.payload
                     : [{ message: action.payload }];
             });
-    },
+    }
 });
 
-export const { clearErrors, clearCurrentPosition } = teacherPositionSlice.actions;
+export const {
+    clearErrors,
+    clearCurrentPosition,
+    setPage,
+    setLimit,
+    setSearchParams
+} = teacherPositionSlice.actions;
+
 export default teacherPositionSlice.reducer;

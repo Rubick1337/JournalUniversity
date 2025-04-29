@@ -11,6 +11,7 @@ import CreateLessonForm from "../../components/CreateLessonForm/CreateLessonForm
 import ContactsTable from "../../components/ContactsTable/ContactsTable";
 import TeacherPositionsTable from "../../components/TeachingPositionTable/TeachingPositionTable";
 import Routers from "../../components/Routers/Routers";
+import PersonTable from "../../components/PersonTable/PersonTable";
 
 
 const SchedulePage = props => {
@@ -25,7 +26,7 @@ const SchedulePage = props => {
                 {/*<SpecializationListTable/>*/}
                 {/*<ContactsTable/>*/}
                 {/*{<TeacherPositionsTable/>}*/}
-                {<Routers></Routers>}
+                {<PersonTable></PersonTable>}
             </main>
             <Footer/>
         </>
