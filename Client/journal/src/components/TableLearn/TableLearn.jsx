@@ -69,6 +69,29 @@ const TableLearn = () => {
     //Get current curriculum
     dispatch(getCurriculumById({ curriculumId }));
   }, [dispatch, curriculumId]);
+  useEffect(() => {
+    axios
+      .get("/TestData/data.json")
+      .then((response) => {
+        const {
+          specialtyCode,
+          specialtyName,
+          startYear,
+          tableData,
+          disciplines,
+          departments,
+          formsOfAttestation,
+        } = response.data;
+        setData(tableData);
+        setDisciplines(disciplines);
+        setDepartments(departments);
+        setFormsOfAttestation(formsOfAttestation);
+      })
+      .catch((error) => {
+        console.error("Ошибка загрузки данных:", error);
+        showAlert("Ошибка загрузки данных", "error");
+      });
+  }, []);
 
   if (curriculumIsLoading) return <div>Loading...</div>;
   if (curriculumErrors) return <div>Error: {curriculumErrors}</div>;
@@ -89,31 +112,6 @@ const TableLearn = () => {
     setAlertState((prev) => ({ ...prev, open: false }));
   };
 
-  useEffect(() => {
-    axios
-      .get("/TestData/data.json")
-      .then((response) => {
-        const {
-          specialtyCode,
-          specialtyName,
-          startYear,
-          tableData,
-          disciplines,
-          departments,
-          formsOfAttestation,
-        } = response.data;
-        setData(tableData);
-        setDisciplines(disciplines);
-        setDepartments(departments);
-        setFormsOfAttestation(formsOfAttestation);
-        setSpecialtyCode(specialtyCode);
-        setSpecialtyName(specialtyName);
-      })
-      .catch((error) => {
-        console.error("Ошибка загрузки данных:", error);
-        showAlert("Ошибка загрузки данных", "error");
-      });
-  }, []);
 
   const handleInputChange = (e, field) => {
     const value = e.target.value;

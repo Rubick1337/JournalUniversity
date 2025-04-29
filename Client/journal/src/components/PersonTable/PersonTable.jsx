@@ -130,7 +130,24 @@ const PersonsTable = () => {
             dispatch(clearPersonErrors());
         }
     }, [errors, dispatch]);
-
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'Enter') {
+                if (openAddModal) {
+                    handleCreate();
+                } else if (openEditModal) {
+                    handleUpdate();
+                } else if (openDeleteModal) {
+                    handleDeleteConfirm();
+                }
+            }
+        };
+    
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [openAddModal, openEditModal, openDeleteModal, formData, currentRow]);
     // CRUD методы
     const handleCreate = async () => {
         try {
@@ -501,7 +518,7 @@ const PersonsTable = () => {
             {/* Модальное окно добавления */}
             <Dialog open={openAddModal} onClose={handleCloseAddModal}>
                 <DialogTitle>Добавить нового человека</DialogTitle>
-                <DialogContent>
+                <DialogContent onKeyPress={(e) => e.key === 'Enter' && handleCreate()}>
                     <TextField
                         autoFocus
                         margin="dense"
@@ -563,7 +580,7 @@ const PersonsTable = () => {
             {/* Модальное окно редактирования */}
             <Dialog open={openEditModal} onClose={handleCloseEditModal}>
                 <DialogTitle>Редактировать данные</DialogTitle>
-                <DialogContent>
+                <DialogContent onKeyPress={(e) => e.key === 'Enter' && handleUpdate()}>
                     <TextField
                         autoFocus
                         margin="dense"
@@ -625,7 +642,7 @@ const PersonsTable = () => {
             {/* Модальное окно удаления */}
             <Dialog open={openDeleteModal} onClose={handleCloseDeleteModal}>
                 <DialogTitle>Подтверждение удаления</DialogTitle>
-                <DialogContent>
+                <DialogContent onKeyPress={(e) => e.key === 'Enter' && handleDeleteConfirm()}>
                     <DialogContentText>
                         Вы уверены, что хотите удалить {currentRow?.surname} {currentRow?.name} {currentRow?.middlename}?
                     </DialogContentText>
