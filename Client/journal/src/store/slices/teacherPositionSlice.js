@@ -80,7 +80,8 @@ const teacherPositionSlice = createSlice({
             totalPage: 0,
             limit: 10,
             page: 1
-        }
+        },
+        searchParams: {} // Добавляем searchParams в initialState
     },
     reducers: {
         clearErrors: (state) => {
@@ -94,6 +95,9 @@ const teacherPositionSlice = createSlice({
         },
         setLimit: (state, action) => {
             state.meta.limit = action.payload;
+        },
+        setSearchParams: (state, action) => {
+            state.searchParams = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -192,7 +196,8 @@ export const {
     clearErrors,
     clearCurrentPosition,
     setPage,
-    setLimit
+    setLimit,
+    setSearchParams
 } = teacherPositionSlice.actions;
 
 export default teacherPositionSlice.reducer;

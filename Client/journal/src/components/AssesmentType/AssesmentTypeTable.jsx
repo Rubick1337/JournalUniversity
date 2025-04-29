@@ -24,6 +24,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import {
     fetchAssessmentTypes,
     addAssessmentType,
@@ -33,7 +34,8 @@ import {
     clearErrors,
     clearCurrentType,
     setPage,
-    setLimit
+    setLimit,
+    setSearchParams
 } from '../../store/slices/assessmentTypeSlice';
 
 const AssessmentTypesTable = () => {
@@ -43,10 +45,10 @@ const AssessmentTypesTable = () => {
         isLoading,
         errors,
         currentType,
-        meta
+        meta,
+        searchParams
     } = useSelector(state => state.assessmentTypes);
 
-    const [searchName, setSearchName] = useState('');
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
     const [anchorEl, setAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
@@ -62,16 +64,17 @@ const AssessmentTypesTable = () => {
     });
     const [orderBy, setOrderBy] = useState('id');
     const [order, setOrder] = useState('asc');
+    const [searchName, setSearchName] = useState('');
 
     useEffect(() => {
         dispatch(fetchAssessmentTypes({
             limit: meta?.limit || 5,
             page: meta?.page || 1,
-            nameQuery: searchName,
             sortBy: orderBy,
-            sortOrder: order
+            sortOrder: order,
+            ...searchParams
         }));
-    }, [dispatch, meta?.limit, meta?.page, searchName, orderBy, order]);
+    }, [dispatch, meta?.limit, meta?.page, orderBy, order, searchParams]);
 
     useEffect(() => {
         if (errors.length > 0) {
@@ -94,13 +97,13 @@ const AssessmentTypesTable = () => {
     };
 
     const handleChangePage = (event, newPage) => {
-        dispatch(setPage(newPage + 1)); // MUI pages are 0-based, API is 1-based
+        dispatch(setPage(newPage + 1));
     };
 
     const handleChangeRowsPerPage = (event) => {
         const newLimit = parseInt(event.target.value, 10);
         dispatch(setLimit(newLimit));
-        dispatch(setPage(1)); // Reset to first page when changing rows per page
+        dispatch(setPage(1));
     };
 
     const handleSearchMenuClick = (event) => {
@@ -115,11 +118,22 @@ const AssessmentTypesTable = () => {
         setSearchName(event.target.value);
     };
 
+    const handleSearch = () => {
+        dispatch(setSearchParams({ nameQuery: searchName }));
+        handleSearchMenuClose();
+    };
+
+    const handleResetSearch = () => {
+        setSearchName('');
+        dispatch(setSearchParams({ nameQuery: '' }));
+        handleSearchMenuClose();
+    };
+
     const handleSortRequest = (property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
-        dispatch(setPage(1)); // Reset to first page when changing sort
+        dispatch(setPage(1));
     };
 
     const handleMenuClick = (event, row) => {
@@ -174,9 +188,9 @@ const AssessmentTypesTable = () => {
             dispatch(fetchAssessmentTypes({
                 limit: meta.limit,
                 page: meta.page,
-                nameQuery: searchName,
                 sortBy: orderBy,
-                sortOrder: order
+                sortOrder: order,
+                ...searchParams
             }));
         } catch (error) {
             showAlert(error.message || 'Ошибка при обновлении типа оценивания', 'error');
@@ -193,13 +207,13 @@ const AssessmentTypesTable = () => {
             await dispatch(addAssessmentType({ name: newType.name })).unwrap();
             showAlert('Тип оценивания успешно добавлен!', 'success');
             handleCloseModals();
-            dispatch(setPage(1)); // Reset to first page after adding
+            dispatch(setPage(1));
             dispatch(fetchAssessmentTypes({
                 limit: meta.limit,
                 page: 1,
-                nameQuery: searchName,
                 sortBy: orderBy,
-                sortOrder: order
+                sortOrder: order,
+                ...searchParams
             }));
         } catch (error) {
             showAlert(error.message || 'Ошибка при добавлении типа оценивания', 'error');
@@ -212,16 +226,15 @@ const AssessmentTypesTable = () => {
             showAlert('Тип оценивания успешно удален!', 'success');
             handleCloseModals();
 
-            // Check if we need to go to previous page
             if (assessmentTypes.length === 1 && meta.page > 1) {
                 dispatch(setPage(meta.page - 1));
             } else {
                 dispatch(fetchAssessmentTypes({
                     limit: meta.limit,
                     page: meta.page,
-                    nameQuery: searchName,
                     sortBy: orderBy,
-                    sortOrder: order
+                    sortOrder: order,
+                    ...searchParams
                 }));
             }
         } catch (error) {
@@ -242,9 +255,12 @@ const AssessmentTypesTable = () => {
             <TableContainer component={Paper}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
                     <Typography variant="h6">Типы оценивания</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton onClick={handleSearchMenuClick}>
                             <SearchIcon />
+                        </IconButton>
+                        <IconButton onClick={handleResetSearch}>
+                            <RefreshIcon />
                         </IconButton>
                         <Menu
                             anchorEl={searchAnchorEl}
@@ -264,9 +280,24 @@ const AssessmentTypesTable = () => {
                                 fullWidth
                                 value={searchName}
                                 onChange={handleSearchNameChange}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSearchMenuClose()}
                                 autoFocus
                             />
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleResetSearch}
+                                    disabled={!searchName}
+                                >
+                                    Сбросить
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleSearch}
+                                    disabled={!searchName}
+                                >
+                                    Поиск
+                                </Button>
+                            </Box>
                         </Menu>
                     </Box>
                 </Box>
@@ -315,7 +346,7 @@ const AssessmentTypesTable = () => {
                     component="div"
                     count={meta.total || 0}
                     rowsPerPage={meta.limit}
-                    page={meta.page - 1} // Convert to 0-based for MUI
+                    page={meta.page - 1}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                     labelRowsPerPage="Записей на странице:"

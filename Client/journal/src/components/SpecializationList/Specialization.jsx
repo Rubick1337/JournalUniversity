@@ -24,6 +24,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import Alert from '../Alert/Alert';
 import {
     fetchAcademicSpecialties,
@@ -34,7 +35,8 @@ import {
     clearErrors,
     clearCurrentSpecialty,
     setPage,
-    setLimit
+    setLimit,
+    setSearchParams
 } from '../../store/slices/academicSpecialtySlice';
 
 const SpecializationListTable = () => {
@@ -44,7 +46,8 @@ const SpecializationListTable = () => {
         isLoading,
         errors,
         currentSpecialty,
-        meta
+        meta,
+        searchParams
     } = useSelector(state => state.academicSpecialties);
 
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
@@ -67,14 +70,13 @@ const SpecializationListTable = () => {
 
     useEffect(() => {
         dispatch(fetchAcademicSpecialties({
-            limit: meta.limit,
-            page: meta.page,
-            codeQuery: searchCode,
-            nameQuery: searchTerm,
+            limit: meta?.limit || 5,
+            page: meta?.page || 1,
             sortBy: orderBy,
-            sortOrder: order
+            sortOrder: order,
+            ...searchParams
         }));
-    }, [dispatch, meta.limit, meta.page, searchTerm, searchCode, orderBy, order]);
+    }, [dispatch, meta?.limit, meta?.page, orderBy, order, searchParams]);
 
     useEffect(() => {
         if (errors.length > 0) {
@@ -97,13 +99,13 @@ const SpecializationListTable = () => {
     };
 
     const handleChangePage = (event, newPage) => {
-        dispatch(setPage(newPage + 1)); // MUI pages are 0-based, API is 1-based
+        dispatch(setPage(newPage + 1));
     };
 
     const handleChangeRowsPerPage = (event) => {
         const newLimit = parseInt(event.target.value, 10);
         dispatch(setLimit(newLimit));
-        dispatch(setPage(1)); // Reset to first page when changing rows per page
+        dispatch(setPage(1));
     };
 
     const handleSearchMenuClick = (event) => {
@@ -122,11 +124,29 @@ const SpecializationListTable = () => {
         setSearchCode(event.target.value);
     };
 
+    const handleSearch = () => {
+        dispatch(setSearchParams({
+            nameQuery: searchTerm,
+            codeQuery: searchCode
+        }));
+        handleSearchMenuClose();
+    };
+
+    const handleResetSearch = () => {
+        setSearchTerm('');
+        setSearchCode('');
+        dispatch(setSearchParams({
+            nameQuery: '',
+            codeQuery: ''
+        }));
+        handleSearchMenuClose();
+    };
+
     const handleSortRequest = (property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
-        dispatch(setPage(1)); // Reset to first page when changing sort
+        dispatch(setPage(1));
     };
 
     const handleMenuClick = (event, row) => {
@@ -181,10 +201,9 @@ const SpecializationListTable = () => {
             dispatch(fetchAcademicSpecialties({
                 limit: meta.limit,
                 page: meta.page,
-                codeQuery: searchCode,
-                nameQuery: searchTerm,
                 sortBy: orderBy,
-                sortOrder: order
+                sortOrder: order,
+                ...searchParams
             }));
         } catch (error) {
             showAlert(error.message || 'Ошибка при обновлении специальности', 'error');
@@ -201,14 +220,13 @@ const SpecializationListTable = () => {
             await dispatch(addAcademicSpecialty(newSpecialty)).unwrap();
             showAlert('Специальность успешно добавлена!', 'success');
             handleCloseModals();
-            dispatch(setPage(1)); // Reset to first page after adding
+            dispatch(setPage(1));
             dispatch(fetchAcademicSpecialties({
                 limit: meta.limit,
                 page: 1,
-                codeQuery: searchCode,
-                nameQuery: searchTerm,
                 sortBy: orderBy,
-                sortOrder: order
+                sortOrder: order,
+                ...searchParams
             }));
         } catch (error) {
             showAlert(error.message || 'Ошибка при добавлении специальности', 'error');
@@ -221,17 +239,15 @@ const SpecializationListTable = () => {
             showAlert('Специальность успешно удалена!', 'success');
             handleCloseModals();
 
-            // Check if we need to go to previous page
             if (specialties.length === 1 && meta.page > 1) {
                 dispatch(setPage(meta.page - 1));
             } else {
                 dispatch(fetchAcademicSpecialties({
                     limit: meta.limit,
                     page: meta.page,
-                    codeQuery: searchCode,
-                    nameQuery: searchTerm,
                     sortBy: orderBy,
-                    sortOrder: order
+                    sortOrder: order,
+                    ...searchParams
                 }));
             }
         } catch (error) {
@@ -252,9 +268,12 @@ const SpecializationListTable = () => {
             <TableContainer component={Paper}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
                     <Typography variant="h6">Список специальностей</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton onClick={handleSearchMenuClick}>
                             <SearchIcon />
+                        </IconButton>
+                        <IconButton onClick={handleResetSearch}>
+                            <RefreshIcon />
                         </IconButton>
                         <Menu
                             anchorEl={searchAnchorEl}
@@ -275,7 +294,6 @@ const SpecializationListTable = () => {
                                 margin="normal"
                                 value={searchTerm}
                                 onChange={handleSearchChange}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSearchMenuClose()}
                                 autoFocus
                             />
                             <TextField
@@ -286,8 +304,23 @@ const SpecializationListTable = () => {
                                 margin="normal"
                                 value={searchCode}
                                 onChange={handleSearchCodeChange}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSearchMenuClose()}
                             />
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleResetSearch}
+                                    disabled={!searchTerm && !searchCode}
+                                >
+                                    Сбросить
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleSearch}
+                                    disabled={!searchTerm && !searchCode}
+                                >
+                                    Поиск
+                                </Button>
+                            </Box>
                         </Menu>
                     </Box>
                 </Box>
@@ -336,7 +369,7 @@ const SpecializationListTable = () => {
                     component="div"
                     count={meta.total || 0}
                     rowsPerPage={meta.limit}
-                    page={meta.page - 1} // Convert to 0-based for MUI
+                    page={meta.page - 1}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                     labelRowsPerPage="Записей на странице:"

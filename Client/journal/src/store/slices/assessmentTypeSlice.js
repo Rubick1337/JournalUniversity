@@ -78,7 +78,8 @@ const assessmentTypeSlice = createSlice({
             totalPage: 0,
             limit: 10,
             page: 1
-        }
+        },
+        searchParams: {}
     },
     reducers: {
         clearErrors: (state) => {
@@ -92,6 +93,9 @@ const assessmentTypeSlice = createSlice({
         },
         setLimit: (state, action) => {
             state.meta.limit = action.payload;
+        },
+        setSearchParams: (state, action) => { // Добавляем новый редюсер
+            state.searchParams = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -185,7 +189,8 @@ export const {
     clearErrors,
     clearCurrentType,
     setPage,
-    setLimit
+    setLimit,
+    setSearchParams
 } = assessmentTypeSlice.actions;
 
 export default assessmentTypeSlice.reducer;

@@ -24,6 +24,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import {
     fetchEducationForms,
     addEducationForm,
@@ -32,7 +33,8 @@ import {
     clearErrors,
     clearCurrentForm,
     setPage,
-    setLimit
+    setLimit,
+    setSearchParams
 } from '../../store/slices/educationFormSlice';
 
 const EducationFormsTable = () => {
@@ -42,10 +44,10 @@ const EducationFormsTable = () => {
         isLoading,
         errors,
         currentForm,
-        meta
+        meta,
+        searchParams
     } = useSelector(state => state.educationForms);
 
-    const [searchName, setSearchName] = useState('');
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
     const [anchorEl, setAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
@@ -61,16 +63,17 @@ const EducationFormsTable = () => {
     });
     const [orderBy, setOrderBy] = useState('id');
     const [order, setOrder] = useState('asc');
+    const [searchName, setSearchName] = useState('');
 
     useEffect(() => {
         dispatch(fetchEducationForms({
-            limit: meta.limit,
-            page: meta.page,
-            nameQuery: searchName,
+            limit: meta?.limit || 5,
+            page: meta?.page || 1,
             sortBy: orderBy,
-            sortOrder: order
+            sortOrder: order,
+            ...searchParams
         }));
-    }, [dispatch, meta.limit, meta.page, searchName, orderBy, order]);
+    }, [dispatch, meta?.limit, meta?.page, orderBy, order, searchParams]);
 
     useEffect(() => {
         if (errors.length > 0) {
@@ -93,13 +96,13 @@ const EducationFormsTable = () => {
     };
 
     const handleChangePage = (event, newPage) => {
-        dispatch(setPage(newPage + 1)); // MUI pages are 0-based, API is 1-based
+        dispatch(setPage(newPage + 1));
     };
 
     const handleChangeRowsPerPage = (event) => {
         const newLimit = parseInt(event.target.value, 10);
         dispatch(setLimit(newLimit));
-        dispatch(setPage(1)); // Reset to first page when changing rows per page
+        dispatch(setPage(1));
     };
 
     const handleSearchMenuClick = (event) => {
@@ -114,11 +117,22 @@ const EducationFormsTable = () => {
         setSearchName(event.target.value);
     };
 
+    const handleSearch = () => {
+        dispatch(setSearchParams({ nameQuery: searchName }));
+        handleSearchMenuClose();
+    };
+
+    const handleResetSearch = () => {
+        setSearchName('');
+        dispatch(setSearchParams({ nameQuery: '' }));
+        handleSearchMenuClose();
+    };
+
     const handleSortRequest = (property) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
-        dispatch(setPage(1)); // Reset to first page when changing sort
+        dispatch(setPage(1));
     };
 
     const handleMenuClick = (event, row) => {
@@ -170,9 +184,9 @@ const EducationFormsTable = () => {
             dispatch(fetchEducationForms({
                 limit: meta.limit,
                 page: meta.page,
-                nameQuery: searchName,
                 sortBy: orderBy,
-                sortOrder: order
+                sortOrder: order,
+                ...searchParams
             }));
         } catch (error) {
             showAlert(error.message || 'Ошибка при обновлении формы обучения', 'error');
@@ -189,13 +203,13 @@ const EducationFormsTable = () => {
             await dispatch(addEducationForm({ name: newForm.name })).unwrap();
             showAlert('Форма обучения успешно добавлена!', 'success');
             handleCloseModals();
-            dispatch(setPage(1)); // Reset to first page after adding
+            dispatch(setPage(1));
             dispatch(fetchEducationForms({
                 limit: meta.limit,
                 page: 1,
-                nameQuery: searchName,
                 sortBy: orderBy,
-                sortOrder: order
+                sortOrder: order,
+                ...searchParams
             }));
         } catch (error) {
             showAlert(error.message || 'Ошибка при добавлении формы обучения', 'error');
@@ -207,17 +221,16 @@ const EducationFormsTable = () => {
             await dispatch(deleteEducationForm(currentRow.id)).unwrap();
             showAlert('Форма обучения успешно удалена!', 'success');
             handleCloseModals();
-            
-            // Check if we need to go to previous page
+
             if (formsData.length === 1 && meta.page > 1) {
                 dispatch(setPage(meta.page - 1));
             } else {
                 dispatch(fetchEducationForms({
                     limit: meta.limit,
                     page: meta.page,
-                    nameQuery: searchName,
                     sortBy: orderBy,
-                    sortOrder: order
+                    sortOrder: order,
+                    ...searchParams
                 }));
             }
         } catch (error) {
@@ -238,9 +251,12 @@ const EducationFormsTable = () => {
             <TableContainer component={Paper}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
                     <Typography variant="h6">Формы обучения</Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <IconButton onClick={handleSearchMenuClick}>
                             <SearchIcon />
+                        </IconButton>
+                        <IconButton onClick={handleResetSearch}>
+                            <RefreshIcon />
                         </IconButton>
                         <Menu
                             anchorEl={searchAnchorEl}
@@ -260,9 +276,24 @@ const EducationFormsTable = () => {
                                 fullWidth
                                 value={searchName}
                                 onChange={handleSearchNameChange}
-                                onKeyDown={(e) => e.key === 'Enter' && handleSearchMenuClose()}
                                 autoFocus
                             />
+                            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
+                                <Button
+                                    variant="outlined"
+                                    onClick={handleResetSearch}
+                                    disabled={!searchName}
+                                >
+                                    Сбросить
+                                </Button>
+                                <Button
+                                    variant="contained"
+                                    onClick={handleSearch}
+                                    disabled={!searchName}
+                                >
+                                    Поиск
+                                </Button>
+                            </Box>
                         </Menu>
                     </Box>
                 </Box>
@@ -311,7 +342,7 @@ const EducationFormsTable = () => {
                     component="div"
                     count={meta.total || 0}
                     rowsPerPage={meta.limit}
-                    page={meta.page - 1} // Convert to 0-based for MUI
+                    page={meta.page - 1}
                     onPageChange={handleChangePage}
                     onRowsPerPageChange={handleChangeRowsPerPage}
                     labelRowsPerPage="Записей на странице:"

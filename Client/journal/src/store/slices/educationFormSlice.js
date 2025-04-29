@@ -78,7 +78,8 @@ const educationFormSlice = createSlice({
             totalPage: 0,
             limit: 10,
             page: 1
-        }
+        },
+        searchParams: {}
     },
     reducers: {
         clearErrors: (state) => {
@@ -92,6 +93,9 @@ const educationFormSlice = createSlice({
         },
         setLimit: (state, action) => {
             state.meta.limit = action.payload;
+        },
+        setSearchParams: (state, action) => { // Добавляем новый редюсер
+            state.searchParams = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -190,7 +194,8 @@ export const {
     clearErrors, 
     clearCurrentForm,
     setPage,
-    setLimit
+    setLimit,
+    setSearchParams
 } = educationFormSlice.actions;
 
 export default educationFormSlice.reducer;

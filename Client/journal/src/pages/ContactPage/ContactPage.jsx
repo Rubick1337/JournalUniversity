@@ -1,6 +1,6 @@
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-import ContactsTable from "../../components/ContactsTable/ContactsTable";
+import PersonsTable from "../../components/PersonTable/PersonTable";
 
 
 
@@ -9,7 +9,7 @@ const ContactTablePage = () => {
         <>
             <Header/>
             <main>
-                <ContactsTable></ContactsTable>
+                <PersonsTable></PersonsTable>
             </main>
             <Footer/>
         </>

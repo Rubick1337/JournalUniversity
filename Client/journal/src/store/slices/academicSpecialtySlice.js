@@ -78,7 +78,8 @@ const academicSpecialtySlice = createSlice({
             totalPage: 0,
             limit: 10,
             page: 1
-        }
+        },
+        searchParams: {}
     },
     reducers: {
         clearErrors: (state) => {
@@ -92,6 +93,9 @@ const academicSpecialtySlice = createSlice({
         },
         setLimit: (state, action) => {
             state.meta.limit = action.payload;
+        },
+        setSearchParams: (state, action) => {
+            state.searchParams = action.payload;
         }
     },
     extraReducers: (builder) => {
@@ -185,7 +189,8 @@ export const {
     clearErrors,
     clearCurrentSpecialty,
     setPage,
-    setLimit
+    setLimit,
+    setSearchParams
 } = academicSpecialtySlice.actions;
 
 export default academicSpecialtySlice.reducer;
