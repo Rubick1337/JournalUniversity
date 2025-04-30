@@ -30,13 +30,34 @@ import {PersonModal} from '../PersonCreationModal/PersonCreationModal';
 import PersonSelector from '../DepartmentsTable/PersonSelector';
 
 const initialStudentsData = [
-    { id: "12345", name: "Иванов Иван Иванович", course: 1, department: "Кафедра информатики", faculty: "Факультет компьютерных наук" },
-    { id: "67890", name: "Петров Петр Петрович", course: 2, department: "Кафедра математики", faculty: "Факультет прикладной математики" },
-    { id: "54321", name: "Сидоров Сидор Сидорович", course: 3, department: "Кафедра физики", faculty: "Факультет физики" },
+    {
+        id: "12345",
+        name: "Иванов Иван Иванович",
+        reprimands: 1,
+        group: "Группа 101",
+        subgroup: "Подгруппа 1",
+        parent: "Петрова Мария Ивановна"
+    },
+    {
+        id: "67890",
+        name: "Петров Петр Петрович",
+        reprimands: 0,
+        group: "Группа 102",
+        subgroup: "Подгруппа 2",
+        parent: "Иванова Ольга Сергеевна"
+    },
+    {
+        id: "54321",
+        name: "Сидоров Сидор Сидорович",
+        reprimands: 2,
+        group: "Группа 103",
+        subgroup: "Подгруппа 1",
+        parent: "Сидорова Елена Викторовна"
+    },
 ];
 
-const departments = ["Кафедра информатики", "Кафедра математики", "Кафедра физики"];
-const faculties = ["Факультет компьютерных наук", "Факультет прикладной математики", "Факультет физики"];
+const groups = ["Группа 101", "Группа 102", "Группа 103"];
+const subgroups = ["Подгруппа 1", "Подгруппа 2"];
 
 const initialPeople = [
     { id: "1", fullName: "Иванов Иван Иванович", lastName: "Иванов", firstName: "Иван", patronymic: "Иванович" },
@@ -51,9 +72,10 @@ const StudentsTable = () => {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [searchId, setSearchId] = useState('');
     const [searchName, setSearchName] = useState('');
-    const [searchCourse, setSearchCourse] = useState('');
-    const [searchDepartment, setSearchDepartment] = useState('');
-    const [searchFaculty, setSearchFaculty] = useState('');
+    const [searchReprimands, setSearchReprimands] = useState('');
+    const [searchGroup, setSearchGroup] = useState('');
+    const [searchSubgroup, setSearchSubgroup] = useState('');
+    const [searchParent, setSearchParent] = useState('');
     const [anchorEl, setAnchorEl] = useState(null);
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
@@ -61,8 +83,22 @@ const StudentsTable = () => {
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
     const [openPersonModal, setOpenPersonModal] = useState(false);
-    const [newStudent, setNewStudent] = useState({ id: '', name: '', course: '', department: '', faculty: '' });
-    const [editStudent, setEditStudent] = useState({ id: '', name: '', course: '', department: '', faculty: '' });
+    const [newStudent, setNewStudent] = useState({
+        id: '',
+        name: '',
+        reprimands: 0,
+        group: '',
+        subgroup: '',
+        parent: ''
+    });
+    const [editStudent, setEditStudent] = useState({
+        id: '',
+        name: '',
+        reprimands: 0,
+        group: '',
+        subgroup: '',
+        parent: ''
+    });
     const [alertState, setAlertState] = useState({
         open: false,
         message: '',
@@ -108,7 +144,7 @@ const StudentsTable = () => {
     };
 
     const handleAdd = () => {
-        setNewStudent({ id: '', name: '', course: '', department: '', faculty: '' });
+        setNewStudent({ id: '', name: '', reprimands: 0, group: '', subgroup: '', parent: '' });
         setPersonInputValue('');
         setOpenAddModal(true);
     };
@@ -150,8 +186,8 @@ const StudentsTable = () => {
     };
 
     const handleSaveEdit = () => {
-        if (!editStudent.id || !editStudent.name || !editStudent.course || !editStudent.department || !editStudent.faculty) {
-            showAlert('Все поля должны быть заполнены!', 'error');
+        if (!editStudent.id || !editStudent.name || !editStudent.group || !editStudent.subgroup || !editStudent.parent) {
+            showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
 
@@ -163,8 +199,8 @@ const StudentsTable = () => {
     };
 
     const handleSaveAdd = () => {
-        if (!newStudent.id || !newStudent.name || !newStudent.course || !newStudent.department || !newStudent.faculty) {
-            showAlert('Все поля должны быть заполнены!', 'error');
+        if (!newStudent.id || !newStudent.name || !newStudent.group || !newStudent.subgroup || !newStudent.parent) {
+            showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
 
@@ -183,11 +219,12 @@ const StudentsTable = () => {
             studentsData.filter(student => (
                 student.id.toLowerCase().includes(searchId.toLowerCase()) &&
                 student.name.toLowerCase().includes(searchName.toLowerCase()) &&
-                student.course.toString().includes(searchCourse) &&
-                student.department.toLowerCase().includes(searchDepartment.toLowerCase()) &&
-                student.faculty.toLowerCase().includes(searchFaculty.toLowerCase())
+                student.reprimands.toString().includes(searchReprimands) &&
+                student.group.toLowerCase().includes(searchGroup.toLowerCase()) &&
+                student.subgroup.toLowerCase().includes(searchSubgroup.toLowerCase()) &&
+                student.parent.toLowerCase().includes(searchParent.toLowerCase())
             )),
-        [studentsData, searchId, searchName, searchCourse, searchDepartment, searchFaculty]
+        [studentsData, searchId, searchName, searchReprimands, searchGroup, searchSubgroup, searchParent]
     );
 
     return (
@@ -227,43 +264,53 @@ const StudentsTable = () => {
                                     sx={{maxWidth: 270}}
                                 />
                                 <TextField
-                                    label="Поиск по курсу"
+                                    label="Поиск по кол-ву выговоров"
                                     variant="outlined"
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchCourse}
-                                    onChange={(e) => setSearchCourse(e.target.value)}
+                                    value={searchReprimands}
+                                    onChange={(e) => setSearchReprimands(e.target.value)}
                                     sx={{maxWidth: 270}}
                                 />
                                 <FormControl variant="outlined" size="small" fullWidth margin="normal">
-                                    <InputLabel>Поиск по кафедре</InputLabel>
+                                    <InputLabel>Поиск по группе</InputLabel>
                                     <Select
-                                        value={searchDepartment}
-                                        onChange={(e) => setSearchDepartment(e.target.value)}
-                                        label="Поиск по кафедре"
+                                        value={searchGroup}
+                                        onChange={(e) => setSearchGroup(e.target.value)}
+                                        label="Поиск по группе"
                                         sx={{maxWidth: 270}}
                                     >
-                                        <SelectMenuItem value="">Все кафедры</SelectMenuItem>
-                                        {departments.map((dept) => (
-                                            <SelectMenuItem key={dept} value={dept}>{dept}</SelectMenuItem>
+                                        <SelectMenuItem value="">Все группы</SelectMenuItem>
+                                        {groups.map((group) => (
+                                            <SelectMenuItem key={group} value={group}>{group}</SelectMenuItem>
                                         ))}
                                     </Select>
                                 </FormControl>
                                 <FormControl variant="outlined" size="small" fullWidth margin="normal">
-                                    <InputLabel>Поиск по факультету</InputLabel>
+                                    <InputLabel>Поиск по подгруппе</InputLabel>
                                     <Select
-                                        value={searchFaculty}
-                                        onChange={(e) => setSearchFaculty(e.target.value)}
-                                        label="Поиск по факультету"
+                                        value={searchSubgroup}
+                                        onChange={(e) => setSearchSubgroup(e.target.value)}
+                                        label="Поиск по подгруппе"
                                         sx={{maxWidth: 270}}
                                     >
-                                        <SelectMenuItem value="">Все факультеты</SelectMenuItem>
-                                        {faculties.map((faculty) => (
-                                            <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
+                                        <SelectMenuItem value="">Все подгруппы</SelectMenuItem>
+                                        {subgroups.map((subgroup) => (
+                                            <SelectMenuItem key={subgroup} value={subgroup}>{subgroup}</SelectMenuItem>
                                         ))}
                                     </Select>
                                 </FormControl>
+                                <TextField
+                                    label="Поиск по родителю"
+                                    variant="outlined"
+                                    size="small"
+                                    fullWidth
+                                    margin="normal"
+                                    value={searchParent}
+                                    onChange={(e) => setSearchParent(e.target.value)}
+                                    sx={{maxWidth: 270}}
+                                />
                             </Box>
                         </Menu>
                     </Box>
@@ -273,9 +320,10 @@ const StudentsTable = () => {
                         <TableRow>
                             <TableCell>ID зачетки</TableCell>
                             <TableCell>ФИО</TableCell>
-                            <TableCell>Курс</TableCell>
-                            <TableCell>Кафедра</TableCell>
-                            <TableCell>Факультет</TableCell>
+                            <TableCell>Кол-во выговоров</TableCell>
+                            <TableCell>Группа</TableCell>
+                            <TableCell>Подгруппа</TableCell>
+                            <TableCell>Родитель</TableCell>
                             <TableCell>Действия</TableCell>
                         </TableRow>
                     </TableHead>
@@ -284,9 +332,10 @@ const StudentsTable = () => {
                             <TableRow key={student.id}>
                                 <TableCell>{student.id}</TableCell>
                                 <TableCell>{student.name}</TableCell>
-                                <TableCell>{student.course}</TableCell>
-                                <TableCell>{student.department}</TableCell>
-                                <TableCell>{student.faculty}</TableCell>
+                                <TableCell>{student.reprimands}</TableCell>
+                                <TableCell>{student.group}</TableCell>
+                                <TableCell>{student.subgroup}</TableCell>
+                                <TableCell>{student.parent}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={(e) => handleMenuClick(e, student)}>
                                         <MoreVertIcon />
@@ -347,37 +396,44 @@ const StudentsTable = () => {
                                         onAddPersonClick={() => setOpenPersonModal(true)}
                                     />
                                     <TextField
-                                        label="Курс"
+                                        label="Кол-во выговоров"
                                         type="number"
                                         fullWidth
                                         margin="normal"
-                                        value={editStudent.course}
-                                        onChange={(e) => setEditStudent({ ...editStudent, course: e.target.value })}
+                                        value={editStudent.reprimands}
+                                        onChange={(e) => setEditStudent({ ...editStudent, reprimands: e.target.value })}
                                     />
                                     <FormControl fullWidth margin="normal">
-                                        <InputLabel>Кафедра</InputLabel>
+                                        <InputLabel>Группа</InputLabel>
                                         <Select
-                                            value={editStudent.department}
-                                            onChange={(e) => setEditStudent({ ...editStudent, department: e.target.value })}
-                                            label="Кафедра"
+                                            value={editStudent.group}
+                                            onChange={(e) => setEditStudent({ ...editStudent, group: e.target.value })}
+                                            label="Группа"
                                         >
-                                            {departments.map((dept) => (
-                                                <SelectMenuItem key={dept} value={dept}>{dept}</SelectMenuItem>
+                                            {groups.map((group) => (
+                                                <SelectMenuItem key={group} value={group}>{group}</SelectMenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
                                     <FormControl fullWidth margin="normal">
-                                        <InputLabel>Факультет</InputLabel>
+                                        <InputLabel>Подгруппа</InputLabel>
                                         <Select
-                                            value={editStudent.faculty}
-                                            onChange={(e) => setEditStudent({ ...editStudent, faculty: e.target.value })}
-                                            label="Факультет"
+                                            value={editStudent.subgroup}
+                                            onChange={(e) => setEditStudent({ ...editStudent, subgroup: e.target.value })}
+                                            label="Подгруппа"
                                         >
-                                            {faculties.map((faculty) => (
-                                                <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
+                                            {subgroups.map((subgroup) => (
+                                                <SelectMenuItem key={subgroup} value={subgroup}>{subgroup}</SelectMenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
+                                    <TextField
+                                        label="Родитель"
+                                        fullWidth
+                                        margin="normal"
+                                        value={editStudent.parent}
+                                        onChange={(e) => setEditStudent({ ...editStudent, parent: e.target.value })}
+                                    />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
                                         <Button onClick={handleSaveEdit} color="primary">Сохранить</Button>
@@ -411,37 +467,44 @@ const StudentsTable = () => {
                                         onAddPersonClick={() => setOpenPersonModal(true)}
                                     />
                                     <TextField
-                                        label="Курс"
+                                        label="Кол-во выговоров"
                                         type="number"
                                         fullWidth
                                         margin="normal"
-                                        value={newStudent.course}
-                                        onChange={(e) => setNewStudent({ ...newStudent, course: e.target.value })}
+                                        value={newStudent.reprimands}
+                                        onChange={(e) => setNewStudent({ ...newStudent, reprimands: e.target.value })}
                                     />
                                     <FormControl fullWidth margin="normal">
-                                        <InputLabel>Кафедра</InputLabel>
+                                        <InputLabel>Группа</InputLabel>
                                         <Select
-                                            value={newStudent.department}
-                                            onChange={(e) => setNewStudent({ ...newStudent, department: e.target.value })}
-                                            label="Кафедра"
+                                            value={newStudent.group}
+                                            onChange={(e) => setNewStudent({ ...newStudent, group: e.target.value })}
+                                            label="Группа"
                                         >
-                                            {departments.map((dept) => (
-                                                <SelectMenuItem key={dept} value={dept}>{dept}</SelectMenuItem>
+                                            {groups.map((group) => (
+                                                <SelectMenuItem key={group} value={group}>{group}</SelectMenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
                                     <FormControl fullWidth margin="normal">
-                                        <InputLabel>Факультет</InputLabel>
+                                        <InputLabel>Подгруппа</InputLabel>
                                         <Select
-                                            value={newStudent.faculty}
-                                            onChange={(e) => setNewStudent({ ...newStudent, faculty: e.target.value })}
-                                            label="Факультет"
+                                            value={newStudent.subgroup}
+                                            onChange={(e) => setNewStudent({ ...newStudent, subgroup: e.target.value })}
+                                            label="Подгруппа"
                                         >
-                                            {faculties.map((faculty) => (
-                                                <SelectMenuItem key={faculty} value={faculty}>{faculty}</SelectMenuItem>
+                                            {subgroups.map((subgroup) => (
+                                                <SelectMenuItem key={subgroup} value={subgroup}>{subgroup}</SelectMenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
+                                    <TextField
+                                        label="Родитель"
+                                        fullWidth
+                                        margin="normal"
+                                        value={newStudent.parent}
+                                        onChange={(e) => setNewStudent({ ...newStudent, parent: e.target.value })}
+                                    />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
                                         <Button onClick={handleSaveAdd} color="primary">Добавить</Button>
