@@ -39,6 +39,34 @@ class PersonService extends BaseService {
     const urlWithParams = `${endpoint}?${params.toString()}`;
 
     const response = await BaseService.request("get", urlWithParams);
+
+    return { data: response.data, meta: response.meta };
+  };
+
+  getAllByFullName = async (
+    limit = 10,
+    page = 1,
+    sortBy = "surname",
+    sortOrder = "ASC",
+    fullNameQuery = "",
+  ) => {
+    const endpoint = API_ENDPOINTS.PERSON.GET_ALL_BY_FULL_NAME;
+
+    // Создаем объект с параметрами
+    const params = new URLSearchParams();
+
+    params.append("limit", limit.toString());
+    params.append("page", page.toString());
+    params.append("sortBy", sortBy);
+    params.append("sortOrder", sortOrder);
+
+    if (fullNameQuery && fullNameQuery !== "") params.append("fullNameQuery", fullNameQuery);
+
+    // Добавляем параметры к endpoint
+    const urlWithParams = `${endpoint}?${params.toString()}`;
+
+    const response = await BaseService.request("get", urlWithParams);
+
     return { data: response.data, meta: response.meta };
   };
   update = async (personId, data)=> {
@@ -51,6 +79,7 @@ class PersonService extends BaseService {
     const response = await BaseService.request("delete", endpoint);
     return response;
   }
+
 }
 const personServiceInstance = new PersonService();
 

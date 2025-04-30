@@ -14,6 +14,8 @@ export const API_ENDPOINTS = {
     UPDATE: '/person/update/:personId',
     DELETE: '/person/delete/:personId',
     GETBYID: `/faculty/getById/:facultyId`,
+
+    GET_ALL_BY_FULL_NAME: `person/getAllByFullName`
   },
   DEPARTMENT: {
     GETALL: "/department/getAll",

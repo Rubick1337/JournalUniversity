@@ -48,7 +48,7 @@ Person.hasOne(Department, {
   foreignKey: "chairperson_of_the_department_person_id",
 });
 Department.belongsTo(Faculty, { foreignKey: 'faculty_id', as: 'faculty' });
-Department.belongsTo(Person, { foreignKey: 'head_person_id', as: 'head' });
+Department.belongsTo(Person, { foreignKey: 'chairperson_of_the_department_person_id', as: 'head' });
 
 Faculty.hasMany(Department, { foreignKey: "faculty_id" });
 Department.hasMany(Group, { foreignKey: "department_id" });
