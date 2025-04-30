@@ -10,11 +10,19 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-const AddDisciplineModal = ({ open, onClose, departments, onSave, showAlert }) => {
+const AddDisciplineModal = ({
+                                open,
+                                onClose,
+                                onSave,
+                                showAlert,
+                                departments = []
+                            }) => {
     const [newDiscipline, setNewDiscipline] = useState({
         name: '',
-        department: ''
+        department_id: null
     });
+
+    const [selectedDepartment, setSelectedDepartment] = useState(null);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -22,15 +30,27 @@ const AddDisciplineModal = ({ open, onClose, departments, onSave, showAlert }) =
     };
 
     const handleDepartmentChange = (event, newValue) => {
-        setNewDiscipline(prev => ({ ...prev, department: newValue }));
+        const department = departments.find(d => d.name === newValue);
+        setSelectedDepartment(department);
+        setNewDiscipline(prev => ({
+            ...prev,
+            department_id: department ? department.id : null
+        }));
     };
 
     const handleSubmit = () => {
-        if (!newDiscipline.name || !newDiscipline.department) {
+        if (!newDiscipline.name || !newDiscipline.department_id) {
             showAlert('Все поля должны быть заполнены!', 'error');
             return;
         }
-        onSave(newDiscipline);
+
+        // Ensure we're sending the correct data structure
+        const dataToSend = {
+            name: newDiscipline.name,
+            department_id: newDiscipline.department_id
+        };
+        console.log(dataToSend);
+        onSave(dataToSend);
         onClose();
     };
 
@@ -66,11 +86,12 @@ const AddDisciplineModal = ({ open, onClose, departments, onSave, showAlert }) =
                         name="name"
                         value={newDiscipline.name}
                         onChange={handleChange}
+                        required
                     />
 
                     <Autocomplete
                         options={departments.map(dept => dept.name)}
-                        value={newDiscipline.department}
+                        value={selectedDepartment?.name || ''}
                         onChange={handleDepartmentChange}
                         renderInput={(params) => (
                             <TextField
@@ -78,6 +99,7 @@ const AddDisciplineModal = ({ open, onClose, departments, onSave, showAlert }) =
                                 label="Кафедра"
                                 margin="normal"
                                 fullWidth
+                                required
                             />
                         )}
                     />
