@@ -8,38 +8,38 @@ class CurriculumSubjectService extends BaseService {
       ":curriculumId",
       curriculumId
     );
-    alert("FDSFDS")
     const response = await BaseService.request("post", endpoint, data);
     return response;
   }
 
-  // async update({ curriculumId, subjectId, assessmentTypeId, semester }, data) {
-  //   const endpoint = API_ENDPOINTS.CURRICULUM_SUBJECT.UPDATE.replace(
-  //     "curriculumId",
-  //     curriculumId
-  //   )
-  //     .replace("subjectId", subjectId)
-  //     .replace("assessmentTypeId", assessmentTypeId)
-  //     .replace("semester", semester);
+  async update({ curriculumId, subjectId, assessmentTypeId, semester }, data) {
+    const endpoint = API_ENDPOINTS.CURRICULUM_SUBJECT.UPDATE.replace(
+      "curriculumId",
+      curriculumId
+    )
+      .replace("subjectId", subjectId)
+      .replace("assessmentTypeId", assessmentTypeId)
+      .replace("semester", semester);
 
-  //   const response = await BaseService.request("put", endpoint, data);
-  //   return response;
-  // }
+    const response = await BaseService.request("put", endpoint, data);
+    return response;
+  }
 
-  // async delete({ curriculumId, subjectId, assessmentTypeId, semester }) {
-  //   const endpoint = API_ENDPOINTS.CURRICULUM_SUBJECT.DELETE.replace(
-  //     "curriculumId",
-  //     curriculumId
-  //   )
-  //     .replace("subjectId", subjectId)
-  //     .replace("assessmentTypeId", assessmentTypeId)
-  //     .replace("semester", semester);
-  //   const response = await BaseService.request(
-  //     "delete",
-  //     endpoint
-  //   );
-  //   return response;
-  // }
+async delete({ curriculumId, subjectId, assessmentTypeId, semester }) {
+    const endpoint = API_ENDPOINTS.CURRICULUM_SUBJECT.DELETE.replace(
+      ":curriculumId",
+      curriculumId
+    )
+      .replace(":subjectId", subjectId)
+      .replace(":assessmentTypeId", assessmentTypeId)
+      .replace(":semester", semester);
+    const response = await BaseService.request(
+      "delete",
+      endpoint
+    );
+    return response;
+  }
+  
 
   async getAlls(curriculumId) {
     const endpoint = API_ENDPOINTS.CURRICULUM_SUBJECT.GETALL.replace(":curriculumId", curriculumId)

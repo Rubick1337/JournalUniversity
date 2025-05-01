@@ -45,10 +45,10 @@ export const updateCurriculumSubject = createAsyncThunk(
 
 export const deleteCurriculumSubject = createAsyncThunk(
   'curriculumSubject/deleteCurriculumSubject',
-  async (id, { rejectWithValue }) => {
+  async (idParams, { rejectWithValue }) => {
     try {
-      await CurriculumSubjectService.delete(id);
-      return id;
+      await CurriculumSubjectService.delete(idParams);
+      return idParams;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
@@ -137,8 +137,12 @@ const curriculumSubjectSlice = createSlice({
       })
       .addCase(deleteCurriculumSubject.fulfilled, (state, action) => {
         state.isLoading = false;
+        const { subjectId, assessmentTypeId, semester } = action.payload;
         state.data = state.data.filter(
-          subject => subject.subject.id !== action.payload
+          subject => 
+            !(subject.subject.id === subjectId && 
+              subject.assessment_type.id === assessmentTypeId && 
+              subject.semester === semester)
         );
         state.meta.total -= 1;
       })

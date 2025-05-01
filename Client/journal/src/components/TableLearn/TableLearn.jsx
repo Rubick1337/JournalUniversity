@@ -306,7 +306,9 @@ const TableLearn = () => {
     dispatch(
       deleteCurriculumSubject({
         curriculumId,
-        subjectId: currentRow.id,
+        subjectId: currentRow.subject.id,
+        assessmentTypeId: currentRow.assessment_type.id,
+        semester: currentRow.semester
       })
     )
       .unwrap()
