@@ -82,7 +82,7 @@ const AddTeacherModal = ({
         </Box>
 
         <PersonSelector
-          textValue="Заведущий кафедрой"
+          textValue="Личные данные"
           value={newTeacher.name}
           onChange={(value) => handleChange("name", value)}
           options={people}
