@@ -1,20 +1,20 @@
 class CurriculumSubjectDtoForCreation {
     constructor({ 
-        subject = {},
-        assessment_type = {},
+        subjectId,
+        assessmentTypeId,
         semester,
-        all_hours,
-        lecture_hours,
-        lab_hours,
-        practice_hours, 
+        allHours,
+        lectureHours,
+        labHours,
+        practiceHours, 
     }) {
-        this.subject_id = subject? subject.id: null;
-        this.assessment_type_id = assessment_type? assessment_type.id: null;
+        this.subject_id = subjectId;
+        this.assessment_type_id = assessmentTypeId;
         this.semester = semester;
-        this.all_hours = all_hours;
-        this.lecture_hours = lecture_hours;
-        this.lab_hours = lab_hours;
-        this.practice_hours = practice_hours;
+        this.all_hours = allHours;
+        this.lecture_hours = lectureHours;
+        this.lab_hours = labHours;
+        this.practice_hours = practiceHours;
     }
 }
 

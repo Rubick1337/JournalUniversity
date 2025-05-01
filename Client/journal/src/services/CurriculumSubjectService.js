@@ -3,14 +3,15 @@ import { API_ENDPOINTS } from "../http/apiEnpoints";
 import BaseService from "./BaseService";
 
 class CurriculumSubjectService extends BaseService {
-  // async create(curriculumId, data = {}) {
-  //   const endpoint = API_ENDPOINTS.CURRICULUM_SUBJECT.CREATE.replace(
-  //     ":curriculumId",
-  //     curriculumId
-  //   );
-  //   const response = await BaseService.request("post", endpoint, data);
-  //   return response;
-  // }
+  async create(curriculumId, data = {}) {
+    const endpoint = API_ENDPOINTS.CURRICULUM_SUBJECT.CREATE.replace(
+      ":curriculumId",
+      curriculumId
+    );
+    alert("FDSFDS")
+    const response = await BaseService.request("post", endpoint, data);
+    return response;
+  }
 
   // async update({ curriculumId, subjectId, assessmentTypeId, semester }, data) {
   //   const endpoint = API_ENDPOINTS.CURRICULUM_SUBJECT.UPDATE.replace(

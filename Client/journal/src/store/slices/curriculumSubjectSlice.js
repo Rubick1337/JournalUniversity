@@ -2,6 +2,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import CurriculumSubjectService from '../../services/CurriculumSubjectService';
 import CurriculumSubjectDto from '../../DTOs/Data/CurriculumSubjectDto';
 import MetaDataDto from '../../DTOs/Data/MetaDataDto';
+import CurriculumSubjectDtoForCreation from '../../DTOs/ForCreation/CurriculumSubjectDtoForCreation';
 
 export const fetchCurriculumSubjects = createAsyncThunk(
   'curriculumSubject/fetchCurriculumSubjects',
@@ -19,9 +20,10 @@ export const fetchCurriculumSubjects = createAsyncThunk(
 
 export const addCurriculumSubject = createAsyncThunk(
   'curriculumSubject/addCurriculumSubject',
-  async (subjectData, { rejectWithValue }) => {
+  async ({ curriculumId, data }, { rejectWithValue }) => {
     try {
-      const response = await CurriculumSubjectService.create(subjectData);
+      const dataDto = new CurriculumSubjectDtoForCreation(data);
+      const response = await CurriculumSubjectService.create( curriculumId, dataDto);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
