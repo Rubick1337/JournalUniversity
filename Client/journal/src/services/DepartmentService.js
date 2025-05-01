@@ -15,11 +15,12 @@ class DepartmentService extends BaseService {
     const requestData = {
       name: data.name,
       full_name: data.full_name,
-      faculty_id: data.faculty_id, // Прямая передача ID
-      chairperson_of_the_department_person_id: data.head_person_id // Прямая передача ID
+      faculty_id: data.faculty_id,
+      chairperson_of_the_department_person_id:
+          data.chairperson_of_the_department_person_id || data.head_person_id
     };
 
-    console.log('Отправляемые данные:', requestData);
+    console.log('Финальные данные для отправки:', requestData);
     const response = await $api.post(API_ENDPOINTS.DEPARTMENT.CREATE, requestData);
     return response.data;
   }

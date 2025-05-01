@@ -63,6 +63,7 @@ class SubjectService extends BaseService {
         };
     }
 
+
     async getById(id) {
         const response = await BaseService.request(
             "get",

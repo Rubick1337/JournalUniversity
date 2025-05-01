@@ -12,7 +12,7 @@ const fetchPersons = createAsyncThunk(
       sortOrder,
       surnameQuery,
       nameQuery,
-      middlename,
+      middlenameQuery,
       phoneNumberQuery,
       emailQuery,
     },
@@ -26,7 +26,7 @@ const fetchPersons = createAsyncThunk(
         sortOrder,
         surnameQuery,
         nameQuery,
-        middlename,
+        middlenameQuery,
         phoneNumberQuery,
         emailQuery
       );
@@ -228,7 +228,13 @@ export const {
   setPersonSearchParams,
 } = personSlice.actions;
 
-export { fetchPersons, fetchPersonsByFullName, addPerson, updatePerson, deletePerson };
+export {
+  fetchPersons,
+  fetchPersonsByFullName,
+  addPerson,
+  updatePerson,
+  deletePerson,
+};
 
 // Алиас для совместимости
 export const createPerson = addPerson;

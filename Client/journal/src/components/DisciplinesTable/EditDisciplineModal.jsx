@@ -34,7 +34,7 @@ const EditDisciplineModal = ({ open, onClose, subject, departments, onSave, show
         setEditDiscipline(prev => ({ ...prev, department: newValue }));
     };
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!editDiscipline.name || !editDiscipline.department) {
             showAlert('Все поля должны быть заполнены!', 'error');
             return;
@@ -46,10 +46,15 @@ const EditDisciplineModal = ({ open, onClose, subject, departments, onSave, show
             return;
         }
 
-        onSave({
-            name: editDiscipline.name,
-            departmentId: selectedDepartment.id
-        });
+        try {
+            await onSave({
+                name: editDiscipline.name,
+                departmentId: selectedDepartment.id
+            });
+            onClose(); // Закрываем модальное окно после успешного сохранения
+        } catch (error) {
+            // Ошибка будет обработана в родительском компоненте
+        }
     };
 
     return (

@@ -168,29 +168,25 @@ useEffect(() => {
     };
 
     const handleSave = (values) => {
+        const preparedData = {
+            name: values.name,
+            full_name: values.full_name,
+            faculty_id: values.faculty_id || values.faculty?.id,
+            // Используем оба варианта для совместимости
+            chairperson_of_the_department_person_id:
+                values.chairperson_of_the_department_person_id || values.head?.id || values.head_person_id
+        };
+
         if (currentRow) {
-            // Получаем ID из значений или из объекта
-            const headId = values.chairperson_of_the_department_person_id || values.head?.id;
-            const facultyId = values.faculty_id || values.faculty?.id;
-
-            const updateData = {
-                name: values.name,
-                full_name: values.full_name,
-                head_person_id: headId, // Используем имя, которое ожидает сервер
-                faculty_id: facultyId
-            };
-
-            console.log('Update data:', updateData);
-
             dispatch(updateDepartment({
                 id: currentRow.id,
-                data: updateData
+                data: preparedData
             })).then(() => {
                 refreshData();
                 setOpenEditModal(false);
             });
         } else {
-            dispatch(createDepartment(values)).then(() => {
+            dispatch(createDepartment(preparedData)).then(() => {
                 refreshData();
                 setOpenAddModal(false);
             });

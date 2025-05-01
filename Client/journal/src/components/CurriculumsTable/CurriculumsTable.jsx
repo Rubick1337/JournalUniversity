@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import {
     Table,
     TableBody,
@@ -24,91 +25,78 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import CloseIcon from '@mui/icons-material/Close';
 import SearchIcon from '@mui/icons-material/Search';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import InfoIcon from '@mui/icons-material/Info';
 import Alert from '../Alert/Alert';
-import PersonSelector from '../DepartmentsTable/PersonSelector';
 import {
-    getAllFaculties,
-    setFacultyPage,
-    setFacultyLimit,
-    setFacultySearchParams,
-    createFaculty,
-    updateFaculty,
-    deleteFaculty,
-    clearFacultyErrors
-} from '../../store/slices/facultySlice';
-import { fetchPersons } from '../../store/slices/personSlice';
-import './FacultiesTable.css';
+    fetchCurriculums,
+    createCurriculum,
+    updateCurriculum,
+    deleteCurriculum,
+    clearErrors,
+    setPage,
+    setLimit,
+    setSearchParams
+} from '../../store/slices/curriculumSlice';
+import { fetchAcademicSpecialties } from '../../store/slices/academicSpecialtySlice';
+import { fetchEducationForms } from '../../store/slices/educationFormSlice';
 
-const FacultiesTable = () => {
+const CurriculumsTable = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState(null);
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
     const [openDeleteModal, setOpenDeleteModal] = useState(false);
     const [openAddModal, setOpenAddModal] = useState(false);
-    const [newFaculty, setNewFaculty] = useState({
-        name: '',
-        full_name: '',
-        dean_person_id: null
+    const [newCurriculum, setNewCurriculum] = useState({
+        year_of_specialty_training: '',
+        specialty_code: '',
+        education_form_id: ''
     });
-    const [editFaculty, setEditFaculty] = useState({
+    const [editCurriculum, setEditCurriculum] = useState({
         id: '',
-        name: '',
-        full_name: '',
-        dean_person_id: null
+        year_of_specialty_training: '',
+        specialty_code: '',
+        education_form_id: ''
     });
     const [alertState, setAlertState] = useState({
         open: false,
         message: '',
         severity: 'success'
     });
-    const [orderBy, setOrderBy] = useState('name');
+    const [orderBy, setOrderBy] = useState('year_of_specialty_training');
     const [order, setOrder] = useState('asc');
     const [rowsMounted, setRowsMounted] = useState(false);
 
     const {
-        data: facultiesData = [],
+        data: curriculumsData = [],
         isLoading,
         errors = [],
-        meta = { page: 1, limit: 10, total: 0 }
-    } = useSelector(state => state.faculty.facultiesList || {});
-    const searchParams = useSelector(state => state.faculty.searchParams || {});
-    const people = useSelector(state => state.person?.data || []);
+        meta = { page: 1, limit: 10, total: 0 },
+        searchParams = {}
+    } = useSelector(state => state.curriculums);
+
+    const academicSpecialties = useSelector(state => state.academicSpecialties.data || []);
+    const educationForms = useSelector(state => state.educationForms.data || []);
 
     const [searchValues, setSearchValues] = useState({
-        nameQuery: '',
-        fullNameQuery: '',
-        deanQuery: ''
+        idQuery: '',
+        yearQuery: '',
+        specialtyQuery: '',
+        educationFormQuery: ''
     });
-// Добавьте этот эффект в компонент FacultiesTable
-useEffect(() => {
-    const handleKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            if (openAddModal) {
-                handleSaveAdd();
-            } else if (openEditModal) {
-                handleSaveEdit();
-            } else if (openDeleteModal) {
-                handleDeleteConfirm();
-            }
-        }
-    };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-        window.removeEventListener('keydown', handleKeyDown);
-    };
-}, [openAddModal, openEditModal, openDeleteModal, newFaculty, editFaculty]);
     useEffect(() => {
-        dispatch(getAllFaculties({
+        dispatch(fetchCurriculums({
             page: meta.page,
             limit: meta.limit,
             sortBy: orderBy,
             sortOrder: order,
             ...searchParams
         }));
-        dispatch(fetchPersons({}));
+        dispatch(fetchAcademicSpecialties({}));
+        dispatch(fetchEducationForms({}));
     }, [dispatch, meta.page, meta.limit, searchParams, orderBy, order]);
 
     useEffect(() => {
@@ -118,18 +106,17 @@ useEffect(() => {
                 message: errors[0].message || 'Произошла ошибка',
                 severity: 'error'
             });
-            dispatch(clearFacultyErrors());
+            dispatch(clearErrors());
         }
     }, [errors, dispatch]);
 
     useEffect(() => {
-        // Активируем анимацию строк после загрузки данных
-        if (facultiesData.length > 0 && !rowsMounted) {
+        if (curriculumsData.length > 0 && !rowsMounted) {
             setTimeout(() => {
                 setRowsMounted(true);
             }, 100);
         }
-    }, [facultiesData, rowsMounted]);
+    }, [curriculumsData, rowsMounted]);
 
     const showAlert = (message, severity = 'success') => {
         setAlertState({
@@ -144,32 +131,33 @@ useEffect(() => {
     };
 
     const handleSearchChange = (field) => (e) => {
-        const newSearchValues = {
+        setSearchValues({
             ...searchValues,
             [field]: e.target.value
-        };
-        setSearchValues(newSearchValues);
+        });
     };
 
     const handleSearch = () => {
-        dispatch(setFacultySearchParams(searchValues));
+        dispatch(setSearchParams(searchValues));
         setSearchAnchorEl(null);
         setRowsMounted(false);
     };
 
     const handleResetSearch = () => {
         setSearchValues({
-            nameQuery: '',
-            fullNameQuery: '',
-            deanQuery: ''
+            idQuery: '',
+            yearQuery: '',
+            specialtyQuery: '',
+            educationFormQuery: ''
         });
-        dispatch(setFacultySearchParams({
-            nameQuery: '',
-            fullNameQuery: '',
-            deanQuery: ''
+        dispatch(setSearchParams({
+            idQuery: '',
+            yearQuery: '',
+            specialtyQuery: '',
+            educationFormQuery: ''
         }));
         setSearchAnchorEl(null);
-        setOrderBy('name');
+        setOrderBy('year_of_specialty_training');
         setOrder('asc');
         setRowsMounted(false);
     };
@@ -209,13 +197,26 @@ useEffect(() => {
         setSearchAnchorEl(null);
     };
 
+    const handleDetails = (id) => {
+        navigate(`/curriculum/${id}`);
+    };
+
     const handleEdit = () => {
-        setEditFaculty({
+        // Проверяем и логируем данные перед установкой
+        console.log('Current row data:', {
             id: currentRow.id,
-            name: currentRow.name,
-            full_name: currentRow.full_name,
-            dean_person_id: currentRow.dean?.id || null
+            year: currentRow.year_of_specialty_training,
+            specialtyCode: currentRow.specialty?.code,
+            educationFormId: currentRow.education_form?.id
         });
+
+        setEditCurriculum({
+            id: currentRow.id,
+            year_of_specialty_training: currentRow.year_of_specialty_training,
+            specialty_code: currentRow.specialty?.code || currentRow.specialty_code || '',
+            education_form_id: currentRow.education_form?.id || currentRow.education_form_id || ''
+        });
+
         setOpenEditModal(true);
         handleMenuClose();
     };
@@ -226,10 +227,10 @@ useEffect(() => {
     };
 
     const handleAdd = () => {
-        setNewFaculty({
-            name: '',
-            full_name: '',
-            dean_person_id: null
+        setNewCurriculum({
+            year_of_specialty_training: '',
+            specialty_code: '',
+            education_form_id: ''
         });
         setOpenAddModal(true);
     };
@@ -240,40 +241,35 @@ useEffect(() => {
         setOpenAddModal(false);
     };
 
-    const handleDeanChangeEdit = (person) => {
-        setEditFaculty(prev => ({
-            ...prev,
-            dean_person_id: person ? person.id : null
-        }));
-    };
-
-    const handleDeanChangeAdd = (person) => {
-        setNewFaculty(prev => ({
-            ...prev,
-            dean_person_id: person ? person.id : null
-        }));
-    };
-
     const handleSaveEdit = () => {
-        if (!editFaculty.name || !editFaculty.full_name) {
+        if (!editCurriculum.year_of_specialty_training || !editCurriculum.specialty_code || !editCurriculum.education_form_id) {
             showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
-
-        dispatch(updateFaculty({
-            id: editFaculty.id,
-            data: {
-                name: editFaculty.name,
-                full_name: editFaculty.full_name,
-                dean_person_id: editFaculty.dean_person_id
+        const updateData = {
+            year_of_specialty_training: editCurriculum.year_of_specialty_training,
+            academic_specialty: {
+                code: editCurriculum.specialty_code
+            },
+            education_form: {
+                id: editCurriculum.education_form_id
             }
+        };
+        console.log('Editing curriculum:', {
+            id: editCurriculum.id,
+            year: editCurriculum.year_of_specialty_training,
+            specialty: editCurriculum.specialty_code,
+            educationForm: editCurriculum.education_form_id
+        });
+        dispatch(updateCurriculum({
+            id: editCurriculum.id,
+            data: updateData
         }))
-            .unwrap() // Добавьте unwrap() для обработки Promise
+            .unwrap()
             .then(() => {
-                showAlert('Факультет успешно обновлен!', 'success');
+                showAlert('Учебный план успешно обновлен!', 'success');
                 handleCloseModals();
-                // Обновляем данные после обновления
-                dispatch(getAllFaculties({
+                dispatch(fetchCurriculums({
                     page: meta.page,
                     limit: meta.limit,
                     sortBy: orderBy,
@@ -282,27 +278,26 @@ useEffect(() => {
                 }));
             })
             .catch(error => {
-                showAlert(error.message || 'Ошибка при обновлении факультета', 'error');
+                showAlert(error.message || 'Ошибка при обновлении учебного плана', 'error');
             });
     };
 
     const handleSaveAdd = () => {
-        if (!newFaculty.name || !newFaculty.full_name) {
+        if (!newCurriculum.year_of_specialty_training || !newCurriculum.specialty_code || !newCurriculum.education_form_id) {
             showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
 
-        dispatch(createFaculty({
-            name: newFaculty.name,
-            full_name: newFaculty.full_name,
-            dean_person_id: newFaculty.dean_person_id
+        dispatch(createCurriculum({
+            year_of_specialty_training: newCurriculum.year_of_specialty_training,
+            academic_specialty: { code: newCurriculum.specialty_code },
+            education_form: { id: newCurriculum.education_form_id }
         }))
-            .unwrap() // Добавьте unwrap() для обработки Promise
+            .unwrap()
             .then(() => {
-                showAlert('Факультет успешно добавлен!', 'success');
+                showAlert('Учебный план успешно добавлен!', 'success');
                 handleCloseModals();
-                // Обновляем данные после добавления
-                dispatch(getAllFaculties({
+                dispatch(fetchCurriculums({
                     page: meta.page,
                     limit: meta.limit,
                     sortBy: orderBy,
@@ -311,27 +306,27 @@ useEffect(() => {
                 }));
             })
             .catch(error => {
-                showAlert(error.message || 'Ошибка при добавлении факультета', 'error');
+                showAlert(error.message || 'Ошибка при добавлении учебного плана', 'error');
             });
     };
 
     const handleDeleteConfirm = () => {
-        dispatch(deleteFaculty(currentRow.id))
+        dispatch(deleteCurriculum(currentRow.id))
             .then(() => {
-                showAlert('Факультет успешно удален!', 'success');
+                showAlert('Учебный план успешно удален!', 'success');
                 handleCloseModals();
             });
     };
 
     const handlePageChange = (_, newPage) => {
-        dispatch(setFacultyPage(newPage + 1));
+        dispatch(setPage(newPage + 1));
         setRowsMounted(false);
     };
 
     const handleRowsPerPageChange = (e) => {
         const newLimit = parseInt(e.target.value, 10);
-        dispatch(setFacultyLimit(newLimit));
-        dispatch(setFacultyPage(1));
+        dispatch(setLimit(newLimit));
+        dispatch(setPage(1));
         setRowsMounted(false);
     };
 
@@ -339,24 +334,11 @@ useEffect(() => {
         return <div>Загрузка данных...</div>;
     }
 
-    if (errors.length > 0) {
-        return (
-            <div>
-                Ошибка загрузки данных:
-                <ul>
-                    {errors.map((err, index) => (
-                        <li key={index}>{err.message || err.toString()}</li>
-                    ))}
-                </ul>
-            </div>
-        );
-    }
-
     return (
         <>
             <TableContainer component={Paper}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
-                    <Typography variant="h6">Список факультетов</Typography>
+                    <Typography variant="h6">Список учебных планов</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <IconButton onClick={handleSearchMenuClick} className="action-button">
                             <SearchIcon />
@@ -372,37 +354,38 @@ useEffect(() => {
                         >
                             <Box sx={{ p: 2, width: 280 }}>
                                 <TextField
-                                    label="Поиск по названию"
+                                    label="Поиск по году"
                                     variant="outlined"
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchValues.nameQuery}
-                                    onChange={handleSearchChange('nameQuery')}
+                                    value={searchValues.yearQuery}
+                                    onChange={handleSearchChange('yearQuery')}
                                 />
                                 <TextField
-                                    label="Поиск по полному названию"
+                                    label="Поиск по специальности"
                                     variant="outlined"
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchValues.fullNameQuery}
-                                    onChange={handleSearchChange('fullNameQuery')}
+                                    value={searchValues.specialtyQuery}
+                                    onChange={handleSearchChange('specialtyQuery')}
                                 />
                                 <TextField
-                                    label="Поиск по декану"
+                                    label="Поиск по форме обучения"
                                     variant="outlined"
                                     size="small"
                                     fullWidth
                                     margin="normal"
-                                    value={searchValues.deanQuery}
-                                    onChange={handleSearchChange('deanQuery')}
+                                    value={searchValues.educationFormQuery}
+                                    onChange={handleSearchChange('educationFormQuery')}
                                 />
                                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
                                     <Button
                                         size="small"
                                         onClick={handleResetSearch}
-                                        disabled={!searchValues.nameQuery && !searchValues.fullNameQuery && !searchValues.deanQuery}
+                                        disabled={!searchValues.idQuery && !searchValues.yearQuery &&
+                                            !searchValues.specialtyQuery && !searchValues.educationFormQuery}
                                         className="action-button"
                                     >
                                         Сбросить
@@ -423,33 +406,35 @@ useEffect(() => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {renderSortableHeader('name', 'Название')}
-                            {renderSortableHeader('full_name', 'Полное название')}
-                            <TableCell>Декан</TableCell>
+                            {renderSortableHeader('year_of_specialty_training', 'Год подготовки')}
+                            {renderSortableHeader('specialty_code', 'Код специальности')}
+                            <TableCell>Форма обучения</TableCell>
                             <TableCell>Действия</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {facultiesData.map((faculty, index) => (
+                        {curriculumsData.map((curriculum, index) => (
                             <TableRow
-                                key={faculty.id}
+                                key={curriculum.id}
                                 className={`table-row ${rowsMounted ? 'show' : ''}`}
                                 style={{ transitionDelay: `${index * 50}ms` }}
                             >
-                                <TableCell>{faculty.name}</TableCell>
-                                <TableCell>{faculty.full_name}</TableCell>
+                                <TableCell>{curriculum.year_of_specialty_training}</TableCell>
                                 <TableCell>
-                                    {faculty.dean_person ? (
-                                        `${faculty.dean_person.surname} ${faculty.dean_person.name} ${faculty.dean_person.middlename || ''}`.trim()
-                                    ) : faculty.dean_person_id ? (
-                                        `ID: ${faculty.dean_person_id} (данные не загружены)`
-                                    ) : (
-                                        'Не указан'
-                                    )}
+                                    {curriculum.specialty?.code} - {curriculum.specialty?.name}
+                                </TableCell>
+                                <TableCell>
+                                    {curriculum.education_form?.name}
                                 </TableCell>
                                 <TableCell>
                                     <IconButton
-                                        onClick={(e) => handleMenuClick(e, faculty)}
+                                        onClick={() => handleDetails(curriculum.id)}
+                                        className="action-button"
+                                    >
+                                        <InfoIcon />
+                                    </IconButton>
+                                    <IconButton
+                                        onClick={(e) => handleMenuClick(e, curriculum)}
                                         className="action-button"
                                     >
                                         <MoreVertIcon />
@@ -505,9 +490,9 @@ useEffect(() => {
                             borderTopRightRadius: 1
                         }}>
                             <Typography variant="h6">
-                                {openEditModal && "Редактировать факультет"}
-                                {openDeleteModal && "Удалить факультет"}
-                                {openAddModal && "Добавить факультет"}
+                                {openEditModal && "Редактировать учебный план"}
+                                {openDeleteModal && "Удалить учебный план"}
+                                {openAddModal && "Добавить учебный план"}
                             </Typography>
                             <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
                                 <CloseIcon />
@@ -515,27 +500,43 @@ useEffect(() => {
                         </Box>
                         <Box sx={{ p: 3 }}>
                             {openEditModal && (
-                                <div onKeyPress={(e) => e.key === 'Enter' && handleSaveEdit()}>
+                                <div>
                                     <TextField
-                                        label="Название"
+                                        label="Год подготовки"
+                                        type="number"
                                         fullWidth
                                         margin="normal"
-                                        value={editFaculty.name}
-                                        onChange={(e) => setEditFaculty({ ...editFaculty, name: e.target.value })}
+                                        value={editCurriculum.year_of_specialty_training}
+                                        onChange={(e) => setEditCurriculum({ ...editCurriculum, year_of_specialty_training: e.target.value })}
                                     />
                                     <TextField
-                                        label="Полное название"
+                                        select
+                                        label="Специальность"
                                         fullWidth
                                         margin="normal"
-                                        value={editFaculty.full_name}
-                                        onChange={(e) => setEditFaculty({ ...editFaculty, full_name: e.target.value })}
-                                    />
-                                    <PersonSelector
-                                        value={editFaculty.dean_person_id}
-                                        onChange={handleDeanChangeEdit}
-                                        options={people}
-                                        label="Декан факультета"
-                                    />
+                                        value={editCurriculum.specialty_code}
+                                        onChange={(e) => setEditCurriculum({ ...editCurriculum, specialty_code: e.target.value })}
+                                    >
+                                        {academicSpecialties.map((specialty) => (
+                                            <MenuItem key={specialty.code} value={specialty.code}>
+                                                {specialty.code} - {specialty.name}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                    <TextField
+                                        select
+                                        label="Форма обучения"
+                                        fullWidth
+                                        margin="normal"
+                                        value={editCurriculum.education_form_id}
+                                        onChange={(e) => setEditCurriculum({ ...editCurriculum, education_form_id: e.target.value })}
+                                    >
+                                        {educationForms.map((form) => (
+                                            <MenuItem key={form.id} value={form.id}>
+                                                {form.name}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
                                         <Button onClick={handleSaveEdit} color="primary" className="action-button">Сохранить</Button>
@@ -543,8 +544,8 @@ useEffect(() => {
                                 </div>
                             )}
                             {openDeleteModal && (
-                                <div onKeyPress={(e) => e.key === 'Enter' && handleDeleteConfirm()}>
-                                    <Typography>Вы уверены, что хотите удалить факультет "{currentRow?.name}"?</Typography>
+                                <div>
+                                    <Typography>Вы уверены, что хотите удалить учебный план {currentRow?.year_of_specialty_training}?</Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
                                         <Button onClick={handleDeleteConfirm} color="error" className="action-button">Удалить</Button>
@@ -552,27 +553,43 @@ useEffect(() => {
                                 </div>
                             )}
                             {openAddModal && (
-                                <div  onKeyPress={(e) => e.key === 'Enter' && handleSaveAdd()}>
+                                <div>
                                     <TextField
-                                        label="Название"
+                                        label="Год подготовки"
+                                        type="number"
                                         fullWidth
                                         margin="normal"
-                                        value={newFaculty.name}
-                                        onChange={(e) => setNewFaculty({ ...newFaculty, name: e.target.value })}
+                                        value={newCurriculum.year_of_specialty_training}
+                                        onChange={(e) => setNewCurriculum({ ...newCurriculum, year_of_specialty_training: e.target.value })}
                                     />
                                     <TextField
-                                        label="Полное название"
+                                        select
+                                        label="Специальность"
                                         fullWidth
                                         margin="normal"
-                                        value={newFaculty.full_name}
-                                        onChange={(e) => setNewFaculty({ ...newFaculty, full_name: e.target.value })}
-                                    />
-                                    <PersonSelector
-                                        value={newFaculty.dean_person_id}
-                                        onChange={handleDeanChangeAdd}
-                                        options={people}
-                                        label="Декан факультета"
-                                    />
+                                        value={newCurriculum.specialty_code}
+                                        onChange={(e) => setNewCurriculum({ ...newCurriculum, specialty_code: e.target.value })}
+                                    >
+                                        {academicSpecialties.map((specialty) => (
+                                            <MenuItem key={specialty.code} value={specialty.code}>
+                                                {specialty.code} - {specialty.name}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
+                                    <TextField
+                                        select
+                                        label="Форма обучения"
+                                        fullWidth
+                                        margin="normal"
+                                        value={newCurriculum.education_form_id}
+                                        onChange={(e) => setNewCurriculum({ ...newCurriculum, education_form_id: e.target.value })}
+                                    >
+                                        {educationForms.map((form) => (
+                                            <MenuItem key={form.id} value={form.id}>
+                                                {form.name}
+                                            </MenuItem>
+                                        ))}
+                                    </TextField>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
                                         <Button onClick={handleSaveAdd} color="primary" className="action-button">Добавить</Button>
@@ -583,15 +600,13 @@ useEffect(() => {
                     </Box>
                 </Modal>
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                        <Button
-                            variant="contained"
-                            startIcon={<AddCircleOutlineIcon />}
-                            onClick={handleAdd}
-                        >
-                            Добавить факультет
-                        </Button>
-                    </Box>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddCircleOutlineIcon />}
+                        onClick={handleAdd}
+                    >
+                        Добавить учебный план
+                    </Button>
                 </Box>
             </TableContainer>
 
@@ -607,4 +622,4 @@ useEffect(() => {
     );
 };
 
-export default FacultiesTable;
+export default CurriculumsTable;

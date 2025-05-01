@@ -48,7 +48,7 @@ function App() {
 
           <a href="curriculum">Рабочие программы</a>
 
-          <a href="specilization">Группы</a>
+          <a href="group">Группы</a>
           <a href="specilization">Подгруппы</a>
           <a href="specilization">Студенты</a>
 

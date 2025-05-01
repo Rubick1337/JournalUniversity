@@ -378,15 +378,33 @@ const DisciplinesTable = React.memo(() => {
 
             <EditDisciplineModal
                 open={openEditModal}
-                onClose={() => setOpenEditModal(false)}
+                onClose={() => {
+                    setOpenEditModal(false);
+                    dispatch(clearCurrentSubject());
+                }}
                 subject={currentSubject}
-                onSave={(data) => dispatch(updateSubject({
-                    id: currentSubject?.id,
-                    data
-                }))}
+                onSave={async (data) => {
+                    const resultAction = await dispatch(updateSubject({
+                        id: currentSubject?.id,
+                        data
+                    }));
+
+                    if (updateSubject.fulfilled.match(resultAction)) {
+                        dispatch(fetchSubjects({
+                            page: meta.page,
+                            limit: meta.limit,
+                            sortBy: orderBy,
+                            sortOrder: order,
+                            ...reduxSearchParams
+                        }));
+                    }
+
+                    return resultAction;
+                }}
                 showAlert={setAlertState}
                 departments={departments}
             />
+
 
             <DeleteDisciplineModal
                 open={openDeleteModal}

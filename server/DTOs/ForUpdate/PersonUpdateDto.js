@@ -8,7 +8,7 @@ class PersonUpdateDto {
         this.surname = data.surname;
         this.name = data.name;
         this.middlename = data.middlename ?? null;
-        this.phone_number = data.phoneNumber ?? null;  // Изменено на phoneNumber
+        this.phone_number = data.phone_number ?? null;
         this.email = data.email;
     }
 
