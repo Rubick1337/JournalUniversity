@@ -88,5 +88,12 @@ export const API_ENDPOINTS = {
     UPDATE: '/topic/update/:id',
     DELETE: '/topic/delete/:id',
     GETBYID: `/topic/getById/:id`,
+  },
+  GROUP: {
+    GETALL: "/group/getAll",
+    CREATE: '/group/create',
+    UPDATE: '/group/update/:id',
+    DELETE: '/group/delete/:id',
+    GETBYID: `/group/getById/:id`,
   }
 };

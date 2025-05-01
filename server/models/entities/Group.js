@@ -11,7 +11,7 @@ const Group = sequelize.define("Group", {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true
-    },
+  },
   name: { type: DataTypes.STRING, allowNull: false },
   graduation_year: { type: DataTypes.INTEGER, allowNull: false },
   year_of_beginning_of_study: { type: DataTypes.INTEGER, allowNull: false },

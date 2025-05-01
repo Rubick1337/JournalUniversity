@@ -69,57 +69,52 @@ Subject.belongsTo(Department, {
   targetKey: 'id' // явно указываем целевой ключ (опционально)
 });
 
-// Group associations with 'as' aliases
-
-// Faculty - Group (one-to-many)
+// Group 
 Faculty.hasMany(Group, { 
   foreignKey: "faculty_id",
-  as: "groups" // Faculty.getGroups()
+  as: "groups"
 });
 Group.belongsTo(Faculty, { 
   foreignKey: "faculty_id",
-  as: "faculty" // Group.getFaculty()
+  as: "faculty" 
 });
-
-// Person (class representative) - Group (one-to-many)
 Person.hasMany(Group, { 
   foreignKey: "class_representative_person_id",
-  as: "representedGroups" // Person.getRepresentedGroups()
+  as: "representedGroups"
 });
 Group.belongsTo(Person, { 
   foreignKey: "class_representative_person_id",
-  as: "classRepresentative" // Group.getClassRepresentative()
+  as: "classRepresentative"
 });
 
-// Person (teacher curator) - Group (one-to-many)
 Person.hasMany(Group, { 
   foreignKey: "teacher_curator_id",
-  as: "curatedGroups" // Person.getCuratedGroups()
+  as: "curatedGroups"
 });
 Group.belongsTo(Person, { 
   foreignKey: "teacher_curator_id",
-  as: "teacherCurator" // Group.getTeacherCurator()
+  as: "teacherCurator"
 });
 
-// Department - Group (one-to-many)
 Department.hasMany(Group, {
   foreignKey: "department_id",
-  as: "groups" // Department.getGroups()
+  as: "groups" 
 });
 Group.belongsTo(Department, { 
   foreignKey: "department_id",
-  as: "department" // Group.getDepartment()
+  as: "department"
 });
 
-// AcademicSpecialty - Group (one-to-many)
 AcademicSpecialty.hasMany(Group, { 
   foreignKey: "specialty_code",
-  as: "groups" // AcademicSpecialty.getGroups()
+  as: "groups"
 });
 Group.belongsTo(AcademicSpecialty, { 
   foreignKey: "specialty_code",
-  as: "academicSpecialty" // Group.getAcademicSpecialty()
+  as: "academicSpecialty"
 });
+
+
 //Subgroup
 Group.hasMany(Subgroup, { foreignKey: "group_id" });
 Subgroup.belongsTo(Group, { foreignKey: "group_id" });
