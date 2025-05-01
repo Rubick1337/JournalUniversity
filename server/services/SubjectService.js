@@ -4,11 +4,17 @@ const { Subject, Department, Op, Sequelize } = require("../models/index");
 class SubjectService {
   async create(data) {
     try {
+      console.log(data);
+      console.log('Используемые значения:', {
+        name: data.name,
+        department_id: data.department_id,
+      });
+
       const subject = await Subject.create({
         name: data.name,
         department_id: data.department_id
       });
-      
+
       return await this._getSubjectWithAssociations(subject.id);
     } catch (error) {
       throw ApiError.badRequest("Error creating subject", error);
@@ -81,7 +87,10 @@ class SubjectService {
       const { count, rows } = await Subject.findAndCountAll({
         where,
         include,
-        order: [[sortBy, sortOrder]],
+        order: sortBy === 'department.name'
+            ? [[{ model: Department, as: 'department' }, 'name', sortOrder]]
+            : [[sortBy, sortOrder]],
+
         limit,
         offset,
         distinct: true

@@ -12,6 +12,8 @@ import ContactsTable from "../../components/ContactsTable/ContactsTable";
 import TeacherPositionsTable from "../../components/TeachingPositionTable/TeachingPositionTable";
 import Routers from "../../components/Routers/Routers";
 import PersonTable from "../../components/PersonTable/PersonTable";
+import WorkPrograming from "../../components/WorkPrograming/WorkProgramingTable";
+
 
 
 const SchedulePage = props => {
@@ -26,7 +28,8 @@ const SchedulePage = props => {
                 {/*<SpecializationListTable/>*/}
                 {/*<ContactsTable/>*/}
                 {/*{<TeacherPositionsTable/>}*/}
-                {<PersonTable></PersonTable>}
+                {/*{<PersonTable></PersonTable>}*/}
+                {<WorkPrograming></WorkPrograming>}
             </main>
             <Footer/>
         </>

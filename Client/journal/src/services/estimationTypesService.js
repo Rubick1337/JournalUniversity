@@ -1,4 +1,3 @@
-import $api from "../http/index";
 import { API_ENDPOINTS } from "../http/apiEnpoints";
 import BaseService from "./BaseService";
 
@@ -11,42 +10,35 @@ const addParamInEndpoint = (endpoint, paramName, paramValue) => {
     return `${endpoint}${separator}${paramName}=${encodeURIComponent(paramValue)}`;
 };
 
-class SubjectService extends BaseService {
+class EstimationTypeService extends BaseService {
     async create(data) {
-            const subjectData = {
-                name: data.name,
-                department_id: data.department_id
-            };
-            console.log(subjectData);
-            const response = await BaseService.request(
-                "post",
-                API_ENDPOINTS.SUBJECT.CREATE,
-                subjectData
-            );
-        console.log('Ответ от сервера:', response.data);
-            return response.data;
-
+        const response = await BaseService.request(
+            "post",
+            API_ENDPOINTS.ESTIMATION_TYPE.CREATE,
+            data
+        );
+        return response.data;
     }
 
     async update(id, data) {
         const response = await BaseService.request(
             "put",
-            API_ENDPOINTS.SUBJECT.UPDATE.replace(':subjectId', id),
+            API_ENDPOINTS.ESTIMATION_TYPE.UPDATE.replace(':id', id),
             data
         );
-        return response;
+        return response.data;
     }
 
     async delete(id) {
         const response = await BaseService.request(
             "delete",
-            API_ENDPOINTS.SUBJECT.DELETE.replace(':subjectId', id),
+            API_ENDPOINTS.ESTIMATION_TYPE.DELETE.replace(':id', id),
         );
-        return response;
+        return response.data;
     }
 
-    async getAll({ limit, page, sortBy, sortOrder, idQuery, nameQuery }) {
-        let endpoint = API_ENDPOINTS.SUBJECT.GETALL;
+    async getAlls({ limit, page, sortBy, sortOrder, idQuery, nameQuery }) {
+        let endpoint = API_ENDPOINTS.ESTIMATION_TYPE.GETALL;
 
         endpoint = addParamInEndpoint(endpoint, "limit", limit);
         endpoint = addParamInEndpoint(endpoint, "page", page);
@@ -66,10 +58,10 @@ class SubjectService extends BaseService {
     async getById(id) {
         const response = await BaseService.request(
             "get",
-            API_ENDPOINTS.SUBJECT.GETBYID.replace(':subjectId', id),
+            API_ENDPOINTS.ESTIMATION_TYPE.GETBYID.replace(':id', id),
         );
         return response.data;
     }
 }
 
-export default new SubjectService();
+export default new EstimationTypeService();

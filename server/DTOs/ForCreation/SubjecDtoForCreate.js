@@ -1,8 +1,7 @@
 class SubjecDtoForCreate {
-  constructor({ name, department = {} }) {
+  constructor({ name, department_id }) {
     this.name = name;
-
-    this.department_id = department ? department.id : null;
+    this.department_id = department_id;
   }
 }
 

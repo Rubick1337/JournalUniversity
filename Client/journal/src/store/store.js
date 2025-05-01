@@ -8,6 +8,8 @@ import academicReducer from "./slices/academicSpecialtySlice";
 import departmentSlice from "./slices/departmentSlice";
 import teacherSlice from "./slices/teacherSlice";
 import curriculumReducer from "./slices/curriculumSlice";
+import subjectSlice from "./slices/subjectSlice";
+import estimationTypeSlice from "./slices/estimationTypeSlice";
 
 const store = configureStore({
   reducer: {
@@ -20,9 +22,12 @@ const store = configureStore({
     departments: departmentSlice,
     teachers: teacherSlice,
     curriculum: curriculumReducer,
+    subjects:subjectSlice,
+    estimationTypes: estimationTypeSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
+
 });
 
 export default store;

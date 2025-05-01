@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
     Modal,
     Box,
@@ -10,17 +10,20 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
-const EditDisciplineModal = ({ open, onClose, discipline, departments, onSave, showAlert }) => {
-    const [editDiscipline, setEditDiscipline] = React.useState(discipline || {
+const EditDisciplineModal = ({ open, onClose, subject, departments, onSave, showAlert }) => {
+    const [editDiscipline, setEditDiscipline] = React.useState({
         name: '',
         department: ''
     });
 
-    React.useEffect(() => {
-        if (discipline) {
-            setEditDiscipline(discipline);
+    useEffect(() => {
+        if (subject) {
+            setEditDiscipline({
+                name: subject.name || '',
+                department: subject.department?.name || ''
+            });
         }
-    }, [discipline]);
+    }, [subject]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -36,8 +39,17 @@ const EditDisciplineModal = ({ open, onClose, discipline, departments, onSave, s
             showAlert('Все поля должны быть заполнены!', 'error');
             return;
         }
-        onSave(editDiscipline);
-        onClose();
+
+        const selectedDepartment = departments.find(d => d.name === editDiscipline.department);
+        if (!selectedDepartment) {
+            showAlert('Выберите корректную кафедру', 'error');
+            return;
+        }
+
+        onSave({
+            name: editDiscipline.name,
+            departmentId: selectedDepartment.id
+        });
     };
 
     return (
@@ -49,7 +61,8 @@ const EditDisciplineModal = ({ open, onClose, discipline, departments, onSave, s
                 transform: 'translate(-50%, -50%)',
                 width: 400,
                 bgcolor: 'background.paper',
-                boxShadow: 24
+                boxShadow: 24,
+                borderRadius: 1
             }}>
                 <Box sx={{
                     bgcolor: '#1976d2',
@@ -57,7 +70,9 @@ const EditDisciplineModal = ({ open, onClose, discipline, departments, onSave, s
                     p: 2,
                     display: 'flex',
                     justifyContent: 'space-between',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    borderTopLeftRadius: 1,
+                    borderTopRightRadius: 1
                 }}>
                     <Typography variant="h6">Редактировать дисциплину</Typography>
                     <IconButton onClick={onClose} sx={{ color: 'white' }}>
@@ -88,9 +103,16 @@ const EditDisciplineModal = ({ open, onClose, discipline, departments, onSave, s
                         )}
                     />
 
-                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                        <Button onClick={onClose}>Отмена</Button>
-                        <Button onClick={handleSubmit} color="primary">Сохранить</Button>
+                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2, gap: 1 }}>
+                        <Button variant="outlined" onClick={onClose}>Отмена</Button>
+                        <Button
+                            variant="contained"
+                            onClick={handleSubmit}
+                            color="primary"
+                            disabled={!editDiscipline.name || !editDiscipline.department}
+                        >
+                            Сохранить
+                        </Button>
                     </Box>
                 </Box>
             </Box>
@@ -98,4 +120,4 @@ const EditDisciplineModal = ({ open, onClose, discipline, departments, onSave, s
     );
 };
 
-export default EditDisciplineModal;
+export default React.memo(EditDisciplineModal);
