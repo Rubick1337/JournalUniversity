@@ -4,7 +4,7 @@ import SubjectService from '../../services/SubjectService';
 // Асинхронные действия
 export const fetchSubjects = createAsyncThunk(
     'subjects/fetchAll',
-    async (params, { rejectWithValue }) => {
+    async (params = {}, { rejectWithValue }) => {
         try {
             const response = await SubjectService.getAll(params);
             return {

@@ -9,9 +9,21 @@ class CurriculumSubjectController {
     try {
       const { curriculumId } = req.params;
       const dataDto = new CurriculumSubjectCreationDTO(req.body);
-      const result = await CurriculumSubjectService.create(curriculumId,dataDto);
+      
+      // Проверяем, что curriculumId из params совпадает с curriculum_id в теле запроса (если есть)
+      if (dataDto.curriculum_id && dataDto.curriculum_id !== curriculumId) {
+        return res.status(400).json({
+          message: "Curriculum ID in request body does not match URL parameter"
+        });
+      }
+
+      const result = await CurriculumSubjectService.create(curriculumId, dataDto);
       const resultDto = new CurriculumSubjectDataDto(result);
-      return res.status(200).json({ message: "created", data: result });
+      
+      return res.status(201).json({ 
+        message: "Curriculum subject created successfully", 
+        data: resultDto 
+      });
     } catch (err) {
       console.error(err);
       next(err);
@@ -30,9 +42,11 @@ class CurriculumSubjectController {
         assessmentTypeQuery = "",
         semesterQuery = ""
       } = req.query;
-      const { curriculumId } = req.params;
+      console.log("TESTadfEdafasdfasdf")
 
-      const { data, meta } = await CurriculumSubjectService.getAll({
+      const { curriculumId } = req.params;
+      console.log("TESTadfE", curriculumId)
+      const result = await CurriculumSubjectService.getAll({
         curriculumId,
         page: parseInt(page),
         limit: parseInt(limit),
@@ -45,10 +59,13 @@ class CurriculumSubjectController {
           semesterQuery
         },
       });
-      
-      const dataDto = data.map((obj) => new CurriculumSubjectDataDto(obj));
-      const metaDto = new MetaDataDto(meta);
+      console.log("result", result)
+
+      const dataDto = result.data.map(obj => new CurriculumSubjectDataDto(obj));
+      const metaDto = new MetaDataDto(result.meta);
+
       return res.status(200).json({
+        message: "Curriculum subjects retrieved successfully",
         data: dataDto,
         meta: metaDto,
       });
@@ -61,14 +78,29 @@ class CurriculumSubjectController {
   getByCompositeId = async (req, res, next) => {
     try {
       const { curriculumId, subjectId, assessmentTypeId, semester } = req.params;
-      const data = await CurriculumSubjectService.getByCompositeId({
+      
+      const compositeId = {
         curriculumId,
         subjectId,
         assessmentTypeId,
-        semester
-      });
+        semester: parseInt(semester)
+      };
+      
+      const data = await CurriculumSubjectService.getByCompositeId(
+        curriculumId,
+        compositeId
+      );
+      
+      if (!data) {
+        return res.status(404).json({
+          message: "Curriculum subject not found with specified composite id"
+        });
+      }
+      
       const dataDto = new CurriculumSubjectDataDto(data);
+      
       return res.status(200).json({
+        message: "Curriculum subject retrieved successfully",
         data: dataDto,
       });
     } catch (err) {
@@ -81,12 +113,26 @@ class CurriculumSubjectController {
     try {
       const { curriculumId, subjectId, assessmentTypeId, semester } = req.params;
       const dataDto = new CurriculumSubjectUpdateDto(req.body);
+      
+      const compositeId = {
+        curriculumId,
+        subjectId,
+        assessmentTypeId,
+        semester: parseInt(semester)
+      };
+      
       const result = await CurriculumSubjectService.update(
-        { curriculumId, subjectId, assessmentTypeId, semester },
+        curriculumId,
+        compositeId,
         dataDto
       );
+      
       const resultDto = new CurriculumSubjectDataDto(result);
-      return res.status(200).json({ message: "updated", data: resultDto });
+      
+      return res.status(200).json({ 
+        message: "Curriculum subject updated successfully", 
+        data: resultDto 
+      });
     } catch (err) {
       console.error(err);
       next(err);
@@ -96,17 +142,25 @@ class CurriculumSubjectController {
   delete = async (req, res, next) => {
     try {
       const { curriculumId, subjectId, assessmentTypeId, semester } = req.params;
-      const result = await CurriculumSubjectService.delete({
+      
+      const compositeId = {
         curriculumId,
         subjectId,
         assessmentTypeId,
-        semester
-      });
+        semester: parseInt(semester)
+      };
+      
+      const result = await CurriculumSubjectService.delete(
+        curriculumId,
+        compositeId
+      );
+      
       if (!result) {
         return res.status(404).json({ 
-          message: `Not found curriculum subject with specified composite id` 
+          message: "Curriculum subject not found with specified composite id" 
         });
       }
+      
       return res.status(204).send();
     } catch (err) {
       console.error(err);

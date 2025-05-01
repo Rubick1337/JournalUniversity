@@ -47,18 +47,20 @@ class SubjectService {
     query = {
       idQuery: "",
       nameQuery: "",
+      departmentIdQuery: null,
       departmentQuery: ""
     }
   }) {
     try {
       const offset = (page - 1) * limit;
-
+      console.log("FEWF",query)
+      
       const where = {};
-
+  
       if (query.nameQuery) {
         where.name = { [Op.iLike]: `%${query.nameQuery}%` };
       }
-      // idQuery с явным приведением типа
+      
       if (query.idQuery) {
         where[Op.and] = [
           Sequelize.where(
@@ -69,12 +71,18 @@ class SubjectService {
           ),
         ];
       }
+  
+      // Добавляем условие для точного совпадения department_id
+      if (query.departmentIdQuery) {
+        where.department_id = query.departmentIdQuery;
+      }
+  
       const include = [
         {
           model: Department,
           as: 'department',
           attributes: ['id', 'name', 'full_name'],
-          required: !!query.departmentQuery,
+          required: !!query.departmentQuery || !!query.departmentIdQuery,
           where: query.departmentQuery ? {
             [Op.or]: [
               { name: { [Op.iLike]: `%${query.departmentQuery}%` }},
@@ -83,19 +91,18 @@ class SubjectService {
           } : undefined
         }
       ];
-
+  
       const { count, rows } = await Subject.findAndCountAll({
         where,
         include,
         order: sortBy === 'department.name'
             ? [[{ model: Department, as: 'department' }, 'name', sortOrder]]
             : [[sortBy, sortOrder]],
-
         limit,
         offset,
         distinct: true
       });
-
+  
       return {
         data: rows,
         meta: {

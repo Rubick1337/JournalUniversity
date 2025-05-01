@@ -68,7 +68,7 @@ function App() {
           <Route path="/faculties" element={<FacultiesTablePage />} />
           <Route path="/test" element={<TestPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/curriculum/:id" element={<p>fds</p>}/> 
+          <Route path="/curriculum/:curriculumId" element={<TableLearnPage/>}/> 
           <Route path="/teachers" element={<TeachersTablePage />} />
           <Route path="/discipline" element={<DisciplinesTablePage />} />
           <Route path="/tablegroups" element={<GroupTablePage />} />

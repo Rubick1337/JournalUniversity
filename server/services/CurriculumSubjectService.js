@@ -4,13 +4,46 @@ const {
   Curriculum,
   Subject,
   AssessmentType,
-  AcademicSpecialty,  // Добавьте эту строку
+  AcademicSpecialty,
   Op,
   Sequelize,
 } = require("../models/index");
+
 class CurriculumSubjectService {
   async create(curriculumId, data) {
     try {
+      // Проверяем существование curriculum
+      const curriculum = await Curriculum.findByPk(curriculumId);
+      if (!curriculum) {
+        throw ApiError.notFound(`Curriculum with id ${curriculumId} not found`);
+      }
+
+      // Проверяем существование subject
+      const subject = await Subject.findByPk(data.subject_id);
+      if (!subject) {
+        throw ApiError.notFound(`Subject with id ${data.subject_id} not found`);
+      }
+
+      // Проверяем существование assessment type
+      const assessmentType = await AssessmentType.findByPk(data.assessment_type_id);
+      if (!assessmentType) {
+        throw ApiError.notFound(`Assessment type with id ${data.assessment_type_id} not found`);
+      }
+
+      // Проверяем, не существует ли уже такой записи
+      const existingRecord = await CurriculumSubject.findOne({
+        where: {
+          curriculum_id: curriculumId,
+          subject_id: data.subject_id,
+          assessment_type_id: data.assessment_type_id,
+          semester: data.semester,
+        },
+      });
+
+      if (existingRecord) {
+        throw ApiError.badRequest('This subject with the same assessment type and semester already exists in the curriculum');
+      }
+
       const curriculumSubject = await CurriculumSubject.create({
         curriculum_id: curriculumId,
         subject_id: data.subject_id,
@@ -29,15 +62,23 @@ class CurriculumSubjectService {
         data.semester
       );
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
       throw ApiError.badRequest("Error creating curriculum subject", error);
     }
   }
 
-  async update(compositeId, updateData) {
+  async update(curriculumId, compositeId, updateData) {
     try {
+      // Проверяем, что curriculumId в compositeId совпадает с переданным curriculumId
+      if (compositeId.curriculumId !== curriculumId) {
+        throw ApiError.badRequest('Curriculum ID in composite ID does not match the provided curriculum ID');
+      }
+
       const curriculumSubject = await CurriculumSubject.findOne({
         where: {
-          curriculum_id: compositeId.curriculumId,
+          curriculum_id: curriculumId,
           subject_id: compositeId.subjectId,
           assessment_type_id: compositeId.assessmentTypeId,
           semester: compositeId.semester,
@@ -46,11 +87,39 @@ class CurriculumSubjectService {
 
       if (!curriculumSubject) {
         throw ApiError.notFound(
-          `Curriculum subject with specified composite id not found`
+          `Curriculum subject with specified composite id not found in curriculum ${curriculumId}`
         );
       }
 
+      // Если пытаемся изменить subject_id, assessment_type_id или semester, проверяем, что новая запись не существует
+      if (updateData.subject_id || updateData.assessment_type_id || updateData.semester) {
+        const newSubjectId = updateData.subject_id || compositeId.subjectId;
+        const newAssessmentTypeId = updateData.assessment_type_id || compositeId.assessmentTypeId;
+        const newSemester = updateData.semester || compositeId.semester;
+
+        if (newSubjectId !== compositeId.subjectId || 
+            newAssessmentTypeId !== compositeId.assessmentTypeId || 
+            newSemester !== compositeId.semester) {
+          
+          const existingRecord = await CurriculumSubject.findOne({
+            where: {
+              curriculum_id: curriculumId,
+              subject_id: newSubjectId,
+              assessment_type_id: newAssessmentTypeId,
+              semester: newSemester,
+            },
+          });
+
+          if (existingRecord) {
+            throw ApiError.badRequest('A record with the new subject, assessment type and semester combination already exists in this curriculum');
+          }
+        }
+      }
+
       await curriculumSubject.update({
+        subject_id: updateData.subject_id || compositeId.subjectId,
+        assessment_type_id: updateData.assessment_type_id || compositeId.assessmentTypeId,
+        semester: updateData.semester || compositeId.semester,
         all_hours: updateData.all_hours,
         lecture_hours: updateData.lecture_hours,
         lab_hours: updateData.lab_hours,
@@ -58,12 +127,15 @@ class CurriculumSubjectService {
       });
 
       return await this._getCurriculumSubjectWithAssociations(
-        compositeId.curriculumId,
-        compositeId.subjectId,
-        compositeId.assessmentTypeId,
-        compositeId.semester
+        curriculumId,
+        updateData.subject_id || compositeId.subjectId,
+        updateData.assessment_type_id || compositeId.assessmentTypeId,
+        updateData.semester || compositeId.semester
       );
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
       throw ApiError.badRequest("Error updating curriculum subject", error);
     }
   }
@@ -84,51 +156,43 @@ class CurriculumSubjectService {
     try {
       const offset = (page - 1) * limit;
 
-      const where = {};
-
-      if (curriculumId) {
-        where.curriculum_id = curriculumId;
-      }
-
-      // if (query.semesterQuery) {
-      //   where.semester = {
-      //     [Op.eq]: query.semesterQuery,
-      //   };
-      // }
-
-      // if (query.curriculumQuery) {
-      //   where[Op.and] = [
-      //     Sequelize.where(
-      //       Sequelize.cast(Sequelize.col("Curriculum.id"), "TEXT"),
-      //       {
-      //         [Op.iLike]: `%${query.curriculumQuery}%`,
-      //       }
-      //     ),
-      //   ];
-      // }
+      const where = {
+        curriculum_id: curriculumId,
+      };
 
       const include = [
         {
           model: Curriculum,
           as: "curriculum",
           attributes: ["id", "year_of_specialty_training"],
-          required: !!query.curriculumQuery || !!curriculumId,
-          where: query.curriculumQuery
-            ? {
-                year_of_specialty_training: {
-                  [Op.iLike]: `%${query.curriculumQuery}%`,
-                },
-                ...(curriculumId && { id: curriculumId }),
-              }
-            : curriculumId
-            ? { id: curriculumId }
-            : undefined,
+          required: true,
+          where: {
+            id: curriculumId,
+            ...(query.curriculumQuery && {
+              year_of_specialty_training: {
+                [Op.iLike]: `%${query.curriculumQuery}%`,
+              },
+            }),
+          },
+          include: [
+            {
+              model: AcademicSpecialty,
+              as: "AcademicSpecialty",
+              attributes: ["code", "name"],
+            },
+          ],
         },
         {
           model: Subject,
           as: "subject",
           attributes: ["id", "name"],
           required: !!query.subjectQuery,
+          include: [
+            {
+              association: 'department',
+              attributes: ['id', 'name', 'full_name']
+            }
+          ],
           where: query.subjectQuery
             ? {
                 name: { [Op.iLike]: `%${query.subjectQuery}%` },
@@ -147,6 +211,13 @@ class CurriculumSubjectService {
             : undefined,
         },
       ];
+
+      if (query.semesterQuery) {
+        where.semester = {
+          [Op.eq]: query.semesterQuery,
+        };
+      }
+
       const { count, rows } = await CurriculumSubject.findAndCountAll({
         where,
         include,
@@ -155,7 +226,6 @@ class CurriculumSubjectService {
         offset,
         distinct: true,
       });
-      console.log("fewq", rows[0])
 
       return {
         data: rows,
@@ -175,11 +245,16 @@ class CurriculumSubjectService {
     }
   }
 
-  async delete(compositeId) {
+  async delete(curriculumId, compositeId) {
     try {
+      // Проверяем, что curriculumId в compositeId совпадает с переданным curriculumId
+      if (compositeId.curriculumId !== curriculumId) {
+        throw ApiError.badRequest('Curriculum ID in composite ID does not match the provided curriculum ID');
+      }
+
       const curriculumSubject = await CurriculumSubject.findOne({
         where: {
-          curriculum_id: compositeId.curriculumId,
+          curriculum_id: curriculumId,
           subject_id: compositeId.subjectId,
           assessment_type_id: compositeId.assessmentTypeId,
           semester: compositeId.semester,
@@ -193,30 +268,40 @@ class CurriculumSubjectService {
       await curriculumSubject.destroy();
       return curriculumSubject;
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
       throw ApiError.internal(
         "Error deleting curriculum subject: " + error.message
       );
     }
   }
 
-  async getByCompositeId(compositeId) {
+  async getByCompositeId(curriculumId, compositeId) {
     try {
-      const curriculumSubject =
-        await this._getCurriculumSubjectWithAssociations(
-          compositeId.curriculumId,
-          compositeId.subjectId,
-          compositeId.assessmentTypeId,
-          compositeId.semester
-        );
+      // Проверяем, что curriculumId в compositeId совпадает с переданным curriculumId
+      if (compositeId.curriculumId !== curriculumId) {
+        throw ApiError.badRequest('Curriculum ID in composite ID does not match the provided curriculum ID');
+      }
+
+      const curriculumSubject = await this._getCurriculumSubjectWithAssociations(
+        curriculumId,
+        compositeId.subjectId,
+        compositeId.assessmentTypeId,
+        compositeId.semester
+      );
 
       if (!curriculumSubject) {
         throw ApiError.notFound(
-          `Curriculum subject with specified composite id not found`
+          `Curriculum subject with specified composite id not found in curriculum ${curriculumId}`
         );
       }
 
       return curriculumSubject;
     } catch (error) {
+      if (error instanceof ApiError) {
+        throw error;
+      }
       throw ApiError.internal(
         "Error fetching curriculum subject: " + error.message
       );
@@ -253,6 +338,12 @@ class CurriculumSubjectService {
           model: Subject,
           as: "subject",
           attributes: ["id", "name"],
+          include: [
+            {
+              association: 'department', 
+              attributes: ['id', 'name', 'full_name']
+            }
+          ]
         },
         {
           model: AssessmentType,

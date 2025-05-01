@@ -67,6 +67,7 @@ export const API_ENDPOINTS = {
     DELETE: '/curriculum/delete/:id',
     GETBYID: `/curriculum/getById/:id`,
   },
+
   ASSESSMENT_TYPE: {
     GETALL: "/assessmentType/getAll",
     CREATE: '/assessmentType/create',
@@ -75,7 +76,7 @@ export const API_ENDPOINTS = {
     GETBYID: `/assessmentType/getById/:id`,
   },
   CURRICULUM_SUBJECT: {
-    GETALL: "/curriculumSubject/getAll",
+    GETALL: "/curriculumSubject/getAll/:curriculumId",
     CREATE: '/curriculumSubject/create/:curriculumId',
     UPDATE: '/curriculumSubject/update/:curriculumId/:subjectId/:assessmentTypeId/:semester',
     DELETE: '/curriculumSubject/delete/:curriculumId/:subjectId/:assessmentTypeId/:semester',

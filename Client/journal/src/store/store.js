@@ -10,6 +10,7 @@ import teacherSlice from "./slices/teacherSlice";
 import curriculumReducer from "./slices/curriculumSlice";
 import subjectSlice from "./slices/subjectSlice";
 import estimationTypeSlice from "./slices/estimationTypeSlice";
+import curriculumSubjectSlice from "./slices/curriculumSubjectSlice";
 
 const store = configureStore({
   reducer: {
@@ -21,9 +22,10 @@ const store = configureStore({
     academicSpecialties: academicReducer,
     departments: departmentSlice,
     teachers: teacherSlice,
-    curriculum: curriculumReducer,
+    curriculums: curriculumReducer,
     subjects:subjectSlice,
     estimationTypes: estimationTypeSlice,
+    curriculumSubject: curriculumSubjectSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

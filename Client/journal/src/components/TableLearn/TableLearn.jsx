@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { useParams } from "react-router-dom";
-
-import Alert from "../Alert/Alert"; // Импортируем компонент Alert
+import { useDispatch, useSelector } from "react-redux";
+import Alert from "../Alert/Alert";
 import "./TableLearn.css";
 //<======= REDUX =========
-import { useDispatch, useSelector } from "react-redux";
 import { getCurriculumById } from "../../store/slices/curriculumSlice";
+import {
+  fetchCurriculumSubjects,
+  addCurriculumSubject,
+  updateCurriculumSubject,
+  deleteCurriculumSubject,
+} from "../../store/slices/curriculumSubjectSlice";
+import { fetchAssessmentTypes } from "../../store/slices/assessmentTypeSlice";
+import { fetchSubjects } from "../../store/slices/subjectSlice";
+import { fetchDepartments } from "../../store/slices/departmentSlice";
 //======== REDUX ========>
 //<======= MUI =========
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
@@ -29,24 +36,23 @@ import {
   Modal,
   Typography,
   Button,
+  Tooltip,
 } from "@mui/material";
 //======== MUI ========>
 
 const TableLearn = () => {
-  //<======= GENERAL =========
   const { curriculumId } = useParams();
   const dispatch = useDispatch();
-  //======== GENERAL ========>
 
-  const [data, setData] = useState([]);
-  const [disciplines, setDisciplines] = useState([]);
-  const [departments, setDepartments] = useState([]);
-  const [formsOfAttestation, setFormsOfAttestation] = useState([]);
   const [newRow, setNewRow] = useState({
     discipline: "",
     department: "",
     formOfAttestation: "",
     semester: "",
+    all_hours: "",
+    lecture_hours: "",
+    lab_hours: "",
+    practice_hours: "",
   });
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentRow, setCurrentRow] = useState(null);
@@ -57,77 +63,113 @@ const TableLearn = () => {
     message: "",
     severity: "success",
   });
+  const [disciplineSearch, setDisciplineSearch] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState(null);
 
-  //<======= STORY =========
+  // Загрузка данных при монтировании
+  useEffect(() => {
+    dispatch(getCurriculumById(curriculumId));
+    dispatch(fetchCurriculumSubjects(curriculumId));
+    dispatch(fetchAssessmentTypes());
+    dispatch(fetchDepartments());
+  }, [dispatch, curriculumId]);
+
+  // Загрузка дисциплин с учетом фильтров
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = {};
+      if (disciplineSearch.trim() !== "") {
+        params.nameQuery = disciplineSearch;
+      }
+      if (selectedDepartment) {
+        params.departmentIdQuery = selectedDepartment.id;
+      }
+      // Загружаем дисциплины только если есть хотя бы один фильтр
+      if (Object.keys(params).length > 0) {
+        dispatch(fetchSubjects(params));
+      }
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [disciplineSearch, selectedDepartment, dispatch]);
+
+  // Обновление кафедры при выборе дисциплины
+  useEffect(() => {
+    if (newRow.discipline && newRow.discipline.department) {
+      setNewRow(prev => ({
+        ...prev,
+        department: newRow.discipline.department
+      }));
+      setSelectedDepartment(newRow.discipline.department);
+    }
+  }, [newRow.discipline]);
+
+  // Обновление списка дисциплин при выборе кафедры
+  const handleDepartmentChange = (value) => {
+    setNewRow(prev => ({ ...prev, department: value || "" }));
+    setSelectedDepartment(value);
+    // Если выбрана новая кафедра, сбрасываем выбранную дисциплину
+    if (!value || (newRow.discipline && newRow.discipline.department?.id !== value?.id)) {
+      setNewRow(prev => ({ ...prev, discipline: "" }));
+    }
+  };
+
+  // Данные из Redux
   const {
-    currentCurriculum = {},
+    currentCurriculum = null,
     isLoading: curriculumIsLoading,
     errors: curriculumErrors,
-  } = useSelector((state) => state.curriculum);
+  } = useSelector((state) => state.curriculums);
 
-  useEffect(() => {
-    //Get current curriculum
-    dispatch(getCurriculumById({ curriculumId }));
-  }, [dispatch, curriculumId]);
-  useEffect(() => {
-    axios
-      .get("/TestData/data.json")
-      .then((response) => {
-        const {
-          specialtyCode,
-          specialtyName,
-          startYear,
-          tableData,
-          disciplines,
-          departments,
-          formsOfAttestation,
-        } = response.data;
-        setData(tableData);
-        setDisciplines(disciplines);
-        setDepartments(departments);
-        setFormsOfAttestation(formsOfAttestation);
-      })
-      .catch((error) => {
-        console.error("Ошибка загрузки данных:", error);
-        showAlert("Ошибка загрузки данных", "error");
-      });
-  }, []);
+  const {
+    data: curriculumSubjectData = [],
+    isLoading: curriculumSubjectIsLoading,
+  } = useSelector((state) => state.curriculumSubject);
 
-  if (curriculumIsLoading) return <div>Loading...</div>;
-  if (curriculumErrors) return <div>Error: {curriculumErrors}</div>;
+  const { data: formsOfAttestation = [] } = useSelector(
+    (state) => state.assessmentTypes
+  );
 
-  const specialtyTitle = `${currentCurriculum.specialty?.code || ''} ${currentCurriculum.specialty?.name || ''}`;
-  const currentEducationForm = currentCurriculum.education_form?.name || '';
-  const startYear = currentCurriculum.year_of_specialty_training || '';
-  //======== STORY ========>
+  const { data: disciplines = [] } = useSelector((state) => state.subjects);
+  const { data: departments = [] } = useSelector((state) => state.departments);
+
+  if (curriculumIsLoading || curriculumSubjectIsLoading) return <div>Loading...</div>;
+  if (curriculumErrors?.length > 0) {
+    return (
+      <div>
+        Ошибка:
+        <ul>
+          {curriculumErrors.map((error, index) => (
+            <li key={index}>{error.message || String(error)}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  }
+
+  const specialtyTitle = `${currentCurriculum?.specialty?.code || ""} ${
+    currentCurriculum?.specialty?.name || ""
+  }`;
+  const currentEducationForm = currentCurriculum?.education_form?.name || "";
+  const startYear = currentCurriculum?.year_of_specialty_training || "";
+
   const showAlert = (message, severity = "success") => {
-    setAlertState({
-      open: true,
-      message,
-      severity,
-    });
+    setAlertState({ open: true, message, severity });
   };
 
   const handleCloseAlert = () => {
-    setAlertState((prev) => ({ ...prev, open: false }));
+    setAlertState(prev => ({ ...prev, open: false }));
   };
-
 
   const handleInputChange = (e, field) => {
     const value = e.target.value;
     if (
-      field === "semester" &&
-      (value === "" ||
-        (parseFloat(value) > 0 && Number.isInteger(parseFloat(value))))
+      ["semester", "all_hours", "lecture_hours", "lab_hours", "practice_hours"].includes(field) &&
+      (value === "" || parseFloat(value) >= 0)
     ) {
       setNewRow({ ...newRow, [field]: value });
-    } else if (field !== "semester") {
+    } else if (!["semester", "all_hours", "lecture_hours", "lab_hours", "practice_hours"].includes(field)) {
       setNewRow({ ...newRow, [field]: value });
     }
-  };
-
-  const handleAutocompleteChange = (value, field) => {
-    setNewRow({ ...newRow, [field]: value || "" });
   };
 
   const addRow = () => {
@@ -135,28 +177,56 @@ const TableLearn = () => {
       !newRow.discipline ||
       !newRow.department ||
       !newRow.formOfAttestation ||
-      !newRow.semester
+      !newRow.semester ||
+      !newRow.all_hours
     ) {
-      showAlert("Все поля должны быть заполнены!", "error");
+      showAlert("Обязательные поля должны быть заполнены!", "error");
       return;
     }
 
-    const newRowWithId = {
-      ...newRow,
-      id: data.length + 1,
+    const newRowData = {
+      subject: {
+        id: newRow.discipline.id,
+        name: newRow.discipline.name,
+        department: {
+          id: newRow.department.id,
+          name: newRow.department.name,
+          full_name: newRow.department.full_name,
+        },
+      },
+      assessment_type: {
+        id: newRow.formOfAttestation.id,
+        name: newRow.formOfAttestation.name,
+      },
       semester: parseInt(newRow.semester, 10),
-      animationClass: "fade-in",
+      all_hours: parseInt(newRow.all_hours, 10),
+      lecture_hours: parseInt(newRow.lecture_hours || 0, 10),
+      lab_hours: parseInt(newRow.lab_hours || 0, 10),
+      practice_hours: parseInt(newRow.practice_hours || 0, 10),
     };
 
-    setData([...data, newRowWithId]);
-    setNewRow({
-      discipline: "",
-      department: "",
-      formOfAttestation: "",
-      semester: "",
-    });
-    showAlert("Запись успешно добавлена!", "success");
+    dispatch(addCurriculumSubject({ curriculumId, data: newRowData }))
+      .unwrap()
+      .then(() => {
+        showAlert("Запись успешно добавлена!", "success");
+        setNewRow({
+          discipline: "",
+          department: "",
+          formOfAttestation: "",
+          semester: "",
+          all_hours: "",
+          lecture_hours: "",
+          lab_hours: "",
+          practice_hours: "",
+        });
+        setSelectedDepartment(null);
+        setDisciplineSearch("");
+      })
+      .catch((error) => {
+        showAlert(`Ошибка при добавлении записи: ${error.message}`, "error");
+      });
   };
+
 
   const handleMenuClick = (event, row) => {
     setAnchorEl(event.currentTarget);
@@ -184,28 +254,69 @@ const TableLearn = () => {
 
   const handleSaveEdit = () => {
     if (
-      !currentRow.discipline ||
-      !currentRow.department ||
-      !currentRow.formOfAttestation ||
-      !currentRow.semester
+      !currentRow?.subject?.name ||
+      !currentRow?.subject?.department?.name ||
+      !currentRow?.assessment_type?.name ||
+      !currentRow.semester ||
+      !currentRow.all_hours
     ) {
-      showAlert("Все поля должны быть заполнены!", "error");
+      showAlert("Обязательные поля должны быть заполнены!", "error");
       return;
     }
 
-    const updatedData = data.map((row) =>
-      row.id === currentRow.id ? currentRow : row
-    );
-    setData(updatedData);
-    handleCloseModals();
-    showAlert("Запись успешно обновлена!", "success");
+    const updatedData = {
+      subject: {
+        id: currentRow.subject.id,
+        name: currentRow.subject.name,
+        department: {
+          id: currentRow.subject.department.id,
+          name: currentRow.subject.department.name,
+          full_name: currentRow.subject.department.full_name,
+        },
+      },
+      assessment_type: {
+        id: currentRow.assessment_type.id,
+        name: currentRow.assessment_type.name,
+      },
+      semester: parseInt(currentRow.semester, 10),
+      all_hours: parseInt(currentRow.all_hours, 10),
+      lecture_hours: parseInt(currentRow.lecture_hours || 0, 10),
+      lab_hours: parseInt(currentRow.lab_hours || 0, 10),
+      practice_hours: parseInt(currentRow.practice_hours || 0, 10),
+    };
+
+    dispatch(
+      updateCurriculumSubject({
+        curriculumId,
+        subjectId: currentRow.id,
+        data: updatedData,
+      })
+    )
+      .unwrap()
+      .then(() => {
+        showAlert("Запись успешно обновлена!", "success");
+        handleCloseModals();
+      })
+      .catch((error) => {
+        showAlert(`Ошибка при обновлении записи: ${error.message}`, "error");
+      });
   };
 
   const handleDeleteConfirm = () => {
-    const updatedData = data.filter((row) => row.id !== currentRow.id);
-    setData(updatedData);
-    handleCloseModals();
-    showAlert("Запись успешно удалена!", "success");
+    dispatch(
+      deleteCurriculumSubject({
+        curriculumId,
+        subjectId: currentRow.id,
+      })
+    )
+      .unwrap()
+      .then(() => {
+        showAlert("Запись успешно удалена!", "success");
+        handleCloseModals();
+      })
+      .catch((error) => {
+        showAlert(`Ошибка при удалении записи: ${error.message}`, "error");
+      });
   };
 
   return (
@@ -219,26 +330,36 @@ const TableLearn = () => {
         <Table>
           <TableHead sx={{ backgroundColor: "#f5f5f5" }}>
             <TableRow>
-              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>
-                Дисциплина
-              </TableCell>
-              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>
-                Кафедра
-              </TableCell>
-              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>
-                Форма аттестации
-              </TableCell>
-              <TableCell>Семестр</TableCell>
+              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>Дисциплина</TableCell>
+              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>Кафедра</TableCell>
+              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>Форма аттестации</TableCell>
+              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>Семестр</TableCell>
+              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>Всего часов</TableCell>
+              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>Лекции</TableCell>
+              <TableCell sx={{ borderRight: "1px solid #e0e0e0" }}>Лабораторные</TableCell>
+              <TableCell>Практические</TableCell>
               <TableCell>Действия</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.id} className={row.animationClass || ""}>
-                <TableCell>{row.discipline}</TableCell>
-                <TableCell>{row.department}</TableCell>
-                <TableCell>{row.formOfAttestation}</TableCell>
-                <TableCell style={{ width: 150 }}>{row.semester}</TableCell>
+            {curriculumSubjectData.map((row) => (
+              <TableRow key={`${row.subject.id}-${row.semester}`}>
+                <TableCell>
+                  <Tooltip title={row.subject.name} arrow>
+                    <span>{row.subject.name}</span>
+                  </Tooltip>
+                </TableCell>
+                <TableCell>
+                  <Tooltip title={row.subject.department.full_name} arrow>
+                    <span>{row.subject.department.name}</span>
+                  </Tooltip>
+                </TableCell>
+                <TableCell>{row.assessment_type.name}</TableCell>
+                <TableCell>{row.semester}</TableCell>
+                <TableCell>{row.all_hours}</TableCell>
+                <TableCell>{row.lecture_hours || 0}</TableCell>
+                <TableCell>{row.lab_hours || 0}</TableCell>
+                <TableCell>{row.practice_hours || 0}</TableCell>
                 <TableCell>
                   <IconButton onClick={(e) => handleMenuClick(e, row)}>
                     <MoreVertIcon />
@@ -249,27 +370,32 @@ const TableLearn = () => {
             <TableRow>
               <TableCell>
                 <Autocomplete
-                  value={newRow.discipline}
-                  onChange={(e, value) =>
-                    handleAutocompleteChange(value, "discipline")
-                  }
-                  options={disciplines.map((discipline) => discipline.name)}
+                  options={disciplines}
+                  getOptionLabel={(option) => option.name || ""}
+                  value={newRow.discipline || null}
+                  onChange={(e, value) => setNewRow({ ...newRow, discipline: value || "" })}
+                  onInputChange={(e, value) => setDisciplineSearch(value)}
+                  isOptionEqualToValue={(option, value) => option.id === value?.id}
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       placeholder="Выберите дисциплину"
                       fullWidth
+                      required
                     />
                   )}
+                  noOptionsText="Дисциплины не найдены"
+                  loadingText="Загрузка дисциплин..."
+                  filterSelectedOptions
                 />
               </TableCell>
               <TableCell>
                 <Autocomplete
-                  value={newRow.department}
-                  onChange={(e, value) =>
-                    handleAutocompleteChange(value, "department")
-                  }
-                  options={departments.map((department) => department.name)}
+                  options={departments}
+                  getOptionLabel={(option) => option.name || ""}
+                  value={newRow.department || null}
+                  onChange={(e, value) => handleDepartmentChange(value)}
+                  isOptionEqualToValue={(option, value) => option.id === value?.id}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -277,15 +403,16 @@ const TableLearn = () => {
                       fullWidth
                     />
                   )}
+                  noOptionsText="Нет доступных вариантов"
                 />
               </TableCell>
               <TableCell>
                 <Autocomplete
-                  value={newRow.formOfAttestation}
-                  onChange={(e, value) =>
-                    handleAutocompleteChange(value, "formOfAttestation")
-                  }
-                  options={formsOfAttestation.map((form) => form.name)}
+                  options={formsOfAttestation}
+                  getOptionLabel={(option) => option.name || ""}
+                  value={newRow.formOfAttestation || null}
+                  onChange={(e, value) => setNewRow({ ...newRow, formOfAttestation: value || "" })}
+                  isOptionEqualToValue={(option, value) => option.id === value?.id}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -293,40 +420,75 @@ const TableLearn = () => {
                       fullWidth
                     />
                   )}
+                  noOptionsText="Нет доступных вариантов"
                 />
               </TableCell>
               <TableCell>
                 <TextField
                   type="number"
                   min="1"
-                  sx={{ minWidth: 160 }}
+                  sx={{ minWidth: 100 }}
                   step="1"
                   value={newRow.semester}
                   onChange={(e) => handleInputChange(e, "semester")}
-                  placeholder="Введите семестр"
+                  placeholder="Семестр"
                   fullWidth
                 />
               </TableCell>
-              <TableCell></TableCell>
+              <TableCell>
+                <TextField
+                  type="number"
+                  min="0"
+                  sx={{ minWidth: 100 }}
+                  value={newRow.all_hours}
+                  onChange={(e) => handleInputChange(e, "all_hours")}
+                  placeholder="Всего часов"
+                  fullWidth
+                  required
+                />
+              </TableCell>
+              <TableCell>
+                <TextField
+                  type="number"
+                  min="0"
+                  sx={{ minWidth: 100 }}
+                  value={newRow.lecture_hours}
+                  onChange={(e) => handleInputChange(e, "lecture_hours")}
+                  placeholder="Лекции"
+                  fullWidth
+                />
+              </TableCell>
+              <TableCell>
+                <TextField
+                  type="number"
+                  min="0"
+                  sx={{ minWidth: 100 }}
+                  value={newRow.lab_hours}
+                  onChange={(e) => handleInputChange(e, "lab_hours")}
+                  placeholder="Лабы"
+                  fullWidth
+                />
+              </TableCell>
+              <TableCell>
+                <TextField
+                  type="number"
+                  min="0"
+                  sx={{ minWidth: 100 }}
+                  value={newRow.practice_hours}
+                  onChange={(e) => handleInputChange(e, "practice_hours")}
+                  placeholder="Практика"
+                  fullWidth
+                />
+              </TableCell>
+              <TableCell>
+                <IconButton onClick={addRow} color="primary">
+                  <AddCircleOutlineIcon />
+                </IconButton>
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </TableContainer>
-      <Box
-        sx={{
-          position: "sticky",
-          left: "50%",
-          transform: "translateX(-50%)",
-          display: "inline-flex",
-          justifyContent: "center",
-          mt: 1,
-          mb: 2,
-        }}
-      >
-        <IconButton onClick={addRow} color="primary">
-          <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
-        </IconButton>
-      </Box>
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -369,46 +531,131 @@ const TableLearn = () => {
             </IconButton>
           </Box>
           <Box sx={{ p: 3 }}>
-            {openEditModal && (
+            {openEditModal && currentRow && (
               <div>
-                <TextField
-                  label="Дисциплина"
-                  fullWidth
-                  margin="normal"
-                  value={currentRow?.discipline || ""}
-                  onChange={(e) =>
-                    setCurrentRow({ ...currentRow, discipline: e.target.value })
-                  }
-                />
-                <TextField
-                  label="Кафедра"
-                  fullWidth
-                  margin="normal"
-                  value={currentRow?.department || ""}
-                  onChange={(e) =>
-                    setCurrentRow({ ...currentRow, department: e.target.value })
-                  }
-                />
-                <TextField
-                  label="Форма аттестации"
-                  fullWidth
-                  margin="normal"
-                  value={currentRow?.formOfAttestation || ""}
-                  onChange={(e) =>
+                <Autocomplete
+                  value={currentRow.subject}
+                  onChange={(e, value) =>
                     setCurrentRow({
                       ...currentRow,
-                      formOfAttestation: e.target.value,
+                      subject: value,
                     })
                   }
+                  options={disciplines}
+                  getOptionLabel={(option) => option.name}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Дисциплина"
+                      fullWidth
+                      margin="normal"
+                    />
+                  )}
+                />
+                <Autocomplete
+                  value={currentRow.subject.department}
+                  onChange={(e, value) =>
+                    setCurrentRow({
+                      ...currentRow,
+                      subject: {
+                        ...currentRow.subject,
+                        department: value,
+                      },
+                    })
+                  }
+                  options={departments}
+                  getOptionLabel={(option) => option.name}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Кафедра"
+                      fullWidth
+                      margin="normal"
+                    />
+                  )}
+                />
+                <Autocomplete
+                  value={currentRow.assessment_type}
+                  onChange={(e, value) =>
+                    setCurrentRow({
+                      ...currentRow,
+                      assessment_type: value,
+                    })
+                  }
+                  options={formsOfAttestation}
+                  getOptionLabel={(option) => option.name}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Форма аттестации"
+                      fullWidth
+                      margin="normal"
+                    />
+                  )}
                 />
                 <TextField
                   label="Семестр"
                   type="number"
                   fullWidth
                   margin="normal"
-                  value={currentRow?.semester || ""}
+                  value={currentRow.semester || ""}
                   onChange={(e) =>
-                    setCurrentRow({ ...currentRow, semester: e.target.value })
+                    setCurrentRow({
+                      ...currentRow,
+                      semester: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  label="Всего часов"
+                  type="number"
+                  fullWidth
+                  margin="normal"
+                  value={currentRow.all_hours || ""}
+                  onChange={(e) =>
+                    setCurrentRow({
+                      ...currentRow,
+                      all_hours: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  label="Лекционные часы"
+                  type="number"
+                  fullWidth
+                  margin="normal"
+                  value={currentRow.lecture_hours || ""}
+                  onChange={(e) =>
+                    setCurrentRow({
+                      ...currentRow,
+                      lecture_hours: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  label="Лабораторные часы"
+                  type="number"
+                  fullWidth
+                  margin="normal"
+                  value={currentRow.lab_hours || ""}
+                  onChange={(e) =>
+                    setCurrentRow({
+                      ...currentRow,
+                      lab_hours: e.target.value,
+                    })
+                  }
+                />
+                <TextField
+                  label="Практические часы"
+                  type="number"
+                  fullWidth
+                  margin="normal"
+                  value={currentRow.practice_hours || ""}
+                  onChange={(e) =>
+                    setCurrentRow({
+                      ...currentRow,
+                      practice_hours: e.target.value,
+                    })
                   }
                 />
                 <Box
@@ -424,8 +671,8 @@ const TableLearn = () => {
             {openDeleteModal && (
               <div>
                 <Typography>
-                  Вы уверены, что хотите удалить запись {currentRow?.discipline}
-                  ?
+                  Вы уверены, что хотите удалить запись{" "}
+                  {currentRow?.subject?.name}?
                 </Typography>
                 <Box
                   sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}
@@ -441,7 +688,6 @@ const TableLearn = () => {
         </Box>
       </Modal>
 
-      {/* Компонент Alert для показа уведомлений */}
       <Alert
         open={alertState.open}
         message={alertState.message}

@@ -54,6 +54,7 @@ const CurriculumSubject = sequelize.define("CurriculumSubject", {
     allowNull: false,
     defaultValue: 0,
   },
+
 }, {
   timestamps: false,
   tableName: 'CurriculumSubjects',

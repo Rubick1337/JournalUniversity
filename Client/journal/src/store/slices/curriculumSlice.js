@@ -159,6 +159,7 @@ const curriculumSlice = createSlice({
       .addCase(getCurriculumById.fulfilled, (state, action) => {
         state.isLoading = false;
         state.currentCurriculum = action.payload;
+
       })
       .addCase(getCurriculumById.rejected, (state, action) => {
         state.isLoading = false;

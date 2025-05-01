@@ -4,7 +4,7 @@ import AssessmentTypeService from '../../services/AssessmentTypeService';
 // Асинхронные действия
 export const fetchAssessmentTypes = createAsyncThunk(
     'assessmentTypes/fetchAssessmentTypes',
-    async (params, { rejectWithValue }) => {
+    async (params = {}, { rejectWithValue }) => {
         try {
             const response = await AssessmentTypeService.getAlls(params);
             return {
