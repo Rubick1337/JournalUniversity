@@ -4,6 +4,8 @@ const { Person, Op } = require("../models/index");
 class PersonService {
   async create(data) {
     try {
+      console.log("Dasdasdasd")
+      console.log(data);
       return await Person.create(data);
     } catch (error) {
       throw ApiError.badRequest("Ошибка при создании пользователя", error);
@@ -11,6 +13,8 @@ class PersonService {
   }
 
   async update(personId, updateData) {
+    console.log("Ddaswqeqwrqwrqd")
+    console.log(updateData);
     console.log('Сервер получил запрос на обновление:', {
       personId,
       updateData
@@ -58,8 +62,9 @@ class PersonService {
       if (query.nameQuery) where.name = { [Op.iLike]: `%${query.nameQuery}%` };
       if (query.middlenameQuery)
         where.middlename = { [Op.iLike]: `%${query.middlenameQuery}%` };
-      if (query.phoneNumberQuery)
-        where.phoneNumber = { [Op.iLike]: `%${query.phoneNumberQuery}%` };
+      if (query.phoneNumberQuery) {
+        where.phone_number = { [Op.iLike]: `%${query.phoneNumberQuery}%` }; // ← Исправлено
+      }
       if (query.emailQuery)
         where.email = { [Op.iLike]: `%${query.emailQuery}%` };
 

@@ -9,17 +9,26 @@ class PersonService extends BaseService {
     return response;
   };
   getAll = async (
-    limit = 10,
-    page = 1,
-    sortBy = "surname",
-    sortOrder = "ASC",
-    surnameQuery = "",
-    nameQuery = "",
-    middlenameQuery = "",
-    phoneNumberQuery = "",
-    emailQuery = ""
+      limit = 10,
+      page = 1,
+      sortBy = "surname",
+      sortOrder = "ASC",
+      surnameQuery = "",
+      nameQuery = "",
+      middlenameQuery = "",
+      phoneNumberQuery = "",
+      emailQuery = ""
   ) => {
     const endpoint = API_ENDPOINTS.PERSON.GETALL;
+
+    // Логирование параметров перед запросом
+    console.log('Параметры поиска:', {
+      surnameQuery,
+      nameQuery,
+      middlenameQuery,
+      phoneNumberQuery,
+      emailQuery
+    });
 
     // Создаем объект с параметрами
     const params = new URLSearchParams();
@@ -29,18 +38,43 @@ class PersonService extends BaseService {
     params.append("sortBy", sortBy);
     params.append("sortOrder", sortOrder);
 
-    if (surnameQuery && surnameQuery !== "") params.append("surnameQuery", surnameQuery);
-    if (nameQuery&& nameQuery !== "") params.append("nameQuery", nameQuery);
-    if (middlenameQuery&& middlenameQuery !== "") params.append("middlenameQuery", middlenameQuery);
-    if (phoneNumberQuery&& phoneNumberQuery !== "") params.append("phoneNumberQuery", phoneNumberQuery);
-    if (emailQuery&& emailQuery !== "") params.append("emailQuery", emailQuery);
+    if (surnameQuery && surnameQuery !== "") {
+      console.log('Добавляем surnameQuery:', surnameQuery);  // Логируем
+      params.append("surnameQuery", surnameQuery);
+    }
+    if (nameQuery && nameQuery !== "") {
+      console.log('Добавляем nameQuery:', nameQuery);  // Логируем
+      params.append("nameQuery", nameQuery);
+    }
+    if (middlenameQuery && middlenameQuery !== "") {
+      console.log('Добавляем middlenameQuery:', middlenameQuery);  // Логируем
+      params.append("middlenameQuery", middlenameQuery);
+    }
+    if (phoneNumberQuery && phoneNumberQuery !== "") {
+      console.log('Добавляем phoneNumberQuery:', phoneNumberQuery);  // Логируем
+      params.append("phoneNumberQuery", phoneNumberQuery);
+    }
+    if (emailQuery && emailQuery !== "") {
+      console.log('Добавляем emailQuery:', emailQuery);  // Логируем
+      params.append("emailQuery", emailQuery);
+    }
+
+    // Логируем строку запроса
+    console.log('Сформированные параметры для запроса:', params.toString());
 
     // Добавляем параметры к endpoint
     const urlWithParams = `${endpoint}?${params.toString()}`;
+    console.log('Финальный URL с параметрами:', urlWithParams);
 
     const response = await BaseService.request("get", urlWithParams);
+
+    // Логируем полученный ответ
+    console.log('Ответ от API:', response);
+
     return { data: response.data, meta: response.meta };
   };
+
+
   update = async (personId, data)=> {
     const endpoint = API_ENDPOINTS.PERSON.UPDATE.replace(':personId', personId);
     const response = await BaseService.request("put", endpoint, data);

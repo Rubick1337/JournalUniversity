@@ -98,7 +98,6 @@ const PersonsTable = () => {
             phoneNumberQuery: searchParams.phoneNumberQuery || '',
             emailQuery: searchParams.emailQuery || ''
         };
-
         dispatch(fetchPersons(params));
     }, [
         dispatch,
@@ -134,9 +133,27 @@ const PersonsTable = () => {
     // CRUD методы
     const handleCreate = async () => {
         try {
-            await dispatch(createPerson(formData)).unwrap();
+            const createData = {
+                surname: formData.surname,
+                name: formData.name,
+                middlename: formData.middlename || null,
+                phone_number: formData.phoneNumber || null,
+                email: formData.email
+            };
+
+            await dispatch(createPerson(createData)).unwrap();
             showAlert('Человек успешно добавлен!', 'success');
             handleCloseAddModal();
+
+            // Обновляем данные после успешного добавления
+            dispatch(fetchPersons({
+                limit: meta.limit,
+                page: meta.page,
+                sortBy: orderBy,
+                sortOrder: order,
+                ...searchParams
+            }));
+
         } catch (error) {
             showAlert(error.message || 'Ошибка при добавлении', 'error');
         }
@@ -146,7 +163,6 @@ const PersonsTable = () => {
         if (!currentRow?.id) return;
 
         try {
-            // Используем простой объект вместо экземпляра класса
             const updateData = {
                 surname: formData.surname,
                 name: formData.name,
@@ -155,11 +171,6 @@ const PersonsTable = () => {
                 email: formData.email
             };
 
-            console.log('Отправка данных на сервер для обновления:', {
-                personId: currentRow.id,
-                updateData
-            });
-
             await dispatch(updatePerson({
                 id: currentRow.id,
                 personData: updateData
@@ -167,6 +178,16 @@ const PersonsTable = () => {
 
             showAlert('Данные успешно обновлены!', 'success');
             handleCloseEditModal();
+
+            // Обновляем данные после успешного обновления
+            dispatch(fetchPersons({
+                limit: meta.limit,
+                page: meta.page,
+                sortBy: orderBy,
+                sortOrder: order,
+                ...searchParams
+            }));
+
         } catch (error) {
             console.error('Ошибка при обновлении:', error);
             showAlert(error.message || 'Ошибка при обновлении', 'error');
@@ -215,7 +236,6 @@ const PersonsTable = () => {
         });
         setOpenAddModal(true);
     };
-
     const handleCloseEditModal = () => {
         setOpenEditModal(false);
         setCurrentRow(null);
@@ -259,6 +279,7 @@ const PersonsTable = () => {
     };
 
     const handleSearch = () => {
+        console.log("Параметры поиска:", searchValues);
         dispatch(setPersonSearchParams(searchValues));
         setSearchAnchorEl(null);
         setRowsMounted(false);
@@ -457,7 +478,7 @@ const PersonsTable = () => {
                                 <TableCell>{person.surname}</TableCell>
                                 <TableCell>{person.name}</TableCell>
                                 <TableCell>{person.middlename || '-'}</TableCell>
-                                <TableCell>{person.phoneNumber || '-'}</TableCell>
+                                <TableCell>{person.phone_number || '-'}</TableCell>
                                 <TableCell>{person.email || '-'}</TableCell>
                                 <TableCell>
                                     <IconButton

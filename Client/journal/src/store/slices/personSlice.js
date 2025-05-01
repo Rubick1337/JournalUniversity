@@ -4,7 +4,7 @@ import personService from '../../services/PersonService';
 // Асинхронные действия
 const fetchPersons = createAsyncThunk(
     'persons/fetchPersons',
-    async ({ limit, page, sortBy, sortOrder, surnameQuery, nameQuery, middlename, phoneNumberQuery, emailQuery }, { rejectWithValue }) => {
+    async ({ limit, page, sortBy, sortOrder, surnameQuery, nameQuery, middlenameQuery, phoneNumberQuery, emailQuery }, { rejectWithValue }) => {
       try {
         const response = await personService.getAll(
             limit,
@@ -13,7 +13,7 @@ const fetchPersons = createAsyncThunk(
             sortOrder,
             surnameQuery,
             nameQuery,
-            middlename,
+            middlenameQuery,
             phoneNumberQuery,
             emailQuery
         );
