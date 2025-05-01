@@ -215,6 +215,18 @@ CurriculumSubject.belongsTo(AssessmentType, {
   as: 'assessmentType'
 });
 
+
+//Topic
+Subject.hasMany(Topic, {
+  foreignKey: "subject_id",
+  as: "subjectForTopic"
+})
+Topic.belongsTo(Subject, {
+  foreignKey: "subject_id",
+  as: "subjectForTopic"
+})
+
+
 module.exports = {
   initModels,
   Op,
