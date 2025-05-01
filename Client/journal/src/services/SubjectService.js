@@ -45,7 +45,7 @@ class SubjectService extends BaseService {
         return response;
     }
 
-    async getAll({ limit, page, sortBy, sortOrder, idQuery, nameQuery }) {
+    async getAll({ limit, page, sortBy, sortOrder, idQuery, nameQuery, departmentQuery, disciplineQuery }) {
         let endpoint = API_ENDPOINTS.SUBJECT.GETALL;
 
         endpoint = addParamInEndpoint(endpoint, "limit", limit);
@@ -54,6 +54,8 @@ class SubjectService extends BaseService {
         endpoint = addParamInEndpoint(endpoint, "sortOrder", sortOrder);
         endpoint = addParamInEndpoint(endpoint, "idQuery", idQuery);
         endpoint = addParamInEndpoint(endpoint, "nameQuery", nameQuery);
+        endpoint = addParamInEndpoint(endpoint, "departmentQuery", departmentQuery);
+        endpoint = addParamInEndpoint(endpoint, "disciplineQuery", disciplineQuery);
 
         const response = await BaseService.request("get", endpoint);
 
@@ -62,6 +64,7 @@ class SubjectService extends BaseService {
             meta: response.meta
         };
     }
+
 
     async getById(id) {
         const response = await BaseService.request(

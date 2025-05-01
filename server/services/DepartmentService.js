@@ -10,6 +10,8 @@ class DepartmentService {
         faculty_id: data.faculty_id,
         head_person_id: data.chairperson_of_the_department_person_id || null,
       });
+      console.log("daswqwqd")
+      console.log(data.chairperson_of_the_department_person_id );
 
       return await this._getDepartmentWithAssociations(department.id);
     } catch (error) {
