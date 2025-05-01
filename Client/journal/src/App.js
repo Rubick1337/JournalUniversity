@@ -26,6 +26,7 @@ import PositionTeacherPage from "./pages/PositionTeacherPage/PositionTeacherPage
 import RoutersPage from "./pages/RoutersPage/RoutersPage";
 import EducationFormPage from "./pages/EducationFormPage/EducationFormPage";
 import TypeAssesmentPage from "./pages/TypeAssmentPage/TypeAssesmentPage";
+import CurriculumsTable from "./components/CurriculumsTable/CurriculumsTable";
 
 function App() {
   return (
@@ -48,7 +49,7 @@ function App() {
 
           <a href="curriculum">Рабочие программы</a>
 
-          <a href="group">Группы</a>
+          <a href="tablegroups">Группы</a>
           <a href="specilization">Подгруппы</a>
           <a href="specilization">Студенты</a>
 
@@ -80,6 +81,7 @@ function App() {
           <Route path={"/router"} element={<RoutersPage />} />
           <Route path={"/educationform"} element={<EducationFormPage />} />
           <Route path={"/assesmenttype"} element={<TypeAssesmentPage />} />
+          <Route path={"/curriculum"} element={<CurriculumsTable />} />
         </Routes>
       </div>
     </Provider>

@@ -18,7 +18,10 @@ const {
   AcademicBuilding,
   Audience,
   EducationForm,
-  CurriculumSubject
+  CurriculumSubject,
+  Topic,
+  SubjectType,
+
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
@@ -27,8 +30,7 @@ const {
   //   PlannedTask,
   //   PlannedTaskTopic,
   //   SubgroupStudent,
-  //   Topic,
-  //   SubjectType,
+
   //   TotalScoreType
 } = require("./entities");
 
@@ -67,15 +69,57 @@ Subject.belongsTo(Department, {
   targetKey: 'id' // явно указываем целевой ключ (опционально)
 });
 
-//Group
-Faculty.hasMany(Group, { foreignKey: "faculty_id" });
-Group.belongsTo(Faculty, { foreignKey: "faculty_id" });
-Person.hasMany(Group, { foreignKey: "class_representative_person_id" });
-Group.belongsTo(Person, { foreignKey: "class_representative_person_id" });
-Group.belongsTo(Department, { foreignKey: "department_id" });
-AcademicSpecialty.hasMany(Group, { foreignKey: "specialty_code" });
-Group.belongsTo(AcademicSpecialty, { foreignKey: "specialty_code" });
+// Group associations with 'as' aliases
 
+// Faculty - Group (one-to-many)
+Faculty.hasMany(Group, { 
+  foreignKey: "faculty_id",
+  as: "groups" // Faculty.getGroups()
+});
+Group.belongsTo(Faculty, { 
+  foreignKey: "faculty_id",
+  as: "faculty" // Group.getFaculty()
+});
+
+// Person (class representative) - Group (one-to-many)
+Person.hasMany(Group, { 
+  foreignKey: "class_representative_person_id",
+  as: "representedGroups" // Person.getRepresentedGroups()
+});
+Group.belongsTo(Person, { 
+  foreignKey: "class_representative_person_id",
+  as: "classRepresentative" // Group.getClassRepresentative()
+});
+
+// Person (teacher curator) - Group (one-to-many)
+Person.hasMany(Group, { 
+  foreignKey: "teacher_curator_id",
+  as: "curatedGroups" // Person.getCuratedGroups()
+});
+Group.belongsTo(Person, { 
+  foreignKey: "teacher_curator_id",
+  as: "teacherCurator" // Group.getTeacherCurator()
+});
+
+// Department - Group (one-to-many)
+Department.hasMany(Group, {
+  foreignKey: "department_id",
+  as: "groups" // Department.getGroups()
+});
+Group.belongsTo(Department, { 
+  foreignKey: "department_id",
+  as: "department" // Group.getDepartment()
+});
+
+// AcademicSpecialty - Group (one-to-many)
+AcademicSpecialty.hasMany(Group, { 
+  foreignKey: "specialty_code",
+  as: "groups" // AcademicSpecialty.getGroups()
+});
+Group.belongsTo(AcademicSpecialty, { 
+  foreignKey: "specialty_code",
+  as: "academicSpecialty" // Group.getAcademicSpecialty()
+});
 //Subgroup
 Group.hasMany(Subgroup, { foreignKey: "group_id" });
 Subgroup.belongsTo(Group, { foreignKey: "group_id" });
@@ -192,7 +236,9 @@ module.exports = {
   AcademicBuilding,
   Audience,
   EducationForm,
-  CurriculumSubject
+  CurriculumSubject,
+  Topic,
+  SubjectType,
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
@@ -201,7 +247,6 @@ module.exports = {
   //   PlannedTask,
   //   PlannedTaskTopic,
   //   SubgroupStudent,
-  //   Topic,
-  //   SubjectType,
+
   //   TotalScoreType,
 };

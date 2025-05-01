@@ -27,7 +27,7 @@ const Topic = sequelize.define("Topic", {
       key: "id",
     },
     allowNull: false,
-  },
+  }
 });
 
   

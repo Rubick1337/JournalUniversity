@@ -27,6 +27,8 @@ const { Teacher } = require("./Teacher");
 const { AcademicBuilding } = require("./AcademicBuilding");
 const { Audience } = require("./Audience");
 const { EducationForm, initializeEducationForm } = require("./EducationForm");
+const { Topic } = require("./Topic");
+const { SubjectType, initializeSubjectType } = require("./SubjectType");
 
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
@@ -35,7 +37,6 @@ const { EducationForm, initializeEducationForm } = require("./EducationForm");
 // const { PlannedTask } = require("./PlannedTask");
 // const { PlannedTaskTopic } = require("./PlannedTaskTopic");
 // const { Topic } = require("./Topic");
-// const { SubjectType } = require("./SubjectType");
 // const { TotalScoreType } = require("./TotalScoreType");
 
 const initModels = async () => {
@@ -48,6 +49,7 @@ const initModels = async () => {
   // await initializeSemesterType();
   // await initializeAssessmentType();
   // await initializeEducationForm();
+  // await initializeSubjectType();
 };
 module.exports = {
   initModels,
@@ -70,13 +72,14 @@ module.exports = {
   Audience,
   EducationForm,
   CurriculumSubject,
+  Topic,
+    SubjectType,
+
   // Absenteeism,
   // AcademicPerformance,
   // Grade,
   // Lesson,
   // PlannedTask,
   // PlannedTaskTopic,
-  // Topic,
-  // SubjectType,
   // TotalScoreType,
 };

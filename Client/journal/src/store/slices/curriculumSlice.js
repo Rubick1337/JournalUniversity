@@ -58,7 +58,7 @@ export const getCurriculumById = createAsyncThunk(
     async (id, { rejectWithValue }) => {
         try {
             const response = await CurriculumService.getById(id);
-            return response.data;
+            return response;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }

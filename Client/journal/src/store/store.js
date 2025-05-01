@@ -26,6 +26,7 @@ const store = configureStore({
     subjects:subjectSlice,
     estimationTypes: estimationTypeSlice,
     curriculumSubject: curriculumSubjectSlice,
+
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
