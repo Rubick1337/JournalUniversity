@@ -59,9 +59,7 @@ class CurriculumService {
       const where = {};
 
       if (query.yearQuery) {
-        where.year_of_specialty_training = {
-          [Op.iLike]: `%${query.yearQuery}%`,
-        };
+        where.year_of_specialty_training = query.yearQuery;
       }
 
       if (query.idQuery) {

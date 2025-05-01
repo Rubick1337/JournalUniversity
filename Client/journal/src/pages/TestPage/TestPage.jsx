@@ -13,6 +13,7 @@ import TeacherPositionsTable from "../../components/TeachingPositionTable/Teachi
 import Routers from "../../components/Routers/Routers";
 import PersonTable from "../../components/PersonTable/PersonTable";
 import WorkPrograming from "../../components/WorkPrograming/WorkProgramingTable";
+import CurriculumsTable from "../../components/CurriculumsTable/CurriculumsTable";
 
 
 
@@ -29,7 +30,7 @@ const SchedulePage = props => {
                 {/*<ContactsTable/>*/}
                 {/*{<TeacherPositionsTable/>}*/}
                 {/*{<PersonTable></PersonTable>}*/}
-                {<WorkPrograming></WorkPrograming>}
+                {<CurriculumsTable></CurriculumsTable>}
             </main>
             <Footer/>
         </>
