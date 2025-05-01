@@ -250,9 +250,21 @@ const FacultiesTable = () => {
                 dean_person_id: editFaculty.dean_person_id
             }
         }))
+            .unwrap() // Добавьте unwrap() для обработки Promise
             .then(() => {
                 showAlert('Факультет успешно обновлен!', 'success');
                 handleCloseModals();
+                // Обновляем данные после обновления
+                dispatch(getAllFaculties({
+                    page: meta.page,
+                    limit: meta.limit,
+                    sortBy: orderBy,
+                    sortOrder: order,
+                    ...searchParams
+                }));
+            })
+            .catch(error => {
+                showAlert(error.message || 'Ошибка при обновлении факультета', 'error');
             });
     };
 
@@ -267,9 +279,21 @@ const FacultiesTable = () => {
             full_name: newFaculty.full_name,
             dean_person_id: newFaculty.dean_person_id
         }))
+            .unwrap() // Добавьте unwrap() для обработки Promise
             .then(() => {
                 showAlert('Факультет успешно добавлен!', 'success');
                 handleCloseModals();
+                // Обновляем данные после добавления
+                dispatch(getAllFaculties({
+                    page: meta.page,
+                    limit: meta.limit,
+                    sortBy: orderBy,
+                    sortOrder: order,
+                    ...searchParams
+                }));
+            })
+            .catch(error => {
+                showAlert(error.message || 'Ошибка при добавлении факультета', 'error');
             });
     };
 
