@@ -41,9 +41,9 @@ function App() {
           <a href="teachers">Преподователи</a>
 
           <a href="specilization">Направления подготовки</a>
-          <a href="TODO">Формы подготовки</a>
+          <a href="educationform">Формы подготовки</a>
 
-          <a href="specilization">Учебный планы</a>
+          <a href="curriculum">Учебный планы</a>
           <a href="TODO">Формы атестации</a>
 
           <a href="curriculum">Рабочие программы</a>
@@ -68,7 +68,7 @@ function App() {
           <Route path="/faculties" element={<FacultiesTablePage />} />
           <Route path="/test" element={<TestPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/curriculum/:id" element={<TableLearnPage />} />
+          <Route path="/curriculum/:id" element={<p>fds</p>}/> 
           <Route path="/teachers" element={<TeachersTablePage />} />
           <Route path="/discipline" element={<DisciplinesTablePage />} />
           <Route path="/tablegroups" element={<GroupTablePage />} />
