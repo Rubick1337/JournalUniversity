@@ -55,6 +55,16 @@ class GroupService extends BaseService {
     return response;
   }
 
+  
+  async getCurrentSubjects() {
+    let endpoint = API_ENDPOINTS.GROUP.GET_CURRENT_SUBJECTS;
+    const response = await BaseService.request(
+        "get",
+        endpoint
+    );
+    return response;
+  }
+
   async getGroupById(id) {
     const response = await BaseService.request(
       "get",

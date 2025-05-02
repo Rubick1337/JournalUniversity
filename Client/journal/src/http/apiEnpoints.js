@@ -95,6 +95,7 @@ export const API_ENDPOINTS = {
     UPDATE: '/group/update/:id',
     DELETE: '/group/delete/:id',
     GETBYID: `/group/getById/:id`,
+    GET_CURRENT_SUBJECTS: `/group/getCurrentSubjects`
   },
   SUBGROUP: {
     GETALL: "/subgroup/getAll",

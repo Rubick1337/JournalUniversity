@@ -4,6 +4,7 @@ const GroupCreationDTO = require("../DTOs/ForCreation/GroupDataForCreateDto");
 const GroupDataDto = require("../DTOs/Data/GroupFullDataDto");
 const GroupUpdateDto = require("../DTOs/ForUpdate/GroupDataForUpdateDto");
 const MetaDataDto = require("../DTOs/Data/MetaDataDto");
+const CurriculumSubjectDto = require("../DTOs/Data/CurriculumSubjectDto");
 
 class GroupController {
   create = async (req, res, next) => {
@@ -12,6 +13,25 @@ class GroupController {
       const result = await GroupService.create(dataDto);
       const resultDto = new GroupDataDto(result);
       return res.status(200).json({ message: "created", data: resultDto });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
+  getCurrentSubjects = async (req, res, next) => {
+    try {
+      const groupId = req.groupId || 1;
+      const currentSubjects = await GroupService.getCurrentSubjectsByGroup(
+        groupId
+      );
+
+      const dataDto = currentSubjects.map((element) => {
+        return new CurriculumSubjectDto(element);
+      });
+
+      return res.status(200).json({
+        data: dataDto,
+      });
     } catch (err) {
       console.error(err);
       next(err);
@@ -31,7 +51,7 @@ class GroupController {
         departmentQuery = "",
         specialtyQuery = "",
         classRepresentativeQuery = "",
-        teacherCuratorQuery = ""
+        teacherCuratorQuery = "",
       } = req.query;
 
       const { data, meta } = await GroupService.getAll({
@@ -46,10 +66,10 @@ class GroupController {
           departmentQuery,
           specialtyQuery,
           classRepresentativeQuery,
-          teacherCuratorQuery
+          teacherCuratorQuery,
         },
       });
-      
+
       const dataDto = data.map((obj) => new GroupDataDto(obj));
       const metaDto = new MetaDataDto(meta);
       return res.status(200).json({

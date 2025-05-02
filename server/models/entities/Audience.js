@@ -5,9 +5,9 @@ const { AcademicBuilding } = require("./AcademicBuilding");
 
 const Audience = sequelize.define("Audience", {
   id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
+    autoIncrement: true
   },
   number: { type: DataTypes.INTEGER, allowNull: false },
   capacity: { type: DataTypes.INTEGER, allowNull: false },
