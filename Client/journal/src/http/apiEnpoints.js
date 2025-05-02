@@ -102,5 +102,12 @@ export const API_ENDPOINTS = {
     UPDATE: '/subgroup/update/:id',
     DELETE: '/subgroup/delete/:id',
     GETBYID: `/subgroup/getById/:id`,
+  },
+  STUDENT: {
+    GETALL: "/student/getAll",
+    CREATE: '/student/create',
+    UPDATE: '/student/update/:id',
+    DELETE: '/student/delete/:id',
+    GETBYID: `/student/getById/:id`,
   }
 };

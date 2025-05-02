@@ -135,14 +135,14 @@ Subgroup.belongsTo(Person, { foreignKey: "leader_id",
  });
 
 //Student
-Person.hasMany(Student, { foreignKey: "person_id" });
-Student.belongsTo(Person, { foreignKey: "person_id" });
-Group.hasMany(Student, { foreignKey: "group_id" });
-Student.belongsTo(Group, { foreignKey: "group_id" });
-Subgroup.hasMany(Student, { foreignKey: "subgroup_id" });
-Student.belongsTo(Subgroup, { foreignKey: "subgroup_id" });
-Person.hasMany(Student, { foreignKey: "perent_person_id" });
-Student.belongsTo(Person, { foreignKey: "perent_person_id" });
+Person.hasMany(Student, { foreignKey: "person_id", as: "studentRecords" });
+Student.belongsTo(Person, { foreignKey: "person_id", as:"person" });
+Group.hasMany(Student, { foreignKey: "group_id", as: "groupStudents" });
+Student.belongsTo(Group, { foreignKey: "group_id", as:"group" });
+Subgroup.hasMany(Student, { foreignKey: "subgroup_id", as:"subgroupStudents" });
+Student.belongsTo(Subgroup, { foreignKey: "subgroup_id",as:"subgroup" });
+Person.hasMany(Student, { foreignKey: "perent_person_id", as:"parentStudents" });
+Student.belongsTo(Person, { foreignKey: "perent_person_id", as:"perent" });
 
 //Teacher
 Person.hasMany(Teacher, {

@@ -24,7 +24,7 @@ const Student = sequelize.define("Student", {
     allowNull: true,
   },
   person_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Person,
       key: "id",
@@ -32,7 +32,7 @@ const Student = sequelize.define("Student", {
     allowNull: false,
   },
   group_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Group,
       key: "id",
@@ -48,7 +48,7 @@ const Student = sequelize.define("Student", {
     allowNull: false,
   },
   perent_person_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Person,
       key: "id",
