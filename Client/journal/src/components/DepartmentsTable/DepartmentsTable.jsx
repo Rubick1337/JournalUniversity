@@ -55,7 +55,25 @@ const DepartmentsTable = () => {
     const [order, setOrder] = useState('asc');
     const [searchMenuOpen, setSearchMenuOpen] = useState(false);
     const searchAnchorRef = useRef(null);
+useEffect(() => {
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            if (openAddModal) {
+                // Получаем ссылку на кнопку "Добавить" и вызываем клик
+                document.getElementById('add-department-button')?.click();
+            } else if (openEditModal) {
+                document.getElementById('save-department-button')?.click();
+            } else if (openDeleteModal) {
+                document.getElementById('delete-department-button')?.click();
+            }
+        }
+    };
 
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+    };
+}, [openAddModal, openEditModal, openDeleteModal]);
     useEffect(() => {
         dispatch(fetchDepartments({
             page: meta.page,

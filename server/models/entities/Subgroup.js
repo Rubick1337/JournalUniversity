@@ -2,6 +2,7 @@ const sequelize = require("../../db");
 const { DataTypes } = require("sequelize");
 
 const { Group } = require("./Group");
+const { Person } = require("./Person");
 
 const Subgroup = sequelize.define("Subgroup", {
   id: {
@@ -16,21 +17,21 @@ const Subgroup = sequelize.define("Subgroup", {
   },
 
   group_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: Group,
       key: "id",
     },
   },
-  // leader_id: {
-  //   type: DataTypes.UUID,
-  //   references: {
-  //     model: Student,
-  //     key: "id",
-  //   },
-  //   allowNull: true,
-  // },
+  leader_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Person,
+      key: "id",
+    },
+    allowNull: true,
+  },
 });
 
 module.exports = { Subgroup };

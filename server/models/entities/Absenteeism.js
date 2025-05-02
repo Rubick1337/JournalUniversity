@@ -7,18 +7,13 @@ const { Lesson } = require("./Lesson");
 const { Student } = require("./Student");
 
 const Absenteeism = sequelize.define("Absenteeism", {
-  id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
-
-  group_id: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: Group,
-      key: "id",
-    },
-    allowNull: false,
+  id: {
+    type: DataTypes.UUID,
+    primaryKey: true,
+    defaultValue: DataTypes.UUIDV4,
   },
-  lesson_id: {
-    type: DataTypes.INTEGER,
+    lesson_id: {
+    type: DataTypes.UUID,
     references: {
       model: Lesson,
       key: "id",

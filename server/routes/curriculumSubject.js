@@ -2,10 +2,10 @@ const curriculumSubjectRouter = require('express').Router();
 const curriculumSubjectController = require('../controllers/CurriculumSubjectController');
 // const authMiddleware = require('../middleware/AuthMiddleware')
 //TODO validate
-// curriculumSubjectRouter.get(`/getAll`, curriculumSubjectController.getAll);
-// curriculumSubjectRouter.get(`/getById/:id`, curriculumSubjectController.getById);
-// curriculumSubjectRouter.delete(`/delete/:id`, curriculumSubjectController.delete);
+curriculumSubjectRouter.get(`/getAll/:curriculumId`, curriculumSubjectController.getAll);
+curriculumSubjectRouter.get(`/getByCompositeId/:curriculumId/:subjectId/:assessmentTypeId/:semester`, curriculumSubjectController.getByCompositeId);
+curriculumSubjectRouter.delete(`/delete/:curriculumId/:subjectId/:assessmentTypeId/:semester`, curriculumSubjectController.delete);
 curriculumSubjectRouter.post(`/create/:curriculumId`, curriculumSubjectController.create);
-// curriculumSubjectRouter.put(`/update/:id`, curriculumSubjectController.update);
-    
+curriculumSubjectRouter.put(`/update/:curriculumId/:subjectId/:assessmentTypeId/:semester`, curriculumSubjectController.update);
+
 module.exports = curriculumSubjectRouter;

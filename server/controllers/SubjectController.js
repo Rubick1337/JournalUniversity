@@ -26,9 +26,9 @@ class SubjectController {
         sortOrder = "ASC",
         idQuery = "",
         nameQuery = "",
-        departmentQuery = ""
+        departmentIdQuery = null,
       } = req.query;
-
+      console.log("FEWFWEFEF",departmentIdQuery)
       const { data, meta } = await SubjectService.getAll({
         page: parseInt(page),
         limit: parseInt(limit),
@@ -37,7 +37,7 @@ class SubjectController {
         query: {
           idQuery,
           nameQuery,
-          departmentQuery
+          departmentIdQuery
         },
       });
       

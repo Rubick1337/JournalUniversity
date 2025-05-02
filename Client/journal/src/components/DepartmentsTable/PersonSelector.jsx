@@ -1,15 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Autocomplete, TextField, IconButton, Box, Typography, Stack } from '@mui/material';
 import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
 import { PersonModal } from '../PersonCreationModal/PersonCreationModal';
 import { useDispatch } from 'react-redux';
-import { addPerson, fetchPersons } from '../../store/slices/personSlice';
+import { addPerson, fetchPersonsByFullName } from '../../store/slices/personSlice';
 
-const PersonSelector = ({ value, onChange, options = [] }) => {
+const PersonSelector = ({textValue = "Выбрать челвоека", value, onChange, options = [] }) => {
     const dispatch = useDispatch();
     const [modalOpen, setModalOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
     const [showAddOption, setShowAddOption] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    // Функция для проверки, нужно ли выполнять поиск
+    const shouldSearch = useCallback((searchText) => {
+        const words = searchText.trim().split(/\s+/).filter(Boolean);
+        return words.length >= 2 && searchText.trim().length >= 5;
+    }, []);
+
+    // Эффект для выполнения поиска при изменении inputValue
+    useEffect(() => {
+        const searchText = inputValue.trim();
+        if (shouldSearch(searchText)) {
+            setLoading(true);
+            const timer = setTimeout(() => {
+                dispatch(fetchPersonsByFullName({
+                    fullNameQuery: searchText,
+                    limit: 10,
+                    page: 1,
+                    sortBy: 'surname',
+                    sortOrder: 'ASC'
+                }))
+                .unwrap()
+                .then((response) => {
+                    setSearchResults(response.data);
+                    setShowAddOption(response.data.length === 0);
+                })
+                .catch((error) => {
+                    console.error('Ошибка поиска:', error);
+                })
+                .finally(() => {
+                    setLoading(false);
+                });
+            }, 500); // Задержка для debounce
+
+            return () => clearTimeout(timer);
+        } else {
+            setSearchResults([]);
+            setShowAddOption(false);
+        }
+    }, [inputValue, dispatch, shouldSearch]);
 
     const getPersonLabel = (person) => {
         if (!person) return '';
@@ -28,14 +69,17 @@ const PersonSelector = ({ value, onChange, options = [] }) => {
 
     const handleInputChange = (event, newInputValue) => {
         setInputValue(newInputValue);
-        // Проверяем, есть ли введенное значение в списке options
-        const exists = options.some(option =>
-            getPersonLabel(option).toLowerCase().includes(newInputValue.toLowerCase())
-        );
-        setShowAddOption(newInputValue.length > 0 && !exists);
+        // Проверяем локальные options, если не выполняем поиск
+        if (!shouldSearch(newInputValue)) {
+            const exists = options.some(option =>
+                getPersonLabel(option).toLowerCase().includes(newInputValue.toLowerCase())
+            );
+            setShowAddOption(newInputValue.length > 0 && !exists);
+        }
     };
 
     const filterOptions = (options, { inputValue }) => {
+        if (!inputValue) return options;
         return options.filter(option =>
             getPersonLabel(option).toLowerCase().includes(inputValue.toLowerCase())
         );
@@ -62,17 +106,28 @@ const PersonSelector = ({ value, onChange, options = [] }) => {
                 setModalOpen(false);
                 setInputValue('');
                 setShowAddOption(false);
-                dispatch(fetchPersons({}));
+                // Обновляем локальный список
+                setSearchResults(prev => [addedPerson, ...prev]);
             })
             .catch((err) => {
                 alert(`Ошибка при добавлении: ${err.message}`);
             });
     };
 
+    // Объединяем локальные options и результаты поиска
+    const allOptions = [...options, ...searchResults].reduce((acc, current) => {
+        const x = acc.find(item => item.id === current.id);
+        if (!x) {
+            return acc.concat([current]);
+        } else {
+            return acc;
+        }
+    }, []);
+
     return (
         <Box sx={{ width: '100%' }}>
             <Autocomplete
-                options={options}
+                options={allOptions}
                 getOptionLabel={getPersonLabel}
                 value={normalizeValue()}
                 onChange={(_, newValue) => {
@@ -82,7 +137,8 @@ const PersonSelector = ({ value, onChange, options = [] }) => {
                 inputValue={inputValue}
                 onInputChange={handleInputChange}
                 isOptionEqualToValue={(option, value) => option?.id === value?.id}
-                filterOptions={filterOptions} // Используем нашу функцию фильтрации
+                filterOptions={filterOptions}
+                loading={loading}
                 noOptionsText={
                     showAddOption ? (
                         <Stack
@@ -98,13 +154,13 @@ const PersonSelector = ({ value, onChange, options = [] }) => {
                             </Typography>
                         </Stack>
                     ) : (
-                        'Не найдено'
+                        shouldSearch(inputValue) ? 'Не найдено' : 'Введите минимум 2 слова (5+ символов)'
                     )
                 }
                 renderInput={(params) => (
                     <TextField
                         {...params}
-                        label="Заведующий кафедрой"
+                        label={textValue}
                         margin="normal"
                         fullWidth
                         InputProps={{

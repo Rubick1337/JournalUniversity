@@ -23,18 +23,17 @@ class CurriculumService extends BaseService {
   async update(id, data) {
     console.log(data)
     const response = await BaseService.request(
-        "put",
-        API_ENDPOINTS.CURRICULUM.UPDATE.replace(':id', id),
-        data
-
+      "put",
+      API_ENDPOINTS.CURRICULUM.UPDATE.replace(":id", id),
+      data
     );
     return response;
   }
 
   async delete(id) {
     const response = await BaseService.request(
-        "delete",
-        API_ENDPOINTS.CURRICULUM.DELETE.replace(':id', id),
+      "delete",
+      API_ENDPOINTS.CURRICULUM.DELETE.replace(":id", id)
     );
     return response;
   }
@@ -72,10 +71,8 @@ class CurriculumService extends BaseService {
   }
 
   async getById(id) {
-    const response = await BaseService.request(
-        "get",
-        API_ENDPOINTS.CURRICULUM.GETBYID.replace(':id', id),
-    );
+    const endpoint = API_ENDPOINTS.CURRICULUM.GETBYID.replace(":id", id);
+    const response = await BaseService.request("get",endpoint);
     return response.data;
   }
 }

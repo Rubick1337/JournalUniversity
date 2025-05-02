@@ -1,5 +1,5 @@
 const ApiError = require("../error/ApiError");
-const { Person, Op } = require("../models/index");
+const { Person, Op, Sequelize } = require("../models/index");
 
 class PersonService {
   async create(data) {
@@ -13,27 +13,70 @@ class PersonService {
   }
 
   async update(personId, updateData) {
-    console.log("Ddaswqeqwrqwrqd")
-    console.log(updateData);
-    console.log('Сервер получил запрос на обновление:', {
-      personId,
-      updateData
-    });
-
     const person = await Person.findByPk(personId);
     if (!person) {
       throw ApiError.notFound(`Person with ID ${personId} not found`);
     }
 
-    console.log('Текущие данные в БД до обновления:', person.toJSON());
+    console.log("Текущие данные в БД до обновления:", person.toJSON());
 
     const result = await person.update(updateData);
 
-    console.log('Обновленные данные в БД:', result.toJSON());
+    console.log("Обновленные данные в БД:", result.toJSON());
 
     return result;
   }
-
+  async getAllByFullName({
+    page = 1,
+    limit = 10,
+    sortBy = "id",
+    sortOrder = "ASC",
+    fullNameQuery = "",
+  }) {
+    try {
+      const offset = (page - 1) * limit;
+      
+      const where = {};
+      if (fullNameQuery) {
+        where[Op.and] = [
+          Sequelize.where(
+            Sequelize.fn(
+              'concat',
+              Sequelize.col('surname'),
+              ' ',
+              Sequelize.col('name'),
+              ' ',
+              Sequelize.col('middlename')
+            ),
+            {
+              [Op.iLike]: `%${fullNameQuery.trim().replace(/\s+/g, ' ')}%`
+            }
+          )
+        ];
+      }
+  
+      const { count, rows } = await Person.findAndCountAll({
+        where,
+        order: [[sortBy, sortOrder]],
+        limit,
+        offset,
+      });
+  
+      return {
+        data: rows,
+        meta: {
+          currentPage: page,
+          perPage: limit,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+          hasNextPage: page * limit < count,
+          hasPreviousPage: page > 1,
+        },
+      };
+    } catch (error) {
+      throw ApiError.internal("Ошибка при получении данных: " + error.message);
+    }
+  }
   async getAll({
     page = 1,
     limit = 10,

@@ -4,10 +4,9 @@ import DepartmentService from '../../services/DepartmentService';
 // Асинхронные действия
 export const fetchDepartments = createAsyncThunk(
     'departments/fetchAll',
-    async (params, { rejectWithValue }) => {
+    async (params ={}, { rejectWithValue }) => {
         try {
             const response = await DepartmentService.getAll(params);
-            console.log('Departments API response:', response); // Добавьте это
             return {
                 data: response.data,
                 meta: response.meta
@@ -25,7 +24,6 @@ export const createDepartment = createAsyncThunk(
         try {
 
             const response = await DepartmentService.create(departmentData);
-            console.log("saqweqweq" + departmentData.faculty_id);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -114,7 +112,6 @@ const departmentSlice = createSlice({
                 state.errors = [];
             })
             .addCase(fetchDepartments.fulfilled, (state, action) => {
-                console.log('Received departments:', action.payload);
                 state.isLoading = false;
                 state.data = action.payload.data;
                 state.meta = {

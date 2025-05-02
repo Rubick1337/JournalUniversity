@@ -81,7 +81,25 @@ const FacultiesTable = () => {
         fullNameQuery: '',
         deanQuery: ''
     });
+// Добавьте этот эффект в компонент FacultiesTable
+useEffect(() => {
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            if (openAddModal) {
+                handleSaveAdd();
+            } else if (openEditModal) {
+                handleSaveEdit();
+            } else if (openDeleteModal) {
+                handleDeleteConfirm();
+            }
+        }
+    };
 
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+        window.removeEventListener('keydown', handleKeyDown);
+    };
+}, [openAddModal, openEditModal, openDeleteModal, newFaculty, editFaculty]);
     useEffect(() => {
         dispatch(getAllFaculties({
             page: meta.page,
@@ -497,7 +515,7 @@ const FacultiesTable = () => {
                         </Box>
                         <Box sx={{ p: 3 }}>
                             {openEditModal && (
-                                <div>
+                                <div onKeyPress={(e) => e.key === 'Enter' && handleSaveEdit()}>
                                     <TextField
                                         label="Название"
                                         fullWidth
@@ -525,7 +543,7 @@ const FacultiesTable = () => {
                                 </div>
                             )}
                             {openDeleteModal && (
-                                <div>
+                                <div onKeyPress={(e) => e.key === 'Enter' && handleDeleteConfirm()}>
                                     <Typography>Вы уверены, что хотите удалить факультет "{currentRow?.name}"?</Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
@@ -534,7 +552,7 @@ const FacultiesTable = () => {
                                 </div>
                             )}
                             {openAddModal && (
-                                <div>
+                                <div  onKeyPress={(e) => e.key === 'Enter' && handleSaveAdd()}>
                                     <TextField
                                         label="Название"
                                         fullWidth

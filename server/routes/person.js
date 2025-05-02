@@ -9,13 +9,11 @@ const {validateCreate, validateUpdate} = require('../middleware/validation/valid
 personRouter.post(`/create`, personController.create);
 //TODO валидация query параметров
 personRouter.get(`/getAll`, personController.getAll);
+
+personRouter.get(`/getAllByFullName`, personController.getAllByFullName);
 //TODO валидация параметров
 personRouter.delete(`/delete/:personId`, personController.delete);
 //TODO валидация параметров
 personRouter.put('/update/:personId', personController.update)
-
-
-
-personRouter.get(`/getDataForSelect`, personController.getDataForSelect);
 
 module.exports = personRouter;

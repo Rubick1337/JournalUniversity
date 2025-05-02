@@ -85,6 +85,7 @@ class PersonService extends BaseService {
     const response = await BaseService.request("delete", endpoint);
     return response;
   }
+
 }
 const personServiceInstance = new PersonService();
 

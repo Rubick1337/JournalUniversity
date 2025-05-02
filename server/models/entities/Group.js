@@ -8,16 +8,16 @@ const { AcademicSpecialty } = require("./AcademicSpecialty");
 
 const Group = sequelize.define("Group", {
   id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
+    autoIncrement: true
   },
   name: { type: DataTypes.STRING, allowNull: false },
   graduation_year: { type: DataTypes.INTEGER, allowNull: false },
   year_of_beginning_of_study: { type: DataTypes.INTEGER, allowNull: false },
 
   faculty_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Faculty,
       key: "id",
@@ -25,24 +25,23 @@ const Group = sequelize.define("Group", {
     allowNull: false,
   },
   class_representative_person_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Person,
       key: "id",
     },
     allowNull: true,
   },
-  //TODO куратор Teacher
-  // teacher_curator_id: {
-  //   type: DataTypes.UUID,
-  //   references: {
-  //     model: Person,
-  //     key: "id",
-  //   },
-  //   allowNull: true,
-  // },
+  teacher_curator_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Person,
+      key: "id",
+    },
+    allowNull: true,
+  },
   department_id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     references: {
       model: Department,
       key: "id",

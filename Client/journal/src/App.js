@@ -26,6 +26,7 @@ import PositionTeacherPage from "./pages/PositionTeacherPage/PositionTeacherPage
 import RoutersPage from "./pages/RoutersPage/RoutersPage";
 import EducationFormPage from "./pages/EducationFormPage/EducationFormPage";
 import TypeAssesmentPage from "./pages/TypeAssmentPage/TypeAssesmentPage";
+import CurriculumsTable from "./components/CurriculumsTable/CurriculumsTable";
 
 function App() {
   return (
@@ -41,14 +42,14 @@ function App() {
           <a href="teachers">Преподователи</a>
 
           <a href="specilization">Направления подготовки</a>
-          <a href="TODO">Формы подготовки</a>
+          <a href="educationform">Формы подготовки</a>
 
-          <a href="specilization">Учебный планы</a>
+          <a href="curriculum">Учебный планы</a>
           <a href="TODO">Формы атестации</a>
 
           <a href="curriculum">Рабочие программы</a>
 
-          <a href="specilization">Группы</a>
+          <a href="tablegroups">Группы</a>
           <a href="specilization">Подгруппы</a>
           <a href="specilization">Студенты</a>
 
@@ -68,7 +69,7 @@ function App() {
           <Route path="/faculties" element={<FacultiesTablePage />} />
           <Route path="/test" element={<TestPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/tablelearn" element={<TableLearnPage />} />
+          <Route path="/curriculum/:curriculumId" element={<TableLearnPage/>}/> 
           <Route path="/teachers" element={<TeachersTablePage />} />
           <Route path="/discipline" element={<DisciplinesTablePage />} />
           <Route path="/tablegroups" element={<GroupTablePage />} />
@@ -80,6 +81,7 @@ function App() {
           <Route path={"/router"} element={<RoutersPage />} />
           <Route path={"/educationform"} element={<EducationFormPage />} />
           <Route path={"/assesmenttype"} element={<TypeAssesmentPage />} />
+          <Route path={"/curriculum"} element={<CurriculumsTable />} />
         </Routes>
       </div>
     </Provider>

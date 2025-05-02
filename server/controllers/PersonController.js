@@ -19,14 +19,29 @@ class PersonController {
       next(err);
     }
   };
-  getDataForSelect = async (req, res, next) => {
+  getAllByFullName = async (req, res, next) => {
     try {
-      const result = await PersonService.getDataForSelect();
-      const resultDto = result.map((element) => {
-        return new GetPersonDataForSelect(element);
+      const {
+        limit = 10,
+        page = 1,
+        sortBy = "surname",
+        sortOrder = "ASC",
+        fullNameQuery = ""
+      } = req.query;
+
+      const { data, meta } = await PersonService.getAllByFullName({
+        page: parseInt(page),
+        limit: parseInt(limit),
+        sortBy,
+        sortOrder,
+        fullNameQuery
       });
-      console.log(resultDto);
-      return res.status(200).json({ data: resultDto });
+      const dataDto = data.map((obj) => new PersonDataDto(obj));
+      const metaDto = new MetaDataDto(meta);
+      return res.status(200).json({
+        data: dataDto,
+        meta: metaDto,
+      });
     } catch (err) {
       console.error(err);
       next(err);
@@ -90,7 +105,7 @@ class PersonController {
     try {
       const { personId } = req.params;
       const dataDto = new PersonUpdateDto(req.body);
-      const result = await PersonService.update(personId, dataDto)
+      const result = await PersonService.update(personId, dataDto);
       const resultDto = new PersonDataDto(result);
       return res.status(200).json({ message: "updated", data: resultDto });
     } catch (err) {

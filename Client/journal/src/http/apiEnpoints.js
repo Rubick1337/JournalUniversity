@@ -1,8 +1,6 @@
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export const API_ENDPOINTS = {
-  // CREATE_PERSON: '/person/create',
-  // GET_PERSONS_DATA_FOR_SELECT: '/person/getDataForSelect',
   Faculty: {
     CREATE: `/faculty/create`,
     UPDATE: `/faculty/update/:facultyId`,
@@ -16,6 +14,8 @@ export const API_ENDPOINTS = {
     UPDATE: '/person/update/:personId',
     DELETE: '/person/delete/:personId',
     GETBYID: `/faculty/getById/:facultyId`,
+
+    GET_ALL_BY_FULL_NAME: `person/getAllByFullName`
   },
   DEPARTMENT: {
     GETALL: "/department/getAll",
@@ -67,6 +67,7 @@ export const API_ENDPOINTS = {
     DELETE: '/curriculum/delete/:id',
     GETBYID: `/curriculum/getById/:id`,
   },
+
   ASSESSMENT_TYPE: {
     GETALL: "/assessmentType/getAll",
     CREATE: '/assessmentType/create',
@@ -74,4 +75,40 @@ export const API_ENDPOINTS = {
     DELETE: '/assessmentType/delete/:id',
     GETBYID: `/assessmentType/getById/:id`,
   },
+  CURRICULUM_SUBJECT: {
+    GETALL: "/curriculumSubject/getAll/:curriculumId",
+    CREATE: '/curriculumSubject/create/:curriculumId',
+    UPDATE: '/curriculumSubject/update/:curriculumId/:subjectId/:assessmentTypeId/:semester',
+    DELETE: '/curriculumSubject/delete/:curriculumId/:subjectId/:assessmentTypeId/:semester',
+    GET_BY_COMPOSITED_ID: `/curriculumSubject/getByCompositeId/:curriculumId/:subjectId/:assessmentTypeId/:semester`,
+  },
+  TOPIC: {
+    GETALL: "/topic/getAll",
+    CREATE: '/topic/create',
+    UPDATE: '/topic/update/:id',
+    DELETE: '/topic/delete/:id',
+    GETBYID: `/topic/getById/:id`,
+  },
+  GROUP: {
+    GETALL: "/group/getAll",
+    CREATE: '/group/create',
+    UPDATE: '/group/update/:id',
+    DELETE: '/group/delete/:id',
+    GETBYID: `/group/getById/:id`,
+    GET_CURRENT_SUBJECTS: `/group/getCurrentSubjects`
+  },
+  SUBGROUP: {
+    GETALL: "/subgroup/getAll",
+    CREATE: '/subgroup/create',
+    UPDATE: '/subgroup/update/:id',
+    DELETE: '/subgroup/delete/:id',
+    GETBYID: `/subgroup/getById/:id`,
+  },
+  STUDENT: {
+    GETALL: "/student/getAll",
+    CREATE: '/student/create',
+    UPDATE: '/student/update/:id',
+    DELETE: '/student/delete/:id',
+    GETBYID: `/student/getById/:id`,
+  }
 };

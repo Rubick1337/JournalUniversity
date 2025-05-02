@@ -13,6 +13,18 @@ const SubjectType = sequelize.define("SubjectType", {
   },
 });
 
-  
-module.exports = { SubjectType };
-  
+// Данные для инициализации
+const defaultValues = [
+  { name: "практика" },
+  { name: "лабораторная работа" },
+  { name: "лекция" },
+];
+
+// Функция для инициализации данных
+const initializeSubjectType = async () => {
+  for (const thisValue of defaultValues) {
+    await SubjectType.create(thisValue);
+  }
+};
+
+module.exports = { SubjectType,initializeSubjectType };
