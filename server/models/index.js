@@ -1,4 +1,4 @@
-const { Op, Sequelize} = require('sequelize')
+const { Op, Sequelize } = require("sequelize");
 const {
   initModels,
   Person,
@@ -36,21 +36,24 @@ const {
 
 // Define associations
 Faculty.belongsTo(Person, {
-  foreignKey: 'dean_person_id',
-  as: 'dean'
+  foreignKey: "dean_person_id",
+  as: "dean",
 });
 
 Person.hasMany(Faculty, {
-  foreignKey: 'dean_person_id',
-  as: 'faculties'
+  foreignKey: "dean_person_id",
+  as: "faculties",
 });
 
 //Department
 Person.hasOne(Department, {
   foreignKey: "chairperson_of_the_department_person_id",
 });
-Department.belongsTo(Faculty, { foreignKey: 'faculty_id', as: 'faculty' });
-Department.belongsTo(Person, { foreignKey: 'chairperson_of_the_department_person_id', as: 'head' });
+Department.belongsTo(Faculty, { foreignKey: "faculty_id", as: "faculty" });
+Department.belongsTo(Person, {
+  foreignKey: "chairperson_of_the_department_person_id",
+  as: "head",
+});
 
 Faculty.hasMany(Department, { foreignKey: "faculty_id" });
 Department.hasMany(Group, { foreignKey: "department_id" });
@@ -58,66 +61,78 @@ Department.hasMany(Group, { foreignKey: "department_id" });
 //Subject
 Department.hasMany(Subject, {
   foreignKey: "department_id",
-  as: 'subjects', // явно указываем псевдоним для ассоциации
-  onDelete: 'CASCADE',
-  onUpdate: 'CASCADE'
+  as: "subjects", // явно указываем псевдоним для ассоциации
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
 });
 
 Subject.belongsTo(Department, {
   foreignKey: "department_id",
-  as: 'department', // явно указываем псевдоним
-  targetKey: 'id' // явно указываем целевой ключ (опционально)
+  as: "department", // явно указываем псевдоним
+  targetKey: "id", // явно указываем целевой ключ (опционально)
 });
 
-// Group 
-Faculty.hasMany(Group, { 
+// Group
+Faculty.hasMany(Group, {
   foreignKey: "faculty_id",
-  as: "groups"
+  as: "groups",
 });
-Group.belongsTo(Faculty, { 
+Group.belongsTo(Faculty, {
   foreignKey: "faculty_id",
-  as: "faculty" 
+  as: "faculty",
 });
-Person.hasMany(Group, { 
+Person.hasMany(Group, {
   foreignKey: "class_representative_person_id",
-  as: "representedGroups"
+  as: "representedGroups",
 });
-Group.belongsTo(Person, { 
+Group.belongsTo(Person, {
   foreignKey: "class_representative_person_id",
-  as: "classRepresentative"
+  as: "classRepresentative",
 });
 
-Person.hasMany(Group, { 
+Person.hasMany(Group, {
   foreignKey: "teacher_curator_id",
-  as: "curatedGroups"
+  as: "curatedGroups",
 });
-Group.belongsTo(Person, { 
+Group.belongsTo(Person, {
   foreignKey: "teacher_curator_id",
-  as: "teacherCurator"
+  as: "teacherCurator",
 });
 
 Department.hasMany(Group, {
   foreignKey: "department_id",
-  as: "groups" 
+  as: "groups",
 });
-Group.belongsTo(Department, { 
+Group.belongsTo(Department, {
   foreignKey: "department_id",
-  as: "department"
+  as: "department",
 });
 
-AcademicSpecialty.hasMany(Group, { 
+AcademicSpecialty.hasMany(Group, {
   foreignKey: "specialty_code",
-  as: "groups"
+  as: "groups",
 });
-Group.belongsTo(AcademicSpecialty, { 
+Group.belongsTo(AcademicSpecialty, {
   foreignKey: "specialty_code",
-  as: "academicSpecialty"
+  as: "academicSpecialty",
 });
-
 
 //Subgroup
-Group.hasMany(Subgroup, { foreignKey: "group_id" });
-Subgroup.belongsTo(Group, { foreignKey: "group_id" });
+Group.hasMany(Subgroup, { 
+  foreignKey: "group_id", 
+  as: "subgroups"
+});
+Subgroup.belongsTo(Group, { foreignKey: "group_id",
+  as: "group"
+ });
+
+ Person.hasMany(Subgroup, { 
+  foreignKey: "leader_id", 
+  as: "subgroups"
+});
+Subgroup.belongsTo(Person, { foreignKey: "leader_id",
+  as: "leader"
+ });
 
 //Student
 Person.hasMany(Student, { foreignKey: "person_id" });
@@ -129,98 +144,93 @@ Student.belongsTo(Subgroup, { foreignKey: "subgroup_id" });
 Person.hasMany(Student, { foreignKey: "perent_person_id" });
 Student.belongsTo(Person, { foreignKey: "perent_person_id" });
 
-
 //Teacher
-Person.hasMany(Teacher, { 
-  foreignKey: 'person_id',
-  as: 'teachers'
+Person.hasMany(Teacher, {
+  foreignKey: "person_id",
+  as: "teachers",
 });
-Teacher.belongsTo(Person, { 
-  foreignKey: 'person_id',
-  as: 'person'
-});
-
-Department.hasMany(Teacher, { 
-  foreignKey: 'department_id',
-  as: 'teachers' 
-});
-Teacher.belongsTo(Department, { 
-  foreignKey: 'department_id',
-  as: 'department'
+Teacher.belongsTo(Person, {
+  foreignKey: "person_id",
+  as: "person",
 });
 
-TeachingPosition.hasMany(Teacher, { 
-  foreignKey: 'teaching_position_id',
-  as: 'teachers' 
+Department.hasMany(Teacher, {
+  foreignKey: "department_id",
+  as: "teachers",
 });
-Teacher.belongsTo(TeachingPosition, { 
-  foreignKey: 'teaching_position_id',
-  as: 'teachingPosition'
+Teacher.belongsTo(Department, {
+  foreignKey: "department_id",
+  as: "department",
 });
 
-
+TeachingPosition.hasMany(Teacher, {
+  foreignKey: "teaching_position_id",
+  as: "teachers",
+});
+Teacher.belongsTo(TeachingPosition, {
+  foreignKey: "teaching_position_id",
+  as: "teachingPosition",
+});
 
 //Curriculum
-AcademicSpecialty.hasMany(Curriculum, { 
+AcademicSpecialty.hasMany(Curriculum, {
   foreignKey: "specialty_code",
-  as: "AcademicSpecialty"   
+  as: "AcademicSpecialty",
 });
-Curriculum.belongsTo(AcademicSpecialty, { 
+Curriculum.belongsTo(AcademicSpecialty, {
   foreignKey: "specialty_code",
-  as: "AcademicSpecialty"   
+  as: "AcademicSpecialty",
 });
 
-EducationForm.hasMany(Curriculum, { 
+EducationForm.hasMany(Curriculum, {
   foreignKey: "education_form_id",
-  as: "EducationForm"   
+  as: "EducationForm",
 });
-Curriculum.belongsTo(EducationForm, { 
+Curriculum.belongsTo(EducationForm, {
   foreignKey: "education_form_id",
-  as: "EducationForm"   
+  as: "EducationForm",
 });
 
 // CurriculumSubject associations
 Curriculum.hasMany(CurriculumSubject, {
-  foreignKey: 'curriculum_id',
-  as: 'curriculum'
+  foreignKey: "curriculum_id",
+  as: "curriculum",
 });
 
 CurriculumSubject.belongsTo(Curriculum, {
-  foreignKey: 'curriculum_id',
-  as: 'curriculum'
+  foreignKey: "curriculum_id",
+  as: "curriculum",
 });
 
 Subject.hasMany(CurriculumSubject, {
-  foreignKey: 'subject_id',
-  as: 'subject'
+  foreignKey: "subject_id",
+  as: "subject",
 });
 
 CurriculumSubject.belongsTo(Subject, {
-  foreignKey: 'subject_id',
-  as: 'subject'
+  foreignKey: "subject_id",
+  as: "subject",
 });
 
 AssessmentType.hasMany(CurriculumSubject, {
-  foreignKey: 'assessment_type_id',
-  as: 'assessmentType'
+  foreignKey: "assessment_type_id",
+  as: "assessmentType",
 });
 
 CurriculumSubject.belongsTo(AssessmentType, {
-  foreignKey: 'assessment_type_id',
-  as: 'assessmentType'
+  foreignKey: "assessment_type_id",
+  as: "assessmentType",
 });
-
 
 //Topic
 Subject.hasMany(Topic, {
   foreignKey: "subject_id",
-  as: "subjectForTopic"
-})
+  as: "subjectForTopic",
+});
 Topic.belongsTo(Subject, {
   foreignKey: "subject_id",
-  as: "subjectForTopic"
-})
-
+  as: "subjectForTopic",
+});
 
 module.exports = {
   initModels,
