@@ -4,7 +4,7 @@ import BaseService from "./BaseService";
 
 const addParamInEndpoint = (endpoint, paramName, paramValue) => {
   if (paramValue === undefined || paramValue === null || paramValue === "") {
-    return endpoint; // Не добавляем пустые параметры
+    return endpoint;
   }
 
   const separator = endpoint.includes("?") ? "&" : "?";
@@ -14,31 +14,31 @@ const addParamInEndpoint = (endpoint, paramName, paramValue) => {
 class TopicService extends BaseService {
   async createTopic(data) {
     const response = await BaseService.request(
-      "post",
-      API_ENDPOINTS.TOPIC.CREATE,
-      data
+        "post",
+        API_ENDPOINTS.TOPIC.CREATE,
+        data
     );
     return response;
   }
 
   async updateTopic(id, data) {
     const response = await BaseService.request(
-      "put",
-      API_ENDPOINTS.TOPIC.UPDATE.replace(':id', id),
-      data
+        "put",
+        API_ENDPOINTS.TOPIC.UPDATE.replace(':id', id),
+        data
     );
     return response;
   }
 
   async deleteTopic(id) {
     const response = await BaseService.request(
-      "delete",
-      API_ENDPOINTS.TOPIC.DELETE.replace(':id', id),
+        "delete",
+        API_ENDPOINTS.TOPIC.DELETE.replace(':id', id),
     );
     return response;
   }
 
-  async getAllTopics({limit, page, sortBy, sortOrder, idQuery, nameQuery}) {
+  async getAllTopics({limit, page, sortBy, sortOrder, idQuery, nameQuery, subjectQuery}) {
     let endpoint = API_ENDPOINTS.TOPIC.GETALL;
 
     endpoint = addParamInEndpoint(endpoint, "limit", limit);
@@ -47,18 +47,20 @@ class TopicService extends BaseService {
     endpoint = addParamInEndpoint(endpoint, "sortOrder", sortOrder);
     endpoint = addParamInEndpoint(endpoint, "idQuery", idQuery);
     endpoint = addParamInEndpoint(endpoint, "nameQuery", nameQuery);
+    endpoint = addParamInEndpoint(endpoint, "subjectQuery", subjectQuery);
 
     const response = await BaseService.request(
         "get",
         endpoint
     );
+    console.log(response);
     return response;
   }
 
   async getTopicById(id) {
     const response = await BaseService.request(
-      "get",
-      API_ENDPOINTS.TOPIC.GETBYID.replace(':id', id),
+        "get",
+        API_ENDPOINTS.TOPIC.GETBYID.replace(':id', id),
     );
     return response.data;
   }

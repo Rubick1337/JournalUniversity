@@ -129,10 +129,13 @@ const topicSlice = createSlice({
                 state.data = action.payload.data;
                 state.meta = {
                     ...state.meta,
-                    ...action.payload.meta,
-                    totalPages: Math.ceil(action.payload.meta.totalItems / state.meta.limit)
+                    total: action.payload.meta.total,
+                    totalPages: action.payload.meta.totalPage,
+                    limit: action.payload.meta.limit,
+                    page: action.payload.meta.page
                 };
             })
+
             .addCase(fetchTopics.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)

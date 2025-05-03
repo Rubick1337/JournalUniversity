@@ -83,11 +83,13 @@ const TopicsTable = () => {
 
     useEffect(() => {
         dispatch(fetchTopics({
-            limit: meta?.limit || 5,
-            page: meta?.page || 1,
-            ...searchParams
+            ...searchParams,
+            page: meta.page,
+            limit: meta.limit
         }));
-    }, [dispatch, meta?.limit, meta?.page, searchParams]);
+    }, [dispatch, searchParams, meta.page, meta.limit]);
+
+
 
     useEffect(() => {
         if (currentTopic) {
@@ -145,9 +147,12 @@ const TopicsTable = () => {
     };
 
     const handleSearch = () => {
+        // Находим ID предмета по имени
+        const selectedSubject = subjects.find(s => s.name === searchSubject);
+
         dispatch(setSearchParams({
             nameQuery: searchName,
-            subjectQuery: searchSubject
+            subjectQuery: selectedSubject?.id || '' // Используем ID предмета вместо имени
         }));
         handleSearchMenuClose();
     };
@@ -160,6 +165,7 @@ const TopicsTable = () => {
             subjectQuery: '',
             idQuery: ''
         }));
+        dispatch(setPage(1)); // Добавляем сброс страницы
         handleSearchMenuClose();
     };
 
@@ -402,7 +408,7 @@ const TopicsTable = () => {
                 <TablePagination
                     rowsPerPageOptions={[5, 10, 25]}
                     component="div"
-                    count={meta.totalItems || 0}
+                    count={meta.total || 0}
                     rowsPerPage={meta.limit}
                     page={meta.page - 1}
                     onPageChange={handleChangePage}

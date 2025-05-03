@@ -35,16 +35,16 @@ class TopicService {
   }
 
   async getAll({
-    page = 1,
-    limit = 10,
-    sortBy = "name",
-    sortOrder = "ASC",
-    query = {
-      idQuery: "",
-      nameQuery: "",
-      subjectQuery: "",
-    },
-  }) {
+                 page = 1,
+                 limit = 10,
+                 sortBy = "name",
+                 sortOrder = "ASC",
+                 query = {
+                   idQuery: "",
+                   nameQuery: "",
+                   subjectQuery: "", // Должен быть ID предмета, а не название
+                 },
+               }) {
     try {
       const offset = (page - 1) * limit;
 
@@ -53,14 +53,14 @@ class TopicService {
       if (query.nameQuery) {
         where.name = { [Op.iLike]: `%${query.nameQuery}%` };
       }
-      
+
       if (query.idQuery) {
         where[Op.and] = [
           Sequelize.where(
-            Sequelize.cast(Sequelize.col("Topic.id"), "TEXT"),
-            {
-              [Op.iLike]: `%${query.idQuery}%`,
-            }
+              Sequelize.cast(Sequelize.col("Topic.id"), "TEXT"),
+              {
+                [Op.iLike]: `%${query.idQuery}%`,
+              }
           ),
         ];
       }
@@ -72,10 +72,10 @@ class TopicService {
           attributes: ["id", "name"],
           required: !!query.subjectQuery,
           where: query.subjectQuery
-            ? {
-                name: { [Op.iLike]: `%${query.subjectQuery}%` }
+              ? {
+                id: query.subjectQuery // Ищем по ID, а не по имени
               }
-            : undefined,
+              : undefined,
         },
       ];
 
