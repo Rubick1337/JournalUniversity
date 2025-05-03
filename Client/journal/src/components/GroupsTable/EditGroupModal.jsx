@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Modal,
     Box,
@@ -9,21 +9,32 @@ import {
     IconButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import PersonSelector from '../DepartmentsTable/PersonSelector';
 
 const EditGroupModal = ({ open, onClose, group, faculties, departments, specialities, students, onSave, showAlert }) => {
-    const [editGroup, setEditGroup] = React.useState(group || {
+    const [editGroup, setEditGroup] = useState({
         name: '',
         startYear: new Date().getFullYear(),
         endYear: new Date().getFullYear() + 4,
-        faculty: '',
-        department: '',
+        facultyId: '',
+        departmentId: '',
         specialityCode: '',
-        headmanId: null
+        headmanId: null,
+        teacherCuratorId: null
     });
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (group) {
-            setEditGroup(group);
+            setEditGroup({
+                name: group.name || '',
+                startYear: group.yearOfBeginningOfStudy || new Date().getFullYear(),
+                endYear: group.graduationYear || new Date().getFullYear() + 4,
+                facultyId: group.faculty?.id || '',
+                departmentId: group.department?.id || '',
+                specialityCode: group.academicSpecialty?.code || '',
+                headmanId: group.classRepresentative?.id || null,
+                teacherCuratorId: group.teacherCurator?.id || null
+            });
         }
     }, [group]);
 
@@ -32,29 +43,79 @@ const EditGroupModal = ({ open, onClose, group, faculties, departments, speciali
         setEditGroup(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleFacultyChange = (event, newValue) => {
-        setEditGroup(prev => ({ ...prev, faculty: newValue }));
+    const handleFacultyChange = (_, newValue) => {
+        const selectedFaculty = faculties.find(f => f.id === newValue || f.name === newValue);
+        setEditGroup(prev => ({
+            ...prev,
+            facultyId: selectedFaculty?.id || newValue,
+            departmentId: '' // Сбрасываем кафедру при изменении факультета
+        }));
     };
 
-    const handleDepartmentChange = (event, newValue) => {
-        setEditGroup(prev => ({ ...prev, department: newValue }));
+    const handleDepartmentChange = (_, newValue) => {
+        const selectedDepartment = departments.find(d => d.id === newValue || d.name === newValue);
+        setEditGroup(prev => ({
+            ...prev,
+            departmentId: selectedDepartment?.id || newValue
+        }));
     };
 
-    const handleSpecialityChange = (event, newValue) => {
-        setEditGroup(prev => ({ ...prev, specialityCode: newValue }));
+    const handleSpecialityChange = (_, newValue) => {
+        const selectedSpeciality = specialities.find(s => s.code === newValue);
+        setEditGroup(prev => ({
+            ...prev,
+            specialityCode: selectedSpeciality?.code || newValue
+        }));
     };
 
-    const handleHeadmanChange = (event, newValue) => {
-        setEditGroup(prev => ({ ...prev, headmanId: newValue?.id || null }));
+    const handleHeadmanChange = (newPerson) => {
+        setEditGroup(prev => ({ ...prev, headmanId: newPerson?.id || null }));
+    };
+
+    const handleTeacherCuratorChange = (newPerson) => {
+        setEditGroup(prev => ({ ...prev, teacherCuratorId: newPerson?.id || null }));
     };
 
     const handleSubmit = () => {
-        if (!editGroup.name || !editGroup.faculty || !editGroup.department || !editGroup.specialityCode) {
-            showAlert('Все обязательные поля должны быть заполнены!', 'error');
+        if (!editGroup.name || !editGroup.facultyId || !editGroup.departmentId || !editGroup.specialityCode) {
+            showAlert({
+                open: true,
+                message: 'Все обязательные поля должны быть заполнены!',
+                severity: 'error'
+            });
             return;
         }
         onSave(editGroup);
         onClose();
+    };
+
+    // Функции для получения отображаемых значений
+    const getFacultyValue = () => {
+        if (!editGroup.facultyId) return null;
+        const faculty = faculties.find(f => f.id === editGroup.facultyId);
+        return faculty ? faculty.name : editGroup.facultyId;
+    };
+
+    const getDepartmentValue = () => {
+        if (!editGroup.departmentId) return null;
+        const department = departments.find(d => d.id === editGroup.departmentId);
+        return department ? department.name : editGroup.departmentId;
+    };
+
+    const getSpecialityValue = () => {
+        if (!editGroup.specialityCode) return null;
+        const speciality = specialities.find(s => s.code === editGroup.specialityCode);
+        return speciality ? speciality.code : editGroup.specialityCode;
+    };
+
+    const getHeadmanValue = () => {
+        if (!editGroup.headmanId) return null;
+        return students.find(s => s.id === editGroup.headmanId);
+    };
+
+    const getTeacherCuratorValue = () => {
+        if (!editGroup.teacherCuratorId) return null;
+        return students.find(s => s.id === editGroup.teacherCuratorId);
     };
 
     return (
@@ -89,6 +150,7 @@ const EditGroupModal = ({ open, onClose, group, faculties, departments, speciali
                         name="name"
                         value={editGroup.name}
                         onChange={handleChange}
+                        required
                     />
 
                     <Box sx={{ display: 'flex', gap: 2 }}>
@@ -100,6 +162,7 @@ const EditGroupModal = ({ open, onClose, group, faculties, departments, speciali
                             type="number"
                             value={editGroup.startYear}
                             onChange={handleChange}
+                            required
                         />
                         <TextField
                             label="Год окончания"
@@ -109,76 +172,79 @@ const EditGroupModal = ({ open, onClose, group, faculties, departments, speciali
                             type="number"
                             value={editGroup.endYear}
                             onChange={handleChange}
+                            required
                         />
                     </Box>
 
                     <Autocomplete
-                        options={faculties.map(f => f.name)}
-                        value={editGroup.faculty}
+                        options={faculties}
+                        value={getFacultyValue()}
                         onChange={handleFacultyChange}
+                        getOptionLabel={(option) => typeof option === 'string' ? option : option.name}
+                        isOptionEqualToValue={(option, value) =>
+                            option.id === value?.id || option === value
+                        }
                         renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Факультет"
-                                margin="normal"
-                                fullWidth
-                                required
-                            />
+                            <TextField {...params} label="Факультет" margin="normal" fullWidth required />
                         )}
                     />
 
                     <Autocomplete
-                        options={departments.map(d => d.name)}
-                        value={editGroup.department}
+                        options={departments.filter(d =>
+                            !editGroup.facultyId || d.facultyId === editGroup.facultyId
+                        )}
+                        value={getDepartmentValue()}
                         onChange={handleDepartmentChange}
+                        getOptionLabel={(option) => typeof option === 'string' ? option : option.name}
+                        isOptionEqualToValue={(option, value) =>
+                            option.id === value?.id || option === value
+                        }
                         renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Кафедра"
-                                margin="normal"
-                                fullWidth
-                                required
-                            />
+                            <TextField {...params} label="Кафедра" margin="normal" fullWidth required />
                         )}
                     />
 
                     <Autocomplete
-                        options={specialities.map(s => s.code)}
-                        value={editGroup.specialityCode}
+                        options={specialities}
+                        value={getSpecialityValue()}
                         onChange={handleSpecialityChange}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Код специальности"
-                                margin="normal"
-                                fullWidth
-                                required
-                            />
-                        )}
                         getOptionLabel={(option) => {
-                            const spec = specialities.find(s => s.code === option);
-                            return spec ? `${option} (${spec.name})` : option;
+                            if (typeof option === 'string') return option;
+                            const spec = specialities.find(s => s.code === option.code);
+                            return spec ? `${spec.code} (${spec.name})` : option.code;
                         }}
+                        isOptionEqualToValue={(option, value) =>
+                            option.code === value?.code || option === value
+                        }
+                        renderInput={(params) => (
+                            <TextField {...params} label="Код специальности" margin="normal" fullWidth required />
+                        )}
                     />
 
-                    <Autocomplete
-                        options={students}
-                        value={students.find(s => s.id === editGroup.headmanId) || null}
+                    <PersonSelector
+                        textValue="Староста группы"
+                        value={getHeadmanValue()}
                         onChange={handleHeadmanChange}
-                        getOptionLabel={(option) => option.name}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Староста группы"
-                                margin="normal"
-                                fullWidth
-                            />
-                        )}
+                        options={students}
+                    />
+
+                    <PersonSelector
+                        textValue="Куратор группы (преподаватель)"
+                        value={getTeacherCuratorValue()}
+                        onChange={handleTeacherCuratorChange}
+                        options={students}
                     />
 
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                        <Button onClick={onClose}>Отмена</Button>
-                        <Button onClick={handleSubmit} color="primary">Сохранить</Button>
+                        <Button onClick={onClose} sx={{ mr: 1 }}>Отмена</Button>
+                        <Button
+                            onClick={handleSubmit}
+                            variant="contained"
+                            disabled={!editGroup.name || !editGroup.facultyId ||
+                                !editGroup.departmentId || !editGroup.specialityCode}
+                        >
+                            Сохранить
+                        </Button>
                     </Box>
                 </Box>
             </Box>

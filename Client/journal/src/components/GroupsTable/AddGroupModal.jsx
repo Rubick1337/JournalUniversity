@@ -9,16 +9,27 @@ import {
     IconButton
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import PersonSelector from '../DepartmentsTable/PersonSelector';
 
-const AddGroupModal = ({ open, onClose, faculties, departments, specialities, students, onSave, showAlert }) => {
+const AddGroupModal = ({
+                           open,
+                           onClose,
+                           faculties,
+                           departments,
+                           specialities,
+                           students,
+                           onSave,
+                           showAlert
+                       }) => {
     const [newGroup, setNewGroup] = useState({
         name: '',
         startYear: new Date().getFullYear(),
         endYear: new Date().getFullYear() + 4,
-        faculty: '',
-        department: '',
+        facultyId: null,  // Храним ID вместо названия
+        departmentId: null,
         specialityCode: '',
-        headmanId: null
+        headmanId: null,
+        teacherCuratorId: null
     });
 
     const handleChange = (e) => {
@@ -26,24 +37,46 @@ const AddGroupModal = ({ open, onClose, faculties, departments, specialities, st
         setNewGroup(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleFacultyChange = (event, newValue) => {
-        setNewGroup(prev => ({ ...prev, faculty: newValue }));
+    const handleFacultyChange = (_, newValue) => {
+        setNewGroup(prev => ({
+            ...prev,
+            facultyId: newValue ? newValue.id : null
+        }));
     };
 
-    const handleDepartmentChange = (event, newValue) => {
-        setNewGroup(prev => ({ ...prev, department: newValue }));
+    const handleDepartmentChange = (_, newValue) => {
+        setNewGroup(prev => ({
+            ...prev,
+            departmentId: newValue ? newValue.id : null
+        }));
     };
 
-    const handleSpecialityChange = (event, newValue) => {
-        setNewGroup(prev => ({ ...prev, specialityCode: newValue }));
+    const handleSpecialityChange = (_, newValue) => {
+        setNewGroup(prev => ({
+            ...prev,
+            specialityCode: newValue ? newValue.code : ''
+        }));
     };
 
-    const handleHeadmanChange = (event, newValue) => {
-        setNewGroup(prev => ({ ...prev, headmanId: newValue?.id || null }));
+    const handleHeadmanChange = (newPerson) => {
+        setNewGroup(prev => ({
+            ...prev,
+            headmanId: newPerson?.id || null
+        }));
+    };
+
+    const handleTeacherCuratorChange = (newPerson) => {
+        setNewGroup(prev => ({
+            ...prev,
+            teacherCuratorId: newPerson?.id || null
+        }));
     };
 
     const handleSubmit = () => {
-        if (!newGroup.name || !newGroup.faculty || !newGroup.department || !newGroup.specialityCode) {
+        if (!newGroup.name ||
+            !newGroup.facultyId ||
+            !newGroup.departmentId ||
+            !newGroup.specialityCode) {
             showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
@@ -83,6 +116,7 @@ const AddGroupModal = ({ open, onClose, faculties, departments, specialities, st
                         name="name"
                         value={newGroup.name}
                         onChange={handleChange}
+                        required
                     />
 
                     <Box sx={{ display: 'flex', gap: 2 }}>
@@ -107,8 +141,9 @@ const AddGroupModal = ({ open, onClose, faculties, departments, specialities, st
                     </Box>
 
                     <Autocomplete
-                        options={faculties.map(f => f.name)}
-                        value={newGroup.faculty}
+                        options={faculties}
+                        getOptionLabel={(option) => option.name}
+                        value={faculties.find(f => f.id === newGroup.facultyId) || null}
                         onChange={handleFacultyChange}
                         renderInput={(params) => (
                             <TextField
@@ -122,8 +157,9 @@ const AddGroupModal = ({ open, onClose, faculties, departments, specialities, st
                     />
 
                     <Autocomplete
-                        options={departments.map(d => d.name)}
-                        value={newGroup.department}
+                        options={departments}
+                        getOptionLabel={(option) => option.name}
+                        value={departments.find(d => d.id === newGroup.departmentId) || null}
                         onChange={handleDepartmentChange}
                         renderInput={(params) => (
                             <TextField
@@ -137,8 +173,9 @@ const AddGroupModal = ({ open, onClose, faculties, departments, specialities, st
                     />
 
                     <Autocomplete
-                        options={specialities.map(s => s.code)}
-                        value={newGroup.specialityCode}
+                        options={specialities}
+                        getOptionLabel={(option) => `${option.code} (${option.name})`}
+                        value={specialities.find(s => s.code === newGroup.specialityCode) || null}
                         onChange={handleSpecialityChange}
                         renderInput={(params) => (
                             <TextField
@@ -149,30 +186,31 @@ const AddGroupModal = ({ open, onClose, faculties, departments, specialities, st
                                 required
                             />
                         )}
-                        getOptionLabel={(option) => {
-                            const spec = specialities.find(s => s.code === option);
-                            return spec ? `${option} (${spec.name})` : option;
-                        }}
                     />
 
-                    <Autocomplete
-                        options={students}
+                    <PersonSelector
+                        textValue="Староста группы"
                         value={students.find(s => s.id === newGroup.headmanId) || null}
                         onChange={handleHeadmanChange}
-                        getOptionLabel={(option) => option.name}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Староста группы"
-                                margin="normal"
-                                fullWidth
-                            />
-                        )}
+                        options={students}
+                    />
+
+                    <PersonSelector
+                        textValue="Куратор (преподаватель)"
+                        value={students.find(s => s.id === newGroup.teacherCuratorId) || null}
+                        onChange={handleTeacherCuratorChange}
+                        options={students}
                     />
 
                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                         <Button onClick={onClose}>Отмена</Button>
-                        <Button onClick={handleSubmit} color="primary">Добавить</Button>
+                        <Button
+                            onClick={handleSubmit}
+                            color="primary"
+                            variant="contained"
+                        >
+                            Добавить
+                        </Button>
                     </Box>
                 </Box>
             </Box>

@@ -37,16 +37,17 @@ class GroupService extends BaseService {
     );
     return response;
   }
-
-  async getAllGroups({limit, page, sortBy, sortOrder, idQuery, nameQuery}) {
+  async getAllGroups({limit, page, sortBy, sortOrder, nameQuery, facultyQuery, departmentQuery, specialtyQuery}) {
     let endpoint = API_ENDPOINTS.GROUP.GETALL;
 
     endpoint = addParamInEndpoint(endpoint, "limit", limit);
     endpoint = addParamInEndpoint(endpoint, "page", page);
     endpoint = addParamInEndpoint(endpoint, "sortBy", sortBy);
     endpoint = addParamInEndpoint(endpoint, "sortOrder", sortOrder);
-    endpoint = addParamInEndpoint(endpoint, "idQuery", idQuery);
     endpoint = addParamInEndpoint(endpoint, "nameQuery", nameQuery);
+    endpoint = addParamInEndpoint(endpoint, "facultyQuery", facultyQuery);
+    endpoint = addParamInEndpoint(endpoint, "departmentQuery", departmentQuery);
+    endpoint = addParamInEndpoint(endpoint, "specialtyQuery", specialtyQuery);
 
     const response = await BaseService.request(
         "get",
