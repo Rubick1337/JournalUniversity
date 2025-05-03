@@ -11,7 +11,7 @@ import curriculumReducer from "./slices/curriculumSlice";
 import subjectSlice from "./slices/subjectSlice";
 import estimationTypeSlice from "./slices/estimationTypeSlice";
 import curriculumSubjectSlice from "./slices/curriculumSubjectSlice";
-
+import topicReducer from "./slices/topicSlice";
 const store = configureStore({
   reducer: {
     person: personReducer,
@@ -26,6 +26,7 @@ const store = configureStore({
     subjects:subjectSlice,
     estimationTypes: estimationTypeSlice,
     curriculumSubject: curriculumSubjectSlice,
+    topics: topicReducer,
 
   },
   middleware: (getDefaultMiddleware) =>
