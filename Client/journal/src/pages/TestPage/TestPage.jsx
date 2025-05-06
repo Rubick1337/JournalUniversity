@@ -15,6 +15,7 @@ import PersonTable from "../../components/PersonTable/PersonTable";
 import WorkPrograming from "../../components/WorkPrograming/WorkProgramingTable";
 import CurriculumsTable from "../../components/CurriculumsTable/CurriculumsTable";
 import TopicsTable from "../../components/TopicsTable/TopicsTable";
+import StudentJournal from "../../components/StudentJournal/StudentJournal";
 
 
 const SchedulePage = props => {
@@ -31,7 +32,8 @@ const SchedulePage = props => {
                 {/*{<TeacherPositionsTable/>}*/}
                 {/*{<PersonTable></PersonTable>}*/}
                 {/*{<CurriculumsTable></CurriculumsTable>}*/}
-                {<TopicsTable/>}
+                {/*{<TopicsTable/>}*/}
+                {<StudentJournal/>}
             </main>
             <Footer/>
         </>

@@ -13,6 +13,7 @@ import estimationTypeSlice from "./slices/estimationTypeSlice";
 import curriculumSubjectSlice from "./slices/curriculumSubjectSlice";
 import topicReducer from "./slices/topicSlice";
 import groupSlice from "./slices/groupSlice";
+import studentJournalReducer from "./slices/studentJournalSlice";
 
 const store = configureStore({
   reducer: {
@@ -30,6 +31,7 @@ const store = configureStore({
     curriculumSubject: curriculumSubjectSlice,
     topics: topicReducer,
     groups: groupSlice,
+    studentJournal: studentJournalReducer,
 
   },
   middleware: (getDefaultMiddleware) =>
