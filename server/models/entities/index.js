@@ -33,7 +33,7 @@ const { SubjectType, initializeSubjectType } = require("./SubjectType");
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
 // const { Grade } = require("./Grade");
-// const { Lesson } = require("./Lesson");
+const { Lesson } = require("./Lesson");
 // const { PlannedTask } = require("./PlannedTask");
 // const { PlannedTaskTopic } = require("./PlannedTaskTopic");
 // const { Topic } = require("./Topic");
@@ -74,11 +74,11 @@ module.exports = {
   CurriculumSubject,
   Topic,
     SubjectType,
+    Lesson,
 
   // Absenteeism,
   // AcademicPerformance,
   // Grade,
-  // Lesson,
   // PlannedTask,
   // PlannedTaskTopic,
   // TotalScoreType,

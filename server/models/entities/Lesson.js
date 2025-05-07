@@ -35,11 +35,7 @@ const Lesson = sequelize.define("Lesson", {
   },
 
   date: { type: DataTypes.DATE, allowNull: false },
-  has_marked_absences: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false,
-  },
+
 
   subject_id: {
     type: DataTypes.INTEGER,
@@ -80,6 +76,11 @@ const Lesson = sequelize.define("Lesson", {
       key: "id",
     },
     allowNull: false,
+  },
+  has_marked_absences: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
 });
 

@@ -41,16 +41,18 @@ const fetchPersonsByFullName = createAsyncThunk(
   "persons/fetchPersonsByFullName",
   async (
     { limit, page, sortBy, sortOrder, fullNameQuery },
+    
     { rejectWithValue }
   ) => {
     try {
-      const response = await personService.getAllByFullName(
+      const response = await personService.getAllByFullName({
         limit,
         page,
         sortBy,
         sortOrder,
         fullNameQuery
-      );
+    });
+
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
