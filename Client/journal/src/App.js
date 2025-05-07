@@ -27,6 +27,7 @@ import RoutersPage from "./pages/RoutersPage/RoutersPage";
 import EducationFormPage from "./pages/EducationFormPage/EducationFormPage";
 import TypeAssesmentPage from "./pages/TypeAssmentPage/TypeAssesmentPage";
 import CurriculumsTable from "./components/CurriculumsTable/CurriculumsTable";
+import TopicsTable from "../../components/TopicsTable/TopicsTable";
 
 function App() {
   return (

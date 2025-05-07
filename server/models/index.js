@@ -21,12 +21,12 @@ const {
   CurriculumSubject,
   Topic,
   SubjectType,
+  Lesson,
 
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
   //   GradeTopic,
-  //   Lesson,
   //   PlannedTask,
   //   PlannedTaskTopic,
   //   SubgroupStudent,
@@ -232,6 +232,56 @@ Topic.belongsTo(Subject, {
   as: "subjectForTopic",
 });
 
+//Lesson
+Group.hasMany(Lesson, {
+  foreignKey: "group_id",
+  as: "GroupForLesson",
+})
+Lesson.belongsTo(Group, {
+  foreignKey: "group_id",
+  as: "GroupForLesson",
+})
+Subgroup.hasMany(Lesson, {
+  foreignKey: "subgroup_id",
+  as: "SubgroupForLesson",
+})
+Lesson.belongsTo(Subgroup, {
+  foreignKey: "subgroup_id",
+  as: "SubgroupForLesson",
+})
+Teacher.hasMany(Lesson, {
+  foreignKey: "teacher_person_id",
+  as: "TeacherForLesson",
+})
+Lesson.belongsTo(Teacher, {
+  foreignKey: "teacher_person_id",
+  as: "TeacherForLesson",
+})
+Topic.hasMany(Lesson, {
+  foreignKey: "topic_id",
+  as: "TopicForLesson",
+})
+Lesson.belongsTo(Topic, {
+  foreignKey: "topic_id",
+  as: "TopicForLesson",
+})
+Audience.hasMany(Lesson, {
+  foreignKey: "audience_id",
+  as: "AudienceForLesson",
+})
+Lesson.belongsTo(Audience, {
+  foreignKey: "audience_id",
+  as: "AudienceForLesson",
+})
+SubjectType.hasMany(Lesson, {
+  foreignKey: "subject_type_id",
+  as: "SubjectTypeForLesson",
+})
+Lesson.belongsTo(SubjectType, {
+  foreignKey: "subject_type_id",
+  as: "SubjectTypeForLesson",
+})
+
 module.exports = {
   initModels,
   Op,
@@ -256,11 +306,12 @@ module.exports = {
   CurriculumSubject,
   Topic,
   SubjectType,
+  Lesson,
+
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
   //   GradeTopic,
-  //   Lesson,
   //   PlannedTask,
   //   PlannedTaskTopic,
   //   SubgroupStudent,
