@@ -1,23 +1,13 @@
-// studentsSlice.js
+// subgroupSlice.js
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import StudentService from '../../services/StudentService';
+import SubgroupService from '../../services/SubgroupService';
 
 // Асинхронные действия
-export const fetchStudents = createAsyncThunk(
-    'students/fetchAll',
-    async (params = {}, { rejectWithValue, getState }) => {
+export const fetchSubgroups = createAsyncThunk(
+    'subgroups/fetchAll',
+    async (params = {}, { rejectWithValue }) => {
         try {
-            const { students } = getState();
-            const fullParams = {
-                ...params,
-                limit: params.limit || students.meta.limit,
-                page: params.page || students.meta.page,
-                sortBy: params.sortBy || 'person.surname',
-                sortOrder: params.sortOrder || 'ASC',
-                ...students.searchParams // Добавляем текущие параметры поиска
-            };
-
-            const response = await StudentService.getAllStudents(fullParams);
+            const response = await SubgroupService.getAllSubgroups(params);
             return {
                 data: response.data,
                 meta: response.meta
@@ -28,11 +18,11 @@ export const fetchStudents = createAsyncThunk(
     }
 );
 
-export const createStudent = createAsyncThunk(
-    'students/create',
-    async (studentData, { rejectWithValue }) => {
+export const createSubgroup = createAsyncThunk(
+    'subgroups/create',
+    async (subgroupData, { rejectWithValue }) => {
         try {
-            const response = await StudentService.createStudent(studentData);
+            const response = await SubgroupService.createSubgroup(subgroupData);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -40,11 +30,11 @@ export const createStudent = createAsyncThunk(
     }
 );
 
-export const updateStudent = createAsyncThunk(
-    'students/update',
+export const updateSubgroup = createAsyncThunk(
+    'subgroups/update',
     async ({ id, data }, { rejectWithValue }) => {
         try {
-            const response = await StudentService.updateStudent(id, data);
+            const response = await SubgroupService.updateSubgroup(id, data);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -52,11 +42,11 @@ export const updateStudent = createAsyncThunk(
     }
 );
 
-export const deleteStudent = createAsyncThunk(
-    'students/delete',
+export const deleteSubgroup = createAsyncThunk(
+    'subgroups/delete',
     async (id, { rejectWithValue }) => {
         try {
-            await StudentService.deleteStudent(id);
+            await SubgroupService.deleteSubgroup(id);
             return id;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -64,11 +54,11 @@ export const deleteStudent = createAsyncThunk(
     }
 );
 
-export const getStudentById = createAsyncThunk(
-    'students/getById',
+export const getSubgroupById = createAsyncThunk(
+    'subgroups/getById',
     async (id, { rejectWithValue }) => {
         try {
-            const response = await StudentService.getStudentById(id);
+            const response = await SubgroupService.getSubgroupById(id);
             return response.data;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
@@ -77,11 +67,11 @@ export const getStudentById = createAsyncThunk(
 );
 
 // Slice
-const studentsSlice = createSlice({
-    name: 'students',
+const subgroupsSlice = createSlice({
+    name: 'subgroups',
     initialState: {
         data: [],
-        currentStudent: null,
+        currentSubgroup: null,
         isLoading: false,
         errors: [],
         meta: {
@@ -92,20 +82,15 @@ const studentsSlice = createSlice({
         },
         searchParams: {
             idQuery: '',
-            surnameQuery: '',
-            nameQuery: '',
-            groupQuery: '',
-            subgroupQuery: '',
-            parentQuery: '',
-            reprimandQuery: ''
+            nameQuery: ''
         }
     },
     reducers: {
         clearErrors: (state) => {
             state.errors = [];
         },
-        clearCurrentStudent: (state) => {
-            state.currentStudent = null;
+        clearCurrentSubgroup: (state) => {
+            state.currentSubgroup = null;
         },
         setPage: (state, action) => {
             state.meta.page = action.payload;
@@ -115,16 +100,15 @@ const studentsSlice = createSlice({
         },
         setSearchParams: (state, action) => {
             state.searchParams = { ...state.searchParams, ...action.payload };
-            state.meta.page = 1;
         }
     },
     extraReducers: (builder) => {
         builder
-            .addCase(fetchStudents.pending, (state) => {
+            .addCase(fetchSubgroups.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(fetchStudents.fulfilled, (state, action) => {
+            .addCase(fetchSubgroups.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data = action.payload.data;
                 state.meta = {
@@ -133,77 +117,77 @@ const studentsSlice = createSlice({
                     totalPages: Math.ceil(action.payload.meta.total / state.meta.limit)
                 };
             })
-            .addCase(fetchStudents.rejected, (state, action) => {
+            .addCase(fetchSubgroups.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(createStudent.pending, (state) => {
+            .addCase(createSubgroup.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(createStudent.fulfilled, (state, action) => {
+            .addCase(createSubgroup.fulfilled, (state, action) => {
                 state.isLoading = false;
                 state.data.unshift(action.payload);
                 state.meta.total += 1;
                 state.meta.totalPages = Math.ceil(state.meta.total / state.meta.limit);
             })
-            .addCase(createStudent.rejected, (state, action) => {
+            .addCase(createSubgroup.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(updateStudent.pending, (state) => {
+            .addCase(updateSubgroup.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(updateStudent.fulfilled, (state, action) => {
+            .addCase(updateSubgroup.fulfilled, (state, action) => {
                 state.isLoading = false;
                 const updated = action.payload;
-                state.data = state.data.map(student =>
-                    student.id === updated.id ? updated : student
+                state.data = state.data.map(subgroup =>
+                    subgroup.id === updated.id ? updated : subgroup
                 );
-                if (state.currentStudent?.id === updated.id) {
-                    state.currentStudent = updated;
+                if (state.currentSubgroup?.id === updated.id) {
+                    state.currentSubgroup = updated;
                 }
             })
-            .addCase(updateStudent.rejected, (state, action) => {
+            .addCase(updateSubgroup.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(deleteStudent.pending, (state) => {
+            .addCase(deleteSubgroup.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(deleteStudent.fulfilled, (state, action) => {
+            .addCase(deleteSubgroup.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.data = state.data.filter(student => student.id !== action.payload);
+                state.data = state.data.filter(subgroup => subgroup.id !== action.payload);
                 state.meta.total -= 1;
                 state.meta.totalPages = Math.ceil(state.meta.total / state.meta.limit);
             })
-            .addCase(deleteStudent.rejected, (state, action) => {
+            .addCase(deleteSubgroup.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
                     : [{ message: action.payload }];
             })
 
-            .addCase(getStudentById.pending, (state) => {
+            .addCase(getSubgroupById.pending, (state) => {
                 state.isLoading = true;
                 state.errors = [];
             })
-            .addCase(getStudentById.fulfilled, (state, action) => {
+            .addCase(getSubgroupById.fulfilled, (state, action) => {
                 state.isLoading = false;
-                state.currentStudent = action.payload;
+                state.currentSubgroup = action.payload;
             })
-            .addCase(getStudentById.rejected, (state, action) => {
+            .addCase(getSubgroupById.rejected, (state, action) => {
                 state.isLoading = false;
                 state.errors = Array.isArray(action.payload)
                     ? action.payload
@@ -214,10 +198,10 @@ const studentsSlice = createSlice({
 
 export const {
     clearErrors,
-    clearCurrentStudent,
+    clearCurrentSubgroup,
     setPage,
     setLimit,
     setSearchParams
-} = studentsSlice.actions;
+} = subgroupsSlice.actions;
 
-export default studentsSlice.reducer;
+export default subgroupsSlice.reducer;

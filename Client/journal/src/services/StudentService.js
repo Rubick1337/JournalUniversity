@@ -13,6 +13,7 @@ const addParamInEndpoint = (endpoint, paramName, paramValue) => {
 
 class StudentService extends BaseService {
   async createStudent(data) {
+    console.log(data);
     const response = await BaseService.request(
       "post",
       API_ENDPOINTS.STUDENT.CREATE,
@@ -38,7 +39,19 @@ class StudentService extends BaseService {
     return response;
   }
 
-  async getAllStudents({limit, page, sortBy, sortOrder, idQuery, nameQuery}) {
+  async getAllStudents({
+                         limit,
+                         page,
+                         sortBy,
+                         sortOrder,
+                         idQuery,
+                         surnameQuery,
+                         nameQuery,
+                         groupQuery,
+                         subgroupQuery,
+                         parentQuery,
+                         reprimandQuery
+                       }) {
     let endpoint = API_ENDPOINTS.STUDENT.GETALL;
 
     endpoint = addParamInEndpoint(endpoint, "limit", limit);
@@ -46,12 +59,14 @@ class StudentService extends BaseService {
     endpoint = addParamInEndpoint(endpoint, "sortBy", sortBy);
     endpoint = addParamInEndpoint(endpoint, "sortOrder", sortOrder);
     endpoint = addParamInEndpoint(endpoint, "idQuery", idQuery);
+    endpoint = addParamInEndpoint(endpoint, "surnameQuery", surnameQuery);
     endpoint = addParamInEndpoint(endpoint, "nameQuery", nameQuery);
+    endpoint = addParamInEndpoint(endpoint, "groupQuery", groupQuery);
+    endpoint = addParamInEndpoint(endpoint, "subgroupQuery", subgroupQuery);
+    endpoint = addParamInEndpoint(endpoint, "parentQuery", parentQuery);
+    endpoint = addParamInEndpoint(endpoint, "reprimandQuery", reprimandQuery);
 
-    const response = await BaseService.request(
-        "get",
-        endpoint
-    );
+    const response = await BaseService.request("get", endpoint);
     return response;
   }
 

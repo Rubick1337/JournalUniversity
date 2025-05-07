@@ -4,6 +4,8 @@ const { Student, Person, Group, Subgroup, Op, Sequelize } = require("../models/i
 class StudentService {
   async create(data) {
     try {
+      console.log("Dasdasdasd");
+      console.log(data);
       const student = await Student.create({
         count_reprimand: data.count_reprimand || 0,
         icon_path: data.icon_path || null,

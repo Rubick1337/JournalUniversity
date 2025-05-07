@@ -53,12 +53,19 @@ import {
     setLimit as setGroupLimit,
     setSearchParams as setGroupSearchParams
 } from '../../store/slices/groupSlice';
+import {
+    fetchSubgroups,
+    setPage as setSubgroupPage,
+    setLimit as setSubgroupLimit,
+    setSearchParams as setSubgroupSearchParams
+} from '../../store/slices/subgroupSlice';
 import { fetchPersons } from '../../store/slices/personSlice';
+
 const StudentsTable = () => {
     const dispatch = useDispatch();
     const searchAnchorRef = useRef(null);
 
-    // Redux state
+    // Состояние из Redux
     const {
         data: studentsData,
         isLoading: studentsLoading,
@@ -73,9 +80,15 @@ const StudentsTable = () => {
         meta: groupsMeta
     } = useSelector(state => state.groups);
 
+    const {
+        data: subgroupsData,
+        isLoading: subgroupsLoading,
+        meta: subgroupsMeta
+    } = useSelector(state => state.subgroups);
+
     const persons = useSelector(state => state.person?.data || []);
 
-    // Local state for UI controls
+    // Локальное состояние для UI
     const [anchorEl, setAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
     const [openEditModal, setOpenEditModal] = useState(false);
@@ -99,6 +112,7 @@ const StudentsTable = () => {
         parentQuery: '',
         reprimandQuery: ''
     });
+    const [loadingSubgroups, setLoadingSubgroups] = useState(false);
 
     const [newStudent, setNewStudent] = useState({
         name: '',
@@ -124,9 +138,7 @@ const StudentsTable = () => {
         personId: ''
     });
 
-    const [subgroups, setSubgroups] = useState(["Подгруппа 1", "Подгруппа 2"]);
-
-    // Fetch initial data
+    // Загрузка данных при монтировании и изменении параметров
     useEffect(() => {
         dispatch(fetchStudents({
             page: studentsMeta.page,
@@ -138,9 +150,10 @@ const StudentsTable = () => {
 
         dispatch(fetchGroups({}));
         dispatch(fetchPersons({}));
+        dispatch(fetchSubgroups({}));
     }, [dispatch, studentsMeta.page, studentsMeta.limit, orderBy, order, studentsSearchParams]);
 
-    // Show errors if any
+    // Показ ошибок
     useEffect(() => {
         if (studentsErrors.length > 0) {
             showAlert(studentsErrors[0].message, 'error');
@@ -148,7 +161,7 @@ const StudentsTable = () => {
         }
     }, [studentsErrors, dispatch]);
 
-    // Initialize search values from Redux
+    // Инициализация параметров поиска
     useEffect(() => {
         if (studentsSearchParams) {
             setSearchValues({
@@ -163,6 +176,7 @@ const StudentsTable = () => {
         }
     }, [studentsSearchParams]);
 
+    // Функция для показа уведомлений
     const showAlert = (message, severity = 'success') => {
         setAlertState({ open: true, message, severity });
     };
@@ -171,6 +185,7 @@ const StudentsTable = () => {
         setAlertState(prev => ({ ...prev, open: false }));
     };
 
+    // Функции для работы с поиском
     const toggleSearchMenu = () => {
         setSearchMenuOpen(!searchMenuOpen);
     };
@@ -187,6 +202,29 @@ const StudentsTable = () => {
         setSearchValues(newSearchValues);
     };
 
+    const handleGroupSearchSelect = async (groupName) => {
+        const newSearchValues = {
+            ...searchValues,
+            groupQuery: groupName,
+            subgroupQuery: '' // Сбрасываем подгруппу при изменении группы
+        };
+
+        setSearchValues(newSearchValues);
+
+        // Загружаем подгруппы для выбранной группы
+        if (groupName) {
+            setLoadingSubgroups(true);
+            try {
+                await dispatch(fetchSubgroups({
+                    groupQuery: groupName,
+                    limit: 100
+                }));
+            } finally {
+                setLoadingSubgroups(false);
+            }
+        }
+    };
+
     useEffect(() => {
         return () => {
             debouncedSearch.cancel();
@@ -194,8 +232,14 @@ const StudentsTable = () => {
     }, []);
 
     const handleSearch = () => {
-        debouncedSearch(searchValues);
-        setSearchMenuOpen(false);
+        debouncedSearch.cancel();
+        dispatch(setSearchParams(searchValues));
+        dispatch(fetchStudents({
+            page: 1,
+            limit: studentsMeta.limit,
+            sortBy: orderBy,
+            sortOrder: order,
+        }));
     };
 
     const resetSearch = () => {
@@ -208,13 +252,22 @@ const StudentsTable = () => {
             parentQuery: '',
             reprimandQuery: ''
         };
+
+        debouncedSearch.cancel();
         setSearchValues(newSearchValues);
         dispatch(setSearchParams(newSearchValues));
         setOrderBy('person.surname');
         setOrder('ASC');
-        setSearchMenuOpen(false);
+
+        dispatch(fetchStudents({
+            page: 1,
+            limit: studentsMeta.limit,
+            sortBy: 'person.surname',
+            sortOrder: 'ASC'
+        }));
     };
 
+    // Сортировка таблицы
     const handleSort = (property) => {
         const isAsc = orderBy === property && order === 'ASC';
         setOrder(isAsc ? 'DESC' : 'ASC');
@@ -233,6 +286,7 @@ const StudentsTable = () => {
         </TableCell>
     );
 
+    // Работа с контекстным меню
     const handleMenuClick = (event, row) => {
         setAnchorEl(event.currentTarget);
         setCurrentRow(row);
@@ -242,17 +296,19 @@ const StudentsTable = () => {
         setAnchorEl(null);
     };
 
+    // Обработчики для модальных окон
     const handleEdit = () => {
         setEditStudent({
             name: currentRow.name,
             reprimands: currentRow.reprimands,
-            group: currentRow.group,
-            groupId: currentRow.groupId,
-            subgroup: currentRow.subgroup,
-            subgroupId: currentRow.subgroupId,
-            parent: currentRow.parent,
-            perentPersonId: currentRow.perentPersonId,
-            personId: currentRow.personId
+            group: currentRow.group.name,
+            groupId: currentRow.group.id,
+            subgroup: currentRow.subgroup.name,
+            subgroupId: currentRow.subgroup.id,
+            parent: currentRow.perent ?
+                `${currentRow.perent.surname} ${currentRow.perent.name} ${currentRow.perent.middlename || ''}` : '',
+            perentPersonId: currentRow.perent?.id || '',
+            personId: currentRow.person.id
         });
         setOpenEditModal(true);
         handleMenuClose();
@@ -285,56 +341,114 @@ const StudentsTable = () => {
         dispatch(clearCurrentStudent());
     };
 
+    // Выбор персоны (студента или родителя)
     const handlePersonSelect = (selectedPerson, field = 'student') => {
+        if (!selectedPerson) {
+            if (openEditModal) {
+                setEditStudent(prev => ({
+                    ...prev,
+                    ...(field === 'student' ? {
+                        name: '',
+                        personId: null
+                    } : {
+                        parent: '',
+                        perentPersonId: null
+                    })
+                }));
+            } else if (openAddModal) {
+                setNewStudent(prev => ({
+                    ...prev,
+                    ...(field === 'student' ? {
+                        name: '',
+                        personId: null
+                    } : {
+                        parent: '',
+                        perentPersonId: null
+                    })
+                }));
+            }
+            return;
+        }
+
         const fullName = `${selectedPerson.surname} ${selectedPerson.name} ${selectedPerson.middlename || ''}`.trim();
+
         if (openEditModal) {
-            if (field === 'student') {
-                setEditStudent(prev => ({
-                    ...prev,
+            setEditStudent(prev => ({
+                ...prev,
+                ...(field === 'student' ? {
                     name: fullName,
                     personId: selectedPerson.id
-                }));
-            } else {
-                setEditStudent(prev => ({
-                    ...prev,
+                } : {
                     parent: fullName,
                     perentPersonId: selectedPerson.id
-                }));
-            }
+                })
+            }));
         } else if (openAddModal) {
-            if (field === 'student') {
-                setNewStudent(prev => ({
-                    ...prev,
+            setNewStudent(prev => ({
+                ...prev,
+                ...(field === 'student' ? {
                     name: fullName,
                     personId: selectedPerson.id
-                }));
-            } else {
-                setNewStudent(prev => ({
-                    ...prev,
+                } : {
                     parent: fullName,
                     perentPersonId: selectedPerson.id
-                }));
-            }
+                })
+            }));
         }
     };
 
-    const handleGroupSelect = (groupName, isEdit) => {
+    // Выбор группы с загрузкой подгрупп
+    const handleGroupSelect = async (groupName, isEdit) => {
         const selectedGroup = groupsData.find(g => g.name === groupName);
+
         if (isEdit) {
             setEditStudent(prev => ({
                 ...prev,
                 group: groupName,
-                groupId: selectedGroup?.id || ''
+                groupId: selectedGroup?.id || '',
+                subgroup: '',
+                subgroupId: ''
             }));
         } else {
             setNewStudent(prev => ({
                 ...prev,
                 group: groupName,
-                groupId: selectedGroup?.id || ''
+                groupId: selectedGroup?.id || '',
+                subgroup: '',
+                subgroupId: ''
+            }));
+        }
+
+        setLoadingSubgroups(true);
+        try {
+            await dispatch(fetchSubgroups({
+                groupQuery: groupName,
+                limit: 100
+            }));
+        } finally {
+            setLoadingSubgroups(false);
+        }
+    };
+
+    // Выбор подгруппы
+    const handleSubgroupSelect = (subgroupName, isEdit) => {
+        const selectedSubgroup = subgroupsData.find(s => s.name === subgroupName);
+        if (isEdit) {
+            setEditStudent(prev => ({
+                ...prev,
+                subgroup: subgroupName,
+                subgroupId: selectedSubgroup?.id || ''
+            }));
+        } else {
+            setNewStudent(prev => ({
+                ...prev,
+                subgroup: subgroupName,
+                subgroupId: selectedSubgroup?.id || ''
             }));
         }
     };
 
+    // Пагинация
     const handlePageChange = (_, newPage) => {
         dispatch(setPage(newPage + 1));
     };
@@ -345,20 +459,16 @@ const StudentsTable = () => {
         dispatch(setPage(1));
     };
 
+    // Сохранение изменений
     const handleSaveEdit = () => {
-        if (!editStudent.name || !editStudent.groupId || !editStudent.subgroupId || !editStudent.perentPersonId) {
-            showAlert('Все обязательные поля должны быть заполнены!', 'error');
-            return;
-        }
-
-        const updateData = new StudentDataForUpdateDto({
-            countReprimand: editStudent.reprimands,
-            iconPath: '',
-            personId: editStudent.personId,
-            groupId: editStudent.groupId,
-            subgroupId: editStudent.subgroupId,
-            perentPersonId: editStudent.perentPersonId
-        });
+        const updateData = {
+            count_reprimand: editStudent.reprimands ?? 0,
+            icon_path: editStudent.iconPath ?? '',
+            person_id: editStudent.personId,
+            group_id: editStudent.groupId,
+            subgroup_id: editStudent.subgroupId,
+            perent_person_id: editStudent.perentPersonId
+        };
 
         dispatch(updateStudent({
             id: currentRow.id,
@@ -369,20 +479,23 @@ const StudentsTable = () => {
         });
     };
 
+    // Добавление нового студента
     const handleSaveAdd = () => {
-        if (!newStudent.name || !newStudent.groupId || !newStudent.subgroupId || !newStudent.perentPersonId) {
-            showAlert('Все обязательные поля должны быть заполнены!', 'error');
+        if (!newStudent.personId || !newStudent.groupId || !newStudent.subgroupId) {
+            showAlert('Заполните все обязательные поля!', 'error');
             return;
         }
 
-        const createData = new StudentDataForCreateDto({
-            countReprimand: newStudent.reprimands,
-            iconPath: '',
-            personId: newStudent.personId,
-            groupId: newStudent.groupId,
-            subgroupId: newStudent.subgroupId,
-            perentPersonId: newStudent.perentPersonId
-        });
+        const createData = {
+            count_reprimand: newStudent.reprimands ?? 0,
+            icon_path: newStudent.iconPath ?? '',
+            person_id: newStudent.personId,
+            group_id: newStudent.groupId,
+            subgroup_id: newStudent.subgroupId,
+            perent_person_id: newStudent.perentPersonId ?? null
+        };
+
+        console.log("Sending to server:", createData);
 
         dispatch(createStudent(createData)).then(() => {
             showAlert('Студент успешно добавлен!', 'success');
@@ -390,6 +503,7 @@ const StudentsTable = () => {
         });
     };
 
+    // Удаление студента
     const handleDeleteConfirm = () => {
         dispatch(deleteStudent(currentRow.id)).then(() => {
             showAlert('Студент успешно удален!', 'success');
@@ -397,6 +511,7 @@ const StudentsTable = () => {
         });
     };
 
+    // Мемоизированные данные для таблицы
     const filteredData = useMemo(() => studentsData, [studentsData]);
 
     return (
@@ -480,6 +595,7 @@ const StudentsTable = () => {
                                 <TextField
                                     label="Поиск по выговорам"
                                     variant="outlined"
+                                    type="number"
                                     size="small"
                                     fullWidth
                                     margin="normal"
@@ -497,7 +613,7 @@ const StudentsTable = () => {
                                     <InputLabel>Поиск по группе</InputLabel>
                                     <Select
                                         value={searchValues.groupQuery}
-                                        onChange={handleSearchChange('groupQuery')}
+                                        onChange={(e) => handleGroupSearchSelect(e.target.value)}
                                         label="Поиск по группе"
                                     >
                                         <SelectMenuItem value="">Все группы</SelectMenuItem>
@@ -512,11 +628,22 @@ const StudentsTable = () => {
                                         value={searchValues.subgroupQuery}
                                         onChange={handleSearchChange('subgroupQuery')}
                                         label="Поиск по подгруппе"
+                                        disabled={!searchValues.groupQuery || loadingSubgroups}
                                     >
                                         <SelectMenuItem value="">Все подгруппы</SelectMenuItem>
-                                        {subgroups.map((subgroup) => (
-                                            <SelectMenuItem key={subgroup} value={subgroup}>{subgroup}</SelectMenuItem>
-                                        ))}
+                                        {loadingSubgroups ? (
+                                            <SelectMenuItem disabled>
+                                                <CircularProgress size={24} />
+                                            </SelectMenuItem>
+                                        ) : (
+                                            subgroupsData
+                                                .filter(subgroup => subgroup.group_id && subgroup.group_id.name === searchValues.groupQuery)
+                                                .map((subgroup) => (
+                                                    <SelectMenuItem key={subgroup.id} value={subgroup.name}>
+                                                        {subgroup.name}
+                                                    </SelectMenuItem>
+                                                ))
+                                        )}
                                     </Select>
                                 </FormControl>
                                 <TextField
@@ -578,11 +705,17 @@ const StudentsTable = () => {
                                 {filteredData.map(student => (
                                     <TableRow key={student.id}>
                                         <TableCell>{student.id}</TableCell>
-                                        <TableCell>{student.name}</TableCell>
-                                        <TableCell>{student.reprimands}</TableCell>
-                                        <TableCell>{student.group}</TableCell>
-                                        <TableCell>{student.subgroup}</TableCell>
-                                        <TableCell>{student.parent}</TableCell>
+                                        <TableCell>
+                                            {student.person.surname} {student.person.name} {student.person.middlename || ''}
+                                        </TableCell>
+                                        <TableCell>{student.countReprimand}</TableCell>
+                                        <TableCell>{student.group.name}</TableCell>
+                                        <TableCell>{student.subgroup.name}</TableCell>
+                                        <TableCell>
+                                            {student.perent && student.perent.surname && student.perent.name
+                                                ? `${student.perent.surname} ${student.perent.name} ${student.perent.middlename || ''}`.trim()
+                                                : 'Не указан'}
+                                        </TableCell>
                                         <TableCell>
                                             <IconButton onClick={(e) => handleMenuClick(e, student)}>
                                                 <MoreVertIcon />
@@ -649,14 +782,9 @@ const StudentsTable = () => {
                                 <div>
                                     <PersonSelector
                                         label="Студент"
-                                        selectedPerson={editStudent.name ? {
-                                            surname: editStudent.name.split(' ')[0] || '',
-                                            name: editStudent.name.split(' ')[1] || '',
-                                            middlename: editStudent.name.split(' ')[2] || '',
-                                            id: editStudent.personId
-                                        } : null}
-                                        personDataSelect={persons}
-                                        onSelectChange={(person) => handlePersonSelect(person, 'student')}
+                                        value={editStudent.personId}
+                                        onChange={(person) => handlePersonSelect(person, 'student')}
+                                        options={persons}
                                     />
                                     <TextField
                                         label="Кол-во выговоров"
@@ -682,24 +810,31 @@ const StudentsTable = () => {
                                         <InputLabel>Подгруппа</InputLabel>
                                         <Select
                                             value={editStudent.subgroup}
-                                            onChange={(e) => setEditStudent({ ...editStudent, subgroup: e.target.value, subgroupId: e.target.value })}
+                                            onChange={(e) => handleSubgroupSelect(e.target.value, true)}
                                             label="Подгруппа"
+                                            disabled={!editStudent.group || loadingSubgroups}
                                         >
-                                            {subgroups.map((subgroup) => (
-                                                <SelectMenuItem key={subgroup} value={subgroup}>{subgroup}</SelectMenuItem>
-                                            ))}
+                                            <SelectMenuItem value="">Выберите подгруппу</SelectMenuItem>
+                                            {loadingSubgroups ? (
+                                                <SelectMenuItem disabled>
+                                                    <CircularProgress size={24} />
+                                                </SelectMenuItem>
+                                            ) : (
+                                                subgroupsData
+                                                    .filter(subgroup => subgroup.group_id && subgroup.group_id.name === editStudent.group)
+                                                    .map((subgroup) => (
+                                                        <SelectMenuItem key={subgroup.id} value={subgroup.name}>
+                                                            {subgroup.name} (Группа: {subgroup.group_id.name})
+                                                        </SelectMenuItem>
+                                                    ))
+                                            )}
                                         </Select>
                                     </FormControl>
                                     <PersonSelector
                                         label="Родитель"
-                                        selectedPerson={editStudent.parent ? {
-                                            surname: editStudent.parent.split(' ')[0] || '',
-                                            name: editStudent.parent.split(' ')[1] || '',
-                                            middlename: editStudent.parent.split(' ')[2] || '',
-                                            id: editStudent.perentPersonId
-                                        } : null}
-                                        personDataSelect={persons}
-                                        onSelectChange={(person) => handlePersonSelect(person, 'parent')}
+                                        value={editStudent.perentPersonId}
+                                        onChange={(person) => handlePersonSelect(person, 'parent')}
+                                        options={persons}
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
@@ -720,9 +855,9 @@ const StudentsTable = () => {
                                 <div>
                                     <PersonSelector
                                         label="Студент"
-                                        selectedPerson={null}
-                                        personDataSelect={persons}
-                                        onSelectChange={(person) => handlePersonSelect(person, 'student')}
+                                        value={newStudent.personId}
+                                        onChange={(person) => handlePersonSelect(person, 'student')}
+                                        options={persons}
                                     />
                                     <TextField
                                         label="Кол-во выговоров"
@@ -748,19 +883,31 @@ const StudentsTable = () => {
                                         <InputLabel>Подгруппа</InputLabel>
                                         <Select
                                             value={newStudent.subgroup}
-                                            onChange={(e) => setNewStudent({ ...newStudent, subgroup: e.target.value, subgroupId: e.target.value })}
+                                            onChange={(e) => handleSubgroupSelect(e.target.value, false)}
                                             label="Подгруппа"
+                                            disabled={!newStudent.group || loadingSubgroups}
                                         >
-                                            {subgroups.map((subgroup) => (
-                                                <SelectMenuItem key={subgroup} value={subgroup}>{subgroup}</SelectMenuItem>
-                                            ))}
+                                            <SelectMenuItem value="">Выберите подгруппу</SelectMenuItem>
+                                            {loadingSubgroups ? (
+                                                <SelectMenuItem disabled>
+                                                    <CircularProgress size={24} />
+                                                </SelectMenuItem>
+                                            ) : (
+                                                subgroupsData
+                                                    .filter(subgroup => subgroup.group_id && subgroup.group_id.name === newStudent.group)
+                                                    .map((subgroup) => (
+                                                        <SelectMenuItem key={subgroup.id} value={subgroup.name}>
+                                                            {subgroup.name} (Группа: {subgroup.group_id.name})
+                                                        </SelectMenuItem>
+                                                    ))
+                                            )}
                                         </Select>
                                     </FormControl>
                                     <PersonSelector
                                         label="Родитель"
-                                        selectedPerson={null}
-                                        personDataSelect={persons}
-                                        onSelectChange={(person) => handlePersonSelect(person, 'parent')}
+                                        value={newStudent.perentPersonId}
+                                        onChange={(person) => handlePersonSelect(person, 'parent')}
+                                        options={persons}
                                     />
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
                                         <Button onClick={handleCloseModals}>Отмена</Button>
@@ -779,7 +926,6 @@ const StudentsTable = () => {
                 </Box>
             </TableContainer>
 
-
             <Alert
                 open={alertState.open}
                 message={alertState.message}
@@ -789,41 +935,4 @@ const StudentsTable = () => {
         </>
     );
 };
-
-class StudentDataForCreateDto {
-    constructor({
-                    countReprimand,
-                    iconPath,
-                    personId,
-                    groupId,
-                    subgroupId,
-                    perentPersonId,
-                }) {
-        this.count_reprimand = countReprimand;
-        this.icon_path = iconPath;
-        this.person_id = personId;
-        this.group_id = groupId;
-        this.subgroup_id = subgroupId;
-        this.perent_person_id = perentPersonId;
-    }
-}
-
-class StudentDataForUpdateDto {
-    constructor({
-                    countReprimand,
-                    iconPath,
-                    personId,
-                    groupId,
-                    subgroupId,
-                    perentPersonId,
-                }) {
-        this.count_reprimand = countReprimand;
-        this.icon_path = iconPath;
-        this.person_id = personId;
-        this.group_id = groupId;
-        this.subgroup_id = subgroupId;
-        this.perent_person_id = perentPersonId;
-    }
-}
-
 export default React.memo(StudentsTable);

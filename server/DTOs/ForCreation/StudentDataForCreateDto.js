@@ -1,19 +1,20 @@
 class StudentDataForCreateDto {
   constructor({
-    countReprimand,
-    iconPath,
-    personId,
-    groupId,
-    subgroupId,
-    perentPersonId,
-  }) {
-    this.count_reprimand = countReprimand;
-    this.icon_path = iconPath;
-    this.person_id = personId;
-    this.group_id = groupId;
-    this.subgroup_id = subgroupId;
-    this.perent_person_id = perentPersonId;
+                count_reprimand,
+                icon_path,
+                person_id,
+                group_id,
+                subgroup_id,
+                perent_person_id,
+              }) {
+    this.count_reprimand = count_reprimand;
+    this.icon_path = icon_path;
+    this.person_id = person_id;
+    this.group_id = group_id;
+    this.subgroup_id = subgroup_id;
+    this.perent_person_id = perent_person_id;
   }
+
 }
 
 module.exports = StudentDataForCreateDto;

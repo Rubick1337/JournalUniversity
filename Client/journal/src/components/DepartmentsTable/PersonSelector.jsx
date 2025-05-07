@@ -5,7 +5,7 @@ import { PersonModal } from '../PersonCreationModal/PersonCreationModal';
 import { useDispatch } from 'react-redux';
 import { addPerson, fetchPersonsByFullName } from '../../store/slices/personSlice';
 
-const PersonSelector = ({textValue = "Выбрать челвоека", value, onChange, options = [] }) => {
+const PersonSelector = ({ textValue = "Выбрать человека", value, onChange, options = [] }) => {
     const dispatch = useDispatch();
     const [modalOpen, setModalOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
@@ -32,17 +32,17 @@ const PersonSelector = ({textValue = "Выбрать челвоека", value, o
                     sortBy: 'surname',
                     sortOrder: 'ASC'
                 }))
-                .unwrap()
-                .then((response) => {
-                    setSearchResults(response.data);
-                    setShowAddOption(response.data.length === 0);
-                })
-                .catch((error) => {
-                    console.error('Ошибка поиска:', error);
-                })
-                .finally(() => {
-                    setLoading(false);
-                });
+                    .unwrap()
+                    .then((response) => {
+                        setSearchResults(response.data);
+                        setShowAddOption(response.data.length === 0);
+                    })
+                    .catch((error) => {
+                        console.error('Ошибка поиска:', error);
+                    })
+                    .finally(() => {
+                        setLoading(false);
+                    });
             }, 500); // Задержка для debounce
 
             return () => clearTimeout(timer);
@@ -64,12 +64,11 @@ const PersonSelector = ({textValue = "Выбрать челвоека", value, o
     const normalizeValue = () => {
         if (!value) return null;
         if (typeof value === 'object') return value;
-        return options.find(opt => opt.id === value) || null;
+        return options.find(opt => opt.id === value) || searchResults.find(opt => opt.id === value) || null;
     };
 
     const handleInputChange = (event, newInputValue) => {
         setInputValue(newInputValue);
-        // Проверяем локальные options, если не выполняем поиск
         if (!shouldSearch(newInputValue)) {
             const exists = options.some(option =>
                 getPersonLabel(option).toLowerCase().includes(newInputValue.toLowerCase())
@@ -106,7 +105,6 @@ const PersonSelector = ({textValue = "Выбрать челвоека", value, o
                 setModalOpen(false);
                 setInputValue('');
                 setShowAddOption(false);
-                // Обновляем локальный список
                 setSearchResults(prev => [addedPerson, ...prev]);
             })
             .catch((err) => {
@@ -114,15 +112,11 @@ const PersonSelector = ({textValue = "Выбрать челвоека", value, o
             });
     };
 
-    // Объединяем локальные options и результаты поиска
-    const allOptions = [...options, ...searchResults].reduce((acc, current) => {
-        const x = acc.find(item => item.id === current.id);
-        if (!x) {
-            return acc.concat([current]);
-        } else {
-            return acc;
-        }
-    }, []);
+    // Объединяем локальные options и результаты поиска, убирая дубликаты
+    const allOptions = [...options, ...searchResults].filter(
+        (person, index, self) =>
+            person && person.id && index === self.findIndex(p => p.id === person.id)
+    );
 
     return (
         <Box sx={{ width: '100%' }}>
@@ -133,6 +127,9 @@ const PersonSelector = ({textValue = "Выбрать челвоека", value, o
                 onChange={(_, newValue) => {
                     onChange(newValue);
                     setShowAddOption(false);
+                    if (newValue) {
+                        setInputValue(getPersonLabel(newValue));
+                    }
                 }}
                 inputValue={inputValue}
                 onInputChange={handleInputChange}
@@ -150,7 +147,7 @@ const PersonSelector = ({textValue = "Выбрать челвоека", value, o
                         >
                             <PersonAddAltIcon color="primary" />
                             <Typography>
-                                Добавить "{inputValue}" как нового заведующего
+                                Добавить "{inputValue}" как нового человека
                             </Typography>
                         </Stack>
                     ) : (
