@@ -1,0 +1,211 @@
+// studentsSlice.js
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import StudentService from '../../services/StudentService';
+
+// Асинхронные действия
+export const fetchStudents = createAsyncThunk(
+    'students/fetchAll',
+    async (params = {}, { rejectWithValue }) => {
+        try {
+            const response = await StudentService.getAllStudents(params);
+            return {
+                data: response.data,
+                meta: response.meta
+            };
+        } catch (error) {
+            return rejectWithValue(error.response?.data || error.message);
+        }
+    }
+);
+
+export const createStudent = createAsyncThunk(
+    'students/create',
+    async (studentData, { rejectWithValue }) => {
+        try {
+            const response = await StudentService.createStudent(studentData);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || error.message);
+        }
+    }
+);
+
+export const updateStudent = createAsyncThunk(
+    'students/update',
+    async ({ id, data }, { rejectWithValue }) => {
+        try {
+            const response = await StudentService.updateStudent(id, data);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || error.message);
+        }
+    }
+);
+
+export const deleteStudent = createAsyncThunk(
+    'students/delete',
+    async (id, { rejectWithValue }) => {
+        try {
+            await StudentService.deleteStudent(id);
+            return id;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || error.message);
+        }
+    }
+);
+
+export const getStudentById = createAsyncThunk(
+    'students/getById',
+    async (id, { rejectWithValue }) => {
+        try {
+            const response = await StudentService.getStudentById(id);
+            return response.data;
+        } catch (error) {
+            return rejectWithValue(error.response?.data || error.message);
+        }
+    }
+);
+
+// Slice
+const studentsSlice = createSlice({
+    name: 'students',
+    initialState: {
+        data: [],
+        currentStudent: null,
+        isLoading: false,
+        errors: [],
+        meta: {
+            total: 0,
+            totalPages: 0,
+            limit: 5,
+            page: 1
+        },
+        searchParams: {
+            idQuery: '',
+            nameQuery: '',
+            groupQuery: '',
+            subgroupQuery: '',
+            parentQuery: '',
+            reprimandsQuery: ''
+        }
+    },
+    reducers: {
+        clearErrors: (state) => {
+            state.errors = [];
+        },
+        clearCurrentStudent: (state) => {
+            state.currentStudent = null;
+        },
+        setPage: (state, action) => {
+            state.meta.page = action.payload;
+        },
+        setLimit: (state, action) => {
+            state.meta.limit = action.payload;
+        },
+        setSearchParams: (state, action) => {
+            state.searchParams = { ...state.searchParams, ...action.payload };
+        }
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchStudents.pending, (state) => {
+                state.isLoading = true;
+                state.errors = [];
+            })
+            .addCase(fetchStudents.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.data = action.payload.data;
+                state.meta = {
+                    ...state.meta,
+                    ...action.payload.meta,
+                    totalPages: Math.ceil(action.payload.meta.total / state.meta.limit)
+                };
+            })
+            .addCase(fetchStudents.rejected, (state, action) => {
+                state.isLoading = false;
+                state.errors = Array.isArray(action.payload)
+                    ? action.payload
+                    : [{ message: action.payload }];
+            })
+
+            .addCase(createStudent.pending, (state) => {
+                state.isLoading = true;
+                state.errors = [];
+            })
+            .addCase(createStudent.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.data.unshift(action.payload);
+                state.meta.total += 1;
+                state.meta.totalPages = Math.ceil(state.meta.total / state.meta.limit);
+            })
+            .addCase(createStudent.rejected, (state, action) => {
+                state.isLoading = false;
+                state.errors = Array.isArray(action.payload)
+                    ? action.payload
+                    : [{ message: action.payload }];
+            })
+
+            .addCase(updateStudent.pending, (state) => {
+                state.isLoading = true;
+                state.errors = [];
+            })
+            .addCase(updateStudent.fulfilled, (state, action) => {
+                state.isLoading = false;
+                const updated = action.payload;
+                state.data = state.data.map(student =>
+                    student.id === updated.id ? updated : student
+                );
+                if (state.currentStudent?.id === updated.id) {
+                    state.currentStudent = updated;
+                }
+            })
+            .addCase(updateStudent.rejected, (state, action) => {
+                state.isLoading = false;
+                state.errors = Array.isArray(action.payload)
+                    ? action.payload
+                    : [{ message: action.payload }];
+            })
+
+            .addCase(deleteStudent.pending, (state) => {
+                state.isLoading = true;
+                state.errors = [];
+            })
+            .addCase(deleteStudent.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.data = state.data.filter(student => student.id !== action.payload);
+                state.meta.total -= 1;
+                state.meta.totalPages = Math.ceil(state.meta.total / state.meta.limit);
+            })
+            .addCase(deleteStudent.rejected, (state, action) => {
+                state.isLoading = false;
+                state.errors = Array.isArray(action.payload)
+                    ? action.payload
+                    : [{ message: action.payload }];
+            })
+
+            .addCase(getStudentById.pending, (state) => {
+                state.isLoading = true;
+                state.errors = [];
+            })
+            .addCase(getStudentById.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.currentStudent = action.payload;
+            })
+            .addCase(getStudentById.rejected, (state, action) => {
+                state.isLoading = false;
+                state.errors = Array.isArray(action.payload)
+                    ? action.payload
+                    : [{ message: action.payload }];
+            });
+    }
+});
+
+export const {
+    clearErrors,
+    clearCurrentStudent,
+    setPage,
+    setLimit,
+    setSearchParams
+} = studentsSlice.actions;
+
+export default studentsSlice.reducer;
