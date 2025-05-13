@@ -73,7 +73,7 @@ const StudentsTable = () => {
         meta: studentsMeta,
         searchParams: studentsSearchParams
     } = useSelector(state => state.students);
-
+    console.log(studentsData)
     const {
         data: groupsData,
         isLoading: groupsLoading,

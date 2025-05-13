@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchStudents, updateStudent } from '../../store/slices/studentSlice';
+import { fetchSubgroups } from '../../store/slices/subgroupSlice';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useSortable } from '@dnd-kit/sortable';
@@ -19,171 +21,204 @@ import "../StudentList/StudentListStyle.css";
 import defaultPhoto from '../../images/icons8-тестовый-аккаунт-64.png';
 
 const StudentsGroup = ({ group }) => {
+    const dispatch = useDispatch();
+    const { data: allStudents, isLoading } = useSelector(state => state.students);
+    const { data: subgroupsData } = useSelector(state => state.subgroups);
     const [students, setStudents] = useState([]);
-    const [isMonitor, setIsMonitor] = useState(true); // Флаг старосты
-    const [sortMode, setSortMode] = useState('fullList'); // По умолчанию полный список
-    const [collapsedSubgroups, setCollapsedSubgroups] = useState({}); // Состояние свернутых подгрупп
-    const [groupName, setGroupName] = useState(''); // Название группы
-    const [groupNumber, setGroupNumber] = useState(''); // Номер группы
-    const [selectedStudent, setSelectedStudent] = useState(null); // Выбранный студент для перемещения
-    const [selectedSubgroup, setSelectedSubgroup] = useState(''); // Выбранная подгруппа в селекторе
+    const [isMonitor, setIsMonitor] = useState(true);
+    const [sortMode, setSortMode] = useState('fullList');
+    const [collapsedSubgroups, setCollapsedSubgroups] = useState({});
+    const [groupName, setGroupName] = useState('');
+    const [groupNumber, setGroupNumber] = useState('');
+    const [selectedStudent, setSelectedStudent] = useState(null);
+    const [selectedSubgroup, setSelectedSubgroup] = useState('');
 
-    // Функция для сортировки студентов по алфавиту
+    // Функция для преобразования данных студента
+    const transformStudentData = (student) => {
+        return {
+            id: student.id,
+            firstName: student.person?.name || '',
+            lastName: student.person?.surname || '',
+            group: student.group?.name || '',
+            subgroup: student.subgroup?.name || null,
+            photo: student.icon_path || defaultPhoto,
+            reprimandCount: student.countReprimand || 0,
+            parentName: student.perent ? `${student.perent.surname} ${student.perent.name}` : '',
+            originalData: student // Сохраняем оригинальные данные для обновления
+        };
+    };
+
+    // Сортировка студентов по алфавиту
     const sortStudentsAlphabetically = (students) => {
         return [...students].sort((a, b) => {
-            const nameA = `${a.firstName} ${a.lastName}`.toLowerCase();
-            const nameB = `${b.firstName} ${b.lastName}`.toLowerCase();
+            const nameA = `${a.lastName} ${a.firstName}`.toLowerCase();
+            const nameB = `${b.lastName} ${b.firstName}`.toLowerCase();
             return nameA.localeCompare(nameB);
         });
     };
 
     useEffect(() => {
-        axios.get('/TestData/students.json')
-            .then(response => {
-                const data = response.data;
-                // Фильтруем студентов по выбранной группе
-                const filteredStudents = data.filter(student => student.group === group);
-                const sortedData = sortStudentsAlphabetically(filteredStudents); // Сортируем данные
-                setStudents(sortedData);
+        dispatch(fetchStudents({ groupQuery: group, limit: 1000 }));
+        dispatch(fetchSubgroups({}));
+    }, [dispatch, group]);
 
-                // Извлекаем название группы и номер группы из props
-                if (group) {
-                    const [name, number] = group.split('-');
-                    setGroupName(name);
-                    setGroupNumber(number);
+    useEffect(() => {
+        if (allStudents && allStudents.length > 0) {
+            const filteredStudents = allStudents
+                .filter(student => student.group?.name === group)
+                .map(transformStudentData);
+
+            const sortedData = sortStudentsAlphabetically(filteredStudents);
+            setStudents(sortedData);
+
+            if (group) {
+                const [name, number] = group.split('-');
+                setGroupName(name);
+                setGroupNumber(number);
+            }
+        }
+    }, [allStudents, group]);
+
+    // Обновление подгруппы студента
+    const updateStudentSubgroup = async (studentId, newSubgroupName) => {
+        try {
+            const studentToUpdate = students.find(s => s.id === studentId);
+            if (!studentToUpdate) return;
+
+            const subgroupToAssign = subgroupsData.find(s => s.name === newSubgroupName);
+            if (!subgroupToAssign) return;
+
+            const updateData = {
+                ...studentToUpdate.originalData,
+                subgroup_id: subgroupToAssign.id
+            };
+
+            await dispatch(updateStudent({
+                id: studentId,
+                data: {
+                    count_reprimand: updateData.countReprimand,
+                    icon_path: updateData.icon_path || '',
+                    person_id: updateData.person.id,
+                    group_id: updateData.group.id,
+                    subgroup_id: subgroupToAssign.id,
+                    perent_person_id: updateData.perent?.id || null
                 }
-            })
-            .catch(error => console.error('Ошибка загрузки данных', error));
-    }, [group]); // Зависимость от group
+            }));
 
-    const onDragEnd = (event) => {
-        if (!isMonitor || sortMode !== 'subgroups') return; // Блокируем DnD
+            // Обновляем локальное состояние
+            setStudents(prev =>
+                sortStudentsAlphabetically(prev.map(s =>
+                    s.id === studentId
+                        ? { ...s, subgroup: newSubgroupName, originalData: { ...s.originalData, subgroup: subgroupToAssign } }
+                        : s
+                ))
+            );
+
+        } catch (error) {
+            console.error('Ошибка при обновлении подгруппы:', error);
+        }
+    };
+
+    const onDragEnd = async (event) => {
+        if (!isMonitor || sortMode !== 'subgroups') return;
 
         const { active, over } = event;
         if (!over || active.id === over.id) return;
 
-        const draggedStudent = students.find(student => student.id === active.id);
-        const targetStudent = students.find(student => student.id === over.id);
+        const draggedStudent = students.find(s => s.id === active.id);
+        const targetStudent = students.find(s => s.id === over.id);
 
-        if (!draggedStudent || !targetStudent) return;
-
-        // ❌ Запрещаем менять местами студентов внутри одной подгруппы
-        if (draggedStudent.subgroup === targetStudent.subgroup) {
+        if (!draggedStudent || !targetStudent || draggedStudent.subgroup === targetStudent.subgroup) {
             return;
         }
 
-        let updatedStudents = [...students];
-
-        // Если студент переносится в другую подгруппу
-        draggedStudent.subgroup = targetStudent.subgroup;
-
-        // Перемещение внутри или между подгруппами
-        const oldIndex = updatedStudents.findIndex(student => student.id === active.id);
-        const newIndex = updatedStudents.findIndex(student => student.id === over.id);
-        updatedStudents = arrayMove(updatedStudents, oldIndex, newIndex);
-
-        // Сортируем студентов после перемещения
-        updatedStudents = sortStudentsAlphabetically(updatedStudents);
-
-        // Перенумерация внутри каждой подгруппы
-        const subgroups = ["Подгруппа 1", "Подгруппа 2", null]; // Добавляем null для студентов без подгруппы
-        subgroups.forEach(subgroup => {
-            let count = 1;
-            updatedStudents
-                .filter(student => student.subgroup === subgroup)
-                .forEach(student => {
-                    student.number = count++;
-                });
-        });
-
-        setStudents(updatedStudents);
+        await updateStudentSubgroup(draggedStudent.id, targetStudent.subgroup);
     };
 
-    // Обработчик для сворачивания/разворачивания подгруппы
     const toggleSubgroup = (subgroup) => {
-        setCollapsedSubgroups((prev) => ({
+        setCollapsedSubgroups(prev => ({
             ...prev,
             [subgroup]: !prev[subgroup],
         }));
     };
 
-    // Фильтрация студентов без подгруппы
     const studentsWithoutSubgroup = students.filter(student => !student.subgroup);
 
-    // Обработчик двойного клика по студенту
     const handleDoubleClick = (student) => {
         if (isMonitor && sortMode === 'subgroups') {
             setSelectedStudent(student);
-            setSelectedSubgroup(student.subgroup || ''); // Устанавливаем текущую подгруппу студента
+            setSelectedSubgroup(student.subgroup || '');
         }
     };
 
-    // Обработчик перемещения студента в подгруппу
-    const moveStudentToSubgroup = () => {
+    const moveStudentToSubgroup = async () => {
         if (!selectedStudent) return;
 
-        const updatedStudents = students.map((student) =>
-            student.id === selectedStudent.id ? { ...student, subgroup: selectedSubgroup || null } : student
-        );
-
-        // Сортируем студентов после перемещения
-        const sortedStudents = sortStudentsAlphabetically(updatedStudents);
-        setStudents(sortedStudents);
-        setSelectedStudent(null); // Закрываем модальное окно
+        await updateStudentSubgroup(selectedStudent.id, selectedSubgroup);
+        setSelectedStudent(null);
     };
 
-    // Сортируем студентов перед рендерингом
     const sortedStudents = sortStudentsAlphabetically(students);
+
+    if (isLoading) {
+        return <div>Загрузка данных...</div>;
+    }
 
     return (
         <div className="container__students student__container__group">
             <div className="header__group">
                 <h1 className="title">Группа: {groupName}-{groupNumber}</h1>
                 <div className="buttons">
-                    <button className="button__group" onClick={() => setSortMode('fullList')}>Показать полный список</button>
-                    <button className="button__group" onClick={() => setSortMode('subgroups')}>Сортировать по подгруппам</button>
-                    {isMonitor && sortMode === 'subgroups' && (
-                        <button className="button__group save__group" onClick={() => console.log('Сохраненные подгруппы:', students)}>
-                            Сохранить подгруппы
-                        </button>
-                    )}
+                    <button className="button__group" onClick={() => setSortMode('fullList')}>
+                        Показать полный список
+                    </button>
+                    <button className="button__group" onClick={() => setSortMode('subgroups')}>
+                        Сортировать по подгруппам
+                    </button>
                 </div>
             </div>
+
             <DndContext collisionDetection={closestCenter} onDragEnd={onDragEnd}>
                 {sortMode === 'subgroups' ? (
                     <div className="subgroups-container">
                         <SortableContext items={sortedStudents} strategy={verticalListSortingStrategy}>
-                            {/* Колонка для Подгруппы 1 */}
+                            {/* Подгруппа 1 */}
                             <div className="subgroup-column">
                                 <div className="subgroup-header">
                                     <h3>Подгруппа 1</h3>
-                                    <button className="collapse-button" onClick={() => toggleSubgroup("Подгруппа 1")}>
+                                    <button
+                                        className="collapse-button"
+                                        onClick={() => toggleSubgroup("Подгруппа 1")}
+                                    >
                                         {collapsedSubgroups["Подгруппа 1"] ? '▶' : '▼'}
                                     </button>
                                 </div>
                                 {!collapsedSubgroups["Подгруппа 1"] && (
                                     <>
                                         {sortedStudents
-                                            .filter(s => s.subgroup === "Подгруппа 1")
+                                            .filter(s => s.subgroup === "1 подгруппа")
                                             .map((student, index) => (
                                                 <SortableStudent
                                                     key={student.id}
                                                     student={{ ...student, number: index + 1 }}
                                                     isDraggable={isMonitor && sortMode === 'subgroups'}
                                                     onDoubleClick={() => handleDoubleClick(student)}
-                                                    showSubgroup={false} // Скрываем подгруппу в карточке
+                                                    showSubgroup={false}
                                                 />
                                             ))}
                                     </>
                                 )}
                             </div>
 
-                            {/* Колонка для студентов без подгруппы (видна только старосте) */}
+                            {/* Студенты без подгруппы */}
                             {isMonitor && studentsWithoutSubgroup.length > 0 && (
                                 <div className="subgroup-column">
                                     <div className="subgroup-header">
                                         <h3>Без подгруппы</h3>
-                                        <button className="collapse-button" onClick={() => toggleSubgroup("Без подгруппы")}>
+                                        <button
+                                            className="collapse-button"
+                                            onClick={() => toggleSubgroup("Без подгруппы")}
+                                        >
                                             {collapsedSubgroups["Без подгруппы"] ? '▶' : '▼'}
                                         </button>
                                     </div>
@@ -197,7 +232,7 @@ const StudentsGroup = ({ group }) => {
                                                         student={{ ...student, number: index + 1 }}
                                                         isDraggable={isMonitor && sortMode === 'subgroups'}
                                                         onDoubleClick={() => handleDoubleClick(student)}
-                                                        showSubgroup={false} // Скрываем подгруппу в карточке
+                                                        showSubgroup={false}
                                                     />
                                                 ))}
                                         </>
@@ -205,25 +240,28 @@ const StudentsGroup = ({ group }) => {
                                 </div>
                             )}
 
-                            {/* Колонка для Подгруппа 2 */}
+                            {/* Подгруппа 2 */}
                             <div className="subgroup-column">
                                 <div className="subgroup-header">
                                     <h3>Подгруппа 2</h3>
-                                    <button className="collapse-button" onClick={() => toggleSubgroup("Подгруппа 2")}>
+                                    <button
+                                        className="collapse-button"
+                                        onClick={() => toggleSubgroup("Подгруппа 2")}
+                                    >
                                         {collapsedSubgroups["Подгруппа 2"] ? '▶' : '▼'}
                                     </button>
                                 </div>
                                 {!collapsedSubgroups["Подгруппа 2"] && (
                                     <>
                                         {sortedStudents
-                                            .filter(s => s.subgroup === "Подгруппа 2")
+                                            .filter(s => s.subgroup === "2 подгруппа")
                                             .map((student, index) => (
                                                 <SortableStudent
                                                     key={student.id}
                                                     student={{ ...student, number: index + 1 }}
                                                     isDraggable={isMonitor && sortMode === 'subgroups'}
                                                     onDoubleClick={() => handleDoubleClick(student)}
-                                                    showSubgroup={false} // Скрываем подгруппу в карточке
+                                                    showSubgroup={false}
                                                 />
                                             ))}
                                     </>
@@ -241,7 +279,7 @@ const StudentsGroup = ({ group }) => {
                                         student={{...student, number: index + 1}}
                                         isDraggable={false}
                                         onDoubleClick={() => handleDoubleClick(student)}
-                                        showSubgroup={true} // Показываем подгруппу в карточке
+                                        showSubgroup={true}
                                     />
                                 ))}
                             </div>
@@ -251,32 +289,28 @@ const StudentsGroup = ({ group }) => {
             </DndContext>
 
             {/* Модальное окно для выбора подгруппы */}
-            <Dialog
-                open={!!selectedStudent}
-                onClose={() => setSelectedStudent(null)}
-            >
+            <Dialog open={!!selectedStudent} onClose={() => setSelectedStudent(null)}>
                 <DialogTitle>Переместить студента</DialogTitle>
                 <DialogContent>
                     {selectedStudent && (
-                        <p>{`${selectedStudent.firstName} ${selectedStudent.lastName}`}</p>
+                        <p>{`${selectedStudent.lastName} ${selectedStudent.firstName}`}</p>
                     )}
                     <FormControl fullWidth>
-                        <InputLabel id="subgroup-select-label">Подгруппа</InputLabel>
+                        <InputLabel>Подгруппа</InputLabel>
                         <Select
-                            labelId="subgroup-select-label"
-                            id="subgroup-select"
                             value={selectedSubgroup}
-                            label="Подгруппа"
                             onChange={(e) => setSelectedSubgroup(e.target.value)}
+                            label="Подгруппа"
                         >
-                            <MenuItem value="Подгруппа 1">Подгруппа 1</MenuItem>
-                            <MenuItem value="Подгруппа 2">Подгруппа 2</MenuItem>
+                            <MenuItem value="1 подгруппа">Подгруппа 1</MenuItem>
+                            <MenuItem value="2 подгруппа">Подгруппа 2</MenuItem>
+                            <MenuItem value="">Без подгруппы</MenuItem>
                         </Select>
                     </FormControl>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setSelectedStudent(null)}>Отмена</Button>
-                    <Button onClick={moveStudentToSubgroup}>Выполнить</Button>
+                    <Button onClick={moveStudentToSubgroup}>Сохранить</Button>
                 </DialogActions>
             </Dialog>
         </div>
@@ -286,28 +320,25 @@ const StudentsGroup = ({ group }) => {
 const SortableStudent = ({ student, isDraggable, onDoubleClick, showSubgroup }) => {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
         id: student.id,
-        disabled: !isDraggable // Отключаем DnD, если нельзя перетаскивать
+        disabled: !isDraggable
     });
 
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
-        cursor: isDraggable ? "grab" : "default" // Изменяем курсор, если нельзя перетаскивать
+        cursor: isDraggable ? "grab" : "default"
     };
-
-    // Обработчик двойного касания
-    const [lastTap, setLastTap] = useState(0);
 
     const handleTouchEnd = (e) => {
         const currentTime = new Date().getTime();
         const tapLength = currentTime - lastTap;
-
-        if (tapLength < 300 && tapLength > 0) { // 300 мс — время для двойного касания
-            onDoubleClick(student); // Вызываем обработчик двойного клика
+        if (tapLength < 300 && tapLength > 0) {
+            onDoubleClick(student);
         }
-
-        setLastTap(currentTime); // Обновляем время последнего касания
+        setLastTap(currentTime);
     };
+
+    const [lastTap, setLastTap] = useState(0);
 
     return (
         <div
@@ -315,8 +346,8 @@ const SortableStudent = ({ student, isDraggable, onDoubleClick, showSubgroup }) 
             ref={setNodeRef}
             style={style}
             {...(isDraggable ? { ...attributes, ...listeners } : {})}
-            onDoubleClick={onDoubleClick} // Обработчик двойного клика для десктопов
-            onTouchEnd={handleTouchEnd} // Обработчик окончания касания для мобильных устройств
+            onDoubleClick={() => onDoubleClick(student)}
+            onTouchEnd={handleTouchEnd}
         >
             <span className="student-number">{student.number}</span>
             <span className="dot" />
@@ -327,10 +358,13 @@ const SortableStudent = ({ student, isDraggable, onDoubleClick, showSubgroup }) 
                 onError={(e) => (e.target.src = defaultPhoto)}
             />
             <div className="student-info">
-                <span className="student-name">{`${student.firstName} ${student.lastName}`}</span>
+                <span className="student-name">{`${student.lastName} ${student.firstName}`}</span>
                 <span className="student-group">{student.group}</span>
                 {showSubgroup && (
                     <span className="student-subgroup">{student.subgroup || "Без подгруппы"}</span>
+                )}
+                {student.reprimandCount > 0 && (
+                    <span className="student-reprimand">Замечания: {student.reprimandCount}</span>
                 )}
             </div>
         </div>
