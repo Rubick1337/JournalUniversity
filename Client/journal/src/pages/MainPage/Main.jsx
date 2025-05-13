@@ -26,7 +26,7 @@ const MainPage = () => {
                     <Calendar onDaySelect={handleDaySelect} onWeekTypeSelect={setWeekType} />
                 </div>
                 <div className="container__student__schedule">
-                    <StudentList group="ASOIR-221" />
+                    <StudentList group="АСОИР-221" />
                     {selectedDay && <Schedule selectedDay={selectedDay} weekType={weekType} />}
                 </div>
             </main>

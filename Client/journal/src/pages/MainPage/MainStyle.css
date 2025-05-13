@@ -54,3 +54,40 @@
         width: 300px;
     }
 }
+/* Стили для кнопки "Показать все..." */
+.see-all {
+    background: none;
+    border: none;
+    color: #1976d2; /* Синий цвет, можно изменить */
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.see-all:hover {
+    background-color: rgba(25, 118, 210, 0.08); /* Слегка прозрачный синий */
+    text-decoration: underline;
+}
+
+.see-all:active {
+    background-color: rgba(25, 118, 210, 0.16); /* Более насыщенный при нажатии */
+}
+
+.see-all:focus {
+    outline: 2px solid rgba(25, 118, 210, 0.4); /* Светлая обводка при фокусе */
+    outline-offset: 2px;
+}
+
+/* Адаптивные стили */
+@media (max-width: 768px) {
+    .see-all {
+        font-size: 13px;
+        padding: 6px 10px;
+    }
+}
