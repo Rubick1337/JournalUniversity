@@ -16,6 +16,7 @@ import WorkPrograming from "../../components/WorkPrograming/WorkProgramingTable"
 import CurriculumsTable from "../../components/CurriculumsTable/CurriculumsTable";
 import TopicsTable from "../../components/TopicsTable/TopicsTable";
 import StudentJournal from "../../components/StudentJournal/StudentJournal";
+import StudentLabsCardView from "../../components/TopicGrade/StudentLabsCardView";
 
 
 const SchedulePage = props => {
@@ -33,7 +34,8 @@ const SchedulePage = props => {
                 {/*{<PersonTable></PersonTable>}*/}
                 {/*{<CurriculumsTable></CurriculumsTable>}*/}
                 {/*{<TopicsTable/>}*/}
-                {<StudentJournal/>}
+                {/*{<StudentJournal/>}*/}
+                {<StudentLabsCardView></StudentLabsCardView>}
             </main>
             <Footer/>
         </>
