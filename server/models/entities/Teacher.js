@@ -4,7 +4,6 @@ const { DataTypes } = require("sequelize");
 const { Person } = require("./Person");
 const { Department } = require("./Department");
 const { TeachingPosition } = require("./TeachingPosition");
-
 const Teacher = sequelize.define("Teacher", {
   id: {
     type: DataTypes.INTEGER,
@@ -36,6 +35,7 @@ const Teacher = sequelize.define("Teacher", {
     },
     allowNull: false,
   },
+
 });
 
 module.exports = { Teacher };

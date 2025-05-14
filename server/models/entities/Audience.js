@@ -20,7 +20,7 @@ const Audience = sequelize.define("Audience", {
     allowNull: false,
   },
 
-  description: { type: DataTypes.STRING(1026), allowNull: false },
-});
+  // description: { type: DataTypes.STRING(1026), allowNull: false },
+}, {timestamps: false});
 
 module.exports = { Audience };

@@ -19,10 +19,7 @@ const Student = sequelize.define("Student", {
     defaultValue: STUDENT.DEFAULT_REPRIMANDS,
     validate: { min: STUDENT.MIN_REPRIMANDS, max: STUDENT.MAX_REPRIMANDS },
   },
-  icon_path: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
+
   person_id: {
     type: DataTypes.INTEGER,
     references: {

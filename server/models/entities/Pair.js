@@ -3,9 +3,9 @@ const { DataTypes } = require("sequelize");
 const { WeekType } = require("./WeekType");
 const Pair = sequelize.define("Pair", {
   id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
+    autoIncrement: true,
   },
   weekday_number: {
     type: DataTypes.INTEGER,

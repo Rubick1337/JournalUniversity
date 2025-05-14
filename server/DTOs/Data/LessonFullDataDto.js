@@ -1,24 +1,52 @@
 class LessonFullDataDto {
-    constructor({
-      group_id,
-      subgroup_id,
-      date,
-      subject_id,
-      teacher_person_id,
-      topic_id,
-      audience_id,
-      subject_type_id,
-    }) {
-      this.groupId = group_id;
-      this.subgroupId = subgroup_id;
-      this.date = date;
-      this.subjectId = subject_id;
-      this.teacherPersonId = teacher_person_id;
-      this.topicId = topic_id;
-      this.audienceId = audience_id;
-      this.subjectTypeId = subject_type_id;
-    }
+  constructor({
+    GroupForLesson,
+    SubgroupForLesson,
+    date,
+    SubjectForLesson,
+    TeacherForLesson,
+    TopicForLesson,
+    audience_id,
+    pair,
+    SubjectTypeForLesson,
+  }) {
+    this.group = GroupForLesson
+      ? { id: GroupForLesson.id, name: GroupForLesson.name }
+      : {};
+    this.subgroup = SubgroupForLesson
+      ? { id: SubgroupForLesson.id, name: SubgroupForLesson.name }
+      : {};
+    this.date = date;
+    this.subject = SubjectForLesson
+      ? { id: SubjectForLesson.id, name: SubjectForLesson.name }
+      : {};
+    this.teacher = TeacherForLesson
+      ? {
+          id: TeacherForLesson.id,
+          person: TeacherForLesson.person
+            ? {
+                id: TeacherForLesson.person.id,
+                surname: TeacherForLesson.person.surname,
+                name: TeacherForLesson.person.name,
+                middlename: TeacherForLesson.person.middlename,
+              }
+            : {},
+          position: TeacherForLesson.teachingPosition
+            ? {
+                id: TeacherForLesson.teachingPosition.id,
+                name: TeacherForLesson.teachingPosition.name,
+              }
+            : {},
+        }
+      : {};
+    this.topic = TopicForLesson
+      ? { id: TopicForLesson.id, name: TopicForLesson.name }
+      : {};
+    this.audienceId = audience_id;
+    this.SubjectType = SubjectTypeForLesson
+    ? { id: SubjectTypeForLesson.id, name: SubjectTypeForLesson.name }
+    : {};
   }
-  
-  module.exports = LessonFullDataDto;
-  
+}
+
+module.exports = LessonFullDataDto;

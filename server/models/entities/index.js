@@ -15,7 +15,6 @@ const { Group } = require("./Group");
 const { Subgroup } = require("./Subgroup");
 const { Student } = require("./Student");
 const { Subject } = require("./Subject");
-const { SemesterType, initializeSemesterType } = require("./SemesterType");
 const {
   AssessmentType,
   initializeAssessmentType,
@@ -30,6 +29,9 @@ const { EducationForm, initializeEducationForm } = require("./EducationForm");
 const { Topic } = require("./Topic");
 const { SubjectType, initializeSubjectType } = require("./SubjectType");
 
+
+const {Schedule} = require('./Schedule')
+const {ScheduleDetails} = require('./ScheduleDetails')
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
 // const { Grade } = require("./Grade");
@@ -39,6 +41,9 @@ const { Lesson } = require("./Lesson");
 // const { Topic } = require("./Topic");
 // const { TotalScoreType } = require("./TotalScoreType");
 
+const {Role, initializeRoles} = require('./Role')
+const {User} = require('./User')
+
 const initModels = async () => {
   // await initializeTeachingPositions();
   // await initializeWeekType();
@@ -46,10 +51,10 @@ const initModels = async () => {
   // await initializeFaculty();
   // await initializeDepartment();
   // await initializeAcademicSpecialty();
-  // await initializeSemesterType();
   // await initializeAssessmentType();
   // await initializeEducationForm();
   // await initializeSubjectType();
+  // await initializeRoles();
 };
 module.exports = {
   initModels,
@@ -64,7 +69,6 @@ module.exports = {
   Subgroup,
   Student,
   Subject,
-  SemesterType,
   AssessmentType,
   Curriculum,
   Teacher,
@@ -75,11 +79,15 @@ module.exports = {
   Topic,
     SubjectType,
     Lesson,
-
+Schedule,
+ScheduleDetails,
   // Absenteeism,
   // AcademicPerformance,
   // Grade,
   // PlannedTask,
   // PlannedTaskTopic,
   // TotalScoreType,
+  Role,
+  User,
 };
+

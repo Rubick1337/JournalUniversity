@@ -3,6 +3,7 @@ class LessonDataForCreateDto {
     groupId,
     subgroupId,
     date,
+    pairId,
     subjectId,
     teacherPersonId,
     topicId,
@@ -11,6 +12,7 @@ class LessonDataForCreateDto {
   }) {
     this.group_id = groupId;
     this.subgroup_id = subgroupId;
+    this.pair_id = pairId;
     this.date = date;
     this.subject_id = subjectId;
     this.teacher_person_id = teacherPersonId;

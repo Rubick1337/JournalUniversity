@@ -11,7 +11,6 @@ const {
   Subgroup,
   Student,
   Subject,
-  SemesterType,
   AssessmentType,
   Curriculum,
   Teacher,
@@ -22,7 +21,11 @@ const {
   Topic,
   SubjectType,
   Lesson,
-
+  Pair,
+  Schedule,
+ScheduleDetails,
+Role,
+User,
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
@@ -281,6 +284,24 @@ Lesson.belongsTo(SubjectType, {
   foreignKey: "subject_type_id",
   as: "SubjectTypeForLesson",
 })
+Subject.hasMany(Lesson, {
+  foreignKey: "subject_id",
+  as: "SubjectForLesson",
+})
+Lesson.belongsTo(Subject, {
+  foreignKey: "subject_id",
+  as: "SubjectForLesson",
+})
+
+Pair.hasMany(Lesson, {
+  foreignKey: "pair_id",
+  as: "PairForLesson",
+})
+Lesson.belongsTo(Pair, {
+  foreignKey: "pair_id",
+  as: "PairForLesson",
+})
+
 
 module.exports = {
   initModels,
@@ -296,7 +317,6 @@ module.exports = {
   Subgroup,
   Student,
   Subject,
-  SemesterType,
   AssessmentType,
   Curriculum,
   Teacher,
@@ -307,7 +327,11 @@ module.exports = {
   Topic,
   SubjectType,
   Lesson,
-
+  Pair,
+    Schedule,
+ScheduleDetails,
+Role,
+User
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
