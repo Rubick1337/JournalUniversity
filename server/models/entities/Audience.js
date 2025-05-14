@@ -23,4 +23,13 @@ const Audience = sequelize.define("Audience", {
   // description: { type: DataTypes.STRING(1026), allowNull: false },
 }, {timestamps: false});
 
+Audience.belongsTo(AcademicBuilding, {
+  foreignKey: {
+    name: 'academic_building_id',
+    allowNull: false
+  },
+  as: 'academicBuilding',
+  comment: "Ссылка на корпус"
+})
+
 module.exports = { Audience };

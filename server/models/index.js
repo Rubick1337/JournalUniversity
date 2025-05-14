@@ -26,6 +26,7 @@ const {
 ScheduleDetails,
 Role,
 User,
+TypeOfSemester,
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,
@@ -331,7 +332,8 @@ module.exports = {
     Schedule,
 ScheduleDetails,
 Role,
-User
+User,
+TypeOfSemester,
   //   Absenteeism,
   //   AcademicPerformance,
   //   Grade,

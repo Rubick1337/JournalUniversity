@@ -36,6 +36,7 @@ const {ScheduleDetails} = require('./ScheduleDetails')
 // const { AcademicPerformance } = require("./AcademicPerformance");
 // const { Grade } = require("./Grade");
 const { Lesson } = require("./Lesson");
+const { TypeOfSemester } = require("./TypeOfSemester");
 // const { PlannedTask } = require("./PlannedTask");
 // const { PlannedTaskTopic } = require("./PlannedTaskTopic");
 // const { Topic } = require("./Topic");
@@ -89,5 +90,6 @@ ScheduleDetails,
   // TotalScoreType,
   Role,
   User,
+  TypeOfSemester,
 };
 
