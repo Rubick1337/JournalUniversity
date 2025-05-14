@@ -36,7 +36,7 @@ function Header() {
         { name: "учеб план", icon: curriculumIcon, path: "/curriculum" },
     ];
     const getRoleSpecificMenuItem = () => {
-        if ([2,3, 4, 5].includes(user?.role_id)) {
+        if ([3, 4, 5].includes(user?.role_id)) {
             return { name: "учеб отдел", icon: groupIcon, path: "/router" };
         }
         return { name: "Группа", icon: groupIcon, path: "/group" };
