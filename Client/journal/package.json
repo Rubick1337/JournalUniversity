@@ -30,6 +30,7 @@
     "react-sortable-hoc": "^2.0.0",
     "recharts": "^2.15.1",
     "redux": "^5.0.1",
+    "redux-persist": "^6.0.0",
     "styled-components": "^6.1.17",
     "swiper": "^11.2.4",
     "web-vitals": "^2.1.4"

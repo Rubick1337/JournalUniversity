@@ -6,9 +6,11 @@ import {
     ListItemIcon,
     Divider,
 } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
 import { Logout, Person } from "@mui/icons-material";
 import "./headerStyle.css";
 
+import { logoutUser } from "../../store/slices/authSlice";
 import dashboardIcon from "../../images/element-1.png";
 import scheduleIcon from "../../images/calendar.png";
 import curriculumIcon from "../../images/sms.png";
@@ -22,17 +24,26 @@ function Header() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
+    const dispatch = useDispatch();
+    const { user } = useSelector((state) => state.user);
 
     const profileMenuRef = useRef(null);
     const sidebarRef = useRef(null);
 
-    const menuItems = [
+    const baseMenuItems  = [
         { name: "Главная", icon: dashboardIcon, path: "/welcome" },
         { name: "Расписание", icon: scheduleIcon, path: "/schedule" },
-        { name: "Успеваемость", icon: curriculumIcon, path: "/curriculum" },
-        { name: "Группа", icon: groupIcon, path: "/group" },
+        { name: "учеб план", icon: curriculumIcon, path: "/curriculum" },
     ];
+    const getRoleSpecificMenuItem = () => {
+        if ([2,3, 4, 5].includes(user?.role_id)) {
+            return { name: "учеб отдел", icon: groupIcon, path: "/router" };
+        }
+        return { name: "Группа", icon: groupIcon, path: "/group" };
+    };
 
+    // Формируем полный список пунктов меню
+    const menuItems = [...baseMenuItems, getRoleSpecificMenuItem()];
     useEffect(() => {
         const currentMenuItem = menuItems.find(item => item.path === location.pathname);
         setActive(currentMenuItem ? currentMenuItem.name : "Главная");
@@ -69,9 +80,22 @@ function Header() {
         handleClose();
     };
 
-    const handleLogout = () => {
-        navigate("/");
-        handleClose();
+    const handleLogout = async () => {
+        try {
+            await dispatch(logoutUser(user?.refreshToken)).unwrap();
+            handleClose();
+
+            // Перенаправляем на страницу входа
+            navigate("/");
+
+            // Принудительно обновляем страницу через 100мс
+            setTimeout(() => {
+                window.location.reload();
+            }, 100);
+
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
     };
 
     return (

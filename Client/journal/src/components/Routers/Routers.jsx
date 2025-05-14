@@ -29,19 +29,19 @@ const EduCards = () => {
                     id: 1,
                     title: 'Факультеты',
                     icon: facultyIcon,
-                    link: 'faculties'
+                    link: '/faculties' // Добавлен / в начало
                 },
                 {
                     id: 2,
                     title: 'Кафедры',
                     icon: departmentIcon,
-                    link: 'departament'
+                    link: '/departament' // Добавлен / в начало
                 },
                 {
                     id: 3,
                     title: 'Предметы',
                     icon: subjectIcon,
-                    link: 'discipline'
+                    link: '/discipline' // Добавлен / в начало
                 }
             ]
         },
@@ -52,13 +52,19 @@ const EduCards = () => {
                     id: 4,
                     title: 'Должности преподавателей',
                     icon: positionIcon,
-                    link: 'positions'
+                    link: '/positions' // Добавлен / в начало
                 },
                 {
                     id: 5,
                     title: 'Преподаватели',
                     icon: teacherIcon,
-                    link: 'teachers'
+                    link: '/teachers' // Добавлен / в начало
+                },
+                {
+                    id: 17,
+                    title: 'Персональные данные',
+                    icon: subgroupIcon,
+                    link: '/personinfo' // Добавлен / в начало
                 }
             ]
         },
@@ -69,25 +75,25 @@ const EduCards = () => {
                     id: 6,
                     title: 'Направления подготовки',
                     icon: specializationIcon,
-                    link: 'specilization'
+                    link: '/specilization' // Добавлен / в начало
                 },
                 {
                     id: 7,
                     title: 'Формы подготовки',
                     icon: educationFormIcon,
-                    link: 'TODO'
+                    link: '/educationform' // Добавлен / в начало
                 },
                 {
                     id: 8,
                     title: 'Учебные планы',
                     icon: curriculumIcon,
-                    link: 'specilization'
+                    link: '/curriculum' // Добавлен / в начало
                 },
                 {
                     id: 9,
                     title: 'Рабочие программы',
                     icon: programIcon,
-                    link: 'curriculum'
+                    link: '/curriculum' // Добавлен / в начало
                 }
             ]
         },
@@ -98,19 +104,13 @@ const EduCards = () => {
                     id: 10,
                     title: 'Группы',
                     icon: groupIcon,
-                    link: 'specilization'
-                },
-                {
-                    id: 11,
-                    title: 'Подгруппы',
-                    icon: subgroupIcon,
-                    link: 'specilization'
+                    link: '/tablegroups' // Добавлен / в начало
                 },
                 {
                     id: 12,
                     title: 'Студенты',
                     icon: studentIcon,
-                    link: 'specilization'
+                    link: '/studenttable' // Добавлен / в начало
                 }
             ]
         },
@@ -118,24 +118,19 @@ const EduCards = () => {
             title: 'Учебный процесс',
             cards: [
                 {
-                    id: 13,
-                    title: 'Занятия',
-                    icon: lessonIcon,
-                    link: 'specilization'
-                },
-                {
-                    id: 14,
-                    title: 'Пропуски',
-                    icon: absenceIcon,
-                    link: 'specilization'
-                },
-                {
                     id: 15,
                     title: 'Оценки',
                     icon: gradeIcon,
-                    link: 'specilization'
+                    link: '/assesmenttype' // Добавлен / в начало
+                },
+                {
+                    id: 16,
+                    title: 'Темы дисциплин',
+                    icon: lessonIcon,
+                    link: '/topic' // Добавлен / в начало
                 }
             ]
+
         }
     ];
 

@@ -1,21 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { fetchScheduleForStudent } from '../../store/slices/scheduleSlice';
 import './ScheduleDayStyle.css';
 
-const ScheduleDay = ({  }) => {
-    const [scheduleData, setScheduleData] = useState([]);
+const ScheduleDay = () => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+
+    // Получаем данные из Redux store
+    const { user } = useSelector(state => state.user);
+    const {
+        studentSchedule,
+        isLoading,
+        dateParams
+    } = useSelector(state => state.schedule);
+
     const [selectedDay, setSelectedDay] = useState('');
     const [weekType, setWeekType] = useState('');
-    const navigate = useNavigate();
-    const role = "headman";
+
+    const role = user?.role || "student"; // Получаем роль из Redux
+
     const daysOfWeek = [
-        { full: 'Понедельник', short: 'Пн' },
-        { full: 'Вторник', short: 'Вт' },
-        { full: 'Среда', short: 'Ср' },
-        { full: 'Четверг', short: 'Чт' },
-        { full: 'Пятница', short: 'Пт' },
-        { full: 'Суббота', short: 'Сб' }
+        { full: 'Понедельник', short: 'Пн', number: 1 },
+        { full: 'Вторник', short: 'Вт', number: 2 },
+        { full: 'Среда', short: 'Ср', number: 3 },
+        { full: 'Четверг', short: 'Чт', number: 4 },
+        { full: 'Пятница', short: 'Пт', number: 5 },
+        { full: 'Суббота', short: 'Сб', number: 6 }
     ];
 
     useEffect(() => {
@@ -24,25 +36,23 @@ const ScheduleDay = ({  }) => {
         const todayDay = dayIndex === 0 ? daysOfWeek[0] : daysOfWeek[dayIndex - 1];
         setSelectedDay(todayDay.full);
 
+        // Определяем тип недели (верхняя/нижняя)
         const weekNumber = Math.floor((today.getDate() - 1) / 7) + 1;
-        const isUpperWeek = weekNumber % 2 === 1;
-        setWeekType(isUpperWeek ? 'upper' : 'lower');
+        const currentWeekType = weekNumber % 2 === 1 ? 'upper' : 'lower';
+        setWeekType(currentWeekType);
     }, []);
 
     useEffect(() => {
-        if (selectedDay && weekType) {
-            axios.get('/TestData/schedule.json')
-                .then(response => {
-                    const filteredData = response.data.filter(item =>
-                        item.day === selectedDay && item.week === weekType
-                    );
-                    setScheduleData(filteredData);
-                })
-                .catch(error => {
-                    console.error('Ошибка загрузки данных:', error);
-                });
+        if (selectedDay && weekType && user?.student_id) {
+            const selectedDayObj = daysOfWeek.find(day => day.full === selectedDay);
+
+            dispatch(fetchScheduleForStudent({
+                studentId: user.student_id,
+                weekdayNumber: selectedDayObj.number,
+                weekType: weekType === 'upper' ? 'Верхняя неделя' : 'Нижняя неделя'
+            }));
         }
-    }, [selectedDay, weekType]);
+    }, [selectedDay, weekType, user?.student_id, dispatch]);
 
     const handleDayChange = (day) => {
         setSelectedDay(day);
@@ -56,9 +66,27 @@ const ScheduleDay = ({  }) => {
         navigate(`/infolesson/${lessonId}`);
     };
 
+    // Преобразуем данные из Redux в удобный формат
+    const formatScheduleData = () => {
+        if (!studentSchedule?.scheduleDetails) return [];
+
+        return studentSchedule.scheduleDetails.map(item => ({
+            id: item.id,
+            time: `${item.PairInSchedule?.start} - ${item.PairInSchedule?.end}`,
+            subject: item.subject?.name,
+            teacher: `${item.teacher?.person?.surname} ${item.teacher?.person?.name}`,
+            room: `${item.audience?.academicBuilding?.name || ''} ${item.audience?.number || ''}`.trim(),
+            type: item.subjectType?.name
+        }));
+    };
+
+    const scheduleData = formatScheduleData();
+
     return (
         <div className="schedule-container">
-            <h1 className="day__title">Расписание на {selectedDay} ({weekType === 'upper' ? 'Вн' : 'Нн'})</h1>
+            <h1 className="day__title">
+                Расписание на {selectedDay} ({weekType === 'upper' ? 'Вн' : 'Нн'})
+            </h1>
 
             <div className="week-selector">
                 <label>
@@ -93,30 +121,31 @@ const ScheduleDay = ({  }) => {
                 ))}
             </div>
 
-            {scheduleData.length > 0 ? (
-                scheduleData.map((daySchedule, index) => (
-                    <div key={index} className="day-schedule">
-                        {daySchedule.schedule.map((lesson, lessonIndex) => (
-                            <div key={lessonIndex} className="lesson">
-                                <div className="dot"></div>
-                                <div className="information__lesson__day">
-                                    <div className="lesson-main-info">
-                                        <div className="time">{lesson.time}</div>
-                                        <div className="subject">{lesson.subject}</div>
-                                        <div className="teacher">{lesson.teacher}</div>
-                                        <div className="room">Аудитория: {lesson.room}</div>
-                                    </div>
-                                    <button
-                                        className={`action-button ${role === 'teacher' ? 'conduct' : 'details'}`}
-                                        onClick={() => handleLessonAction(lesson.id)}
-                                    >
-                                        {role === 'teacher' ? 'Провести' : 'Подробнее'}
-                                    </button>
+            {isLoading ? (
+                <p>Загрузка расписания...</p>
+            ) : scheduleData.length > 0 ? (
+                <div className="day-schedule">
+                    {scheduleData.map((lesson, index) => (
+                        <div key={index} className="lesson">
+                            <div className="dot"></div>
+                            <div className="information__lesson__day">
+                                <div className="lesson-main-info">
+                                    <div className="time">{lesson.time}</div>
+                                    <div className="subject">{lesson.subject}</div>
+                                    <div className="teacher">{lesson.teacher}</div>
+                                    <div className="room">Аудитория: {lesson.room}</div>
+                                        <div className="type">Тип: {lesson.type}</div>
                                 </div>
+                                <button
+                                    className={`action-button ${role === 'teacher' ? 'conduct' : 'details'}`}
+                                    onClick={() => handleLessonAction(lesson.id)}
+                                >
+                                    {role === 'teacher' ? 'Провести' : 'Подробнее'}
+                                </button>
                             </div>
-                        ))}
-                    </div>
-                ))
+                        </div>
+                    ))}
+                </div>
             ) : (
                 <p>Нет данных для отображения.</p>
             )}

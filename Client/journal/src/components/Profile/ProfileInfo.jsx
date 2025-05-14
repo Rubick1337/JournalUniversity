@@ -13,16 +13,12 @@ const ProfileInfo = ({ profile }) => {
                 <Typography className="info-value">{profile.email}</Typography>
                 <Typography className="info-label">Телефон:</Typography>
                 <Typography className="info-value">{profile.phone}</Typography>
-                <Typography className="info-label">Паспорт:</Typography>
-                <Typography className="info-value">{profile.passport}</Typography>
                 <Typography className="info-label">Группа:</Typography>
                 <Typography className="info-value">{profile.group}</Typography>
                 <Typography className="info-label">Номер зачётки:</Typography>
                 <Typography className="info-value">{profile.recordBook}</Typography>
-                <Typography className="info-label">Страна:</Typography>
-                <Typography className="info-value">{profile.country}</Typography>
-                <Typography className="info-label">Город:</Typography>
-                <Typography className="info-value">{profile.city}</Typography>
+                <Typography className="info-label">Кол-во Выговоров:</Typography>
+                <Typography className="info-value">{profile.countReprimand}</Typography>
             </Box>
         </Box>
     );

@@ -67,7 +67,10 @@
 .tab-button.inactive {
     color: #666;
 }
-
+.section-title-profile
+{
+    text-align: center;
+}
 .section-title-information {
     margin-bottom: 20px;
     color: #444;

@@ -28,37 +28,31 @@ import EducationFormPage from "./pages/EducationFormPage/EducationFormPage";
 import TypeAssesmentPage from "./pages/TypeAssmentPage/TypeAssesmentPage";
 import CurriculumsTable from "./components/CurriculumsTable/CurriculumsTable";
 import TopicsTable from "./components/TopicsTable/TopicsTable";
-
+import { useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { refreshUser } from "./store/slices/authSlice";
+import { getRefreshToken } from "./services/tokenStorage";
+import { useNavigate } from "react-router-dom";
+import TopicTablePage from "./pages/TopicTablePage/TopicTablePage";
+import CurruculimPage from "./pages/CurruculimPage/CurruculimPage";
 function App() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Попытаться восстановить токен из localStorage
+    const refreshToken = getRefreshToken();
+
+    if (refreshToken) {
+      dispatch(refreshUser(refreshToken))
+          .unwrap()
+    } else {
+      navigate("/");
+    }
+  }, [dispatch, navigate]);
   return (
     <Provider store={store}>
       <div className="App">
-        <nav>
-          <a href="personinfo">Персональные данные</a>
-
-          <a href="faculties">Факультеты</a>
-          <a href="departament">Кафедры</a>
-          <a href="discipline">Предметы</a>
-          <a href="positions">Должности преподователей</a>
-          <a href="teachers">Преподователи</a>
-
-          <a href="specilization">Направления подготовки</a>
-          <a href="educationform">Формы подготовки</a>
-
-          <a href="curriculum">Учебный планы</a>
-          <a href="TODO">Формы атестации</a>
-
-          <a href="curriculum">Рабочие программы</a>
-
-          <a href="tablegroups">Группы</a>
-          <a href="specilization">Подгруппы</a>
-          <a href="specilization">Студенты</a>
-
-          <a href="specilization">Занятия</a>
-          <a href="specilization">Пропуски</a>
-          <a href="specilization">Оценки</a>
-          <h4></h4>
-        </nav>
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/welcome" element={<MainPage />} />
@@ -70,7 +64,7 @@ function App() {
           <Route path="/faculties" element={<FacultiesTablePage />} />
           <Route path="/test" element={<TestPage />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/curriculum/:curriculumId" element={<TableLearnPage/>}/> 
+          <Route path="/curriculum/:curriculumId" element={<TableLearnPage/>}/>
           <Route path="/teachers" element={<TeachersTablePage />} />
           <Route path="/discipline" element={<DisciplinesTablePage />} />
           <Route path="/tablegroups" element={<GroupTablePage />} />
@@ -82,8 +76,9 @@ function App() {
           <Route path={"/router"} element={<RoutersPage />} />
           <Route path={"/educationform"} element={<EducationFormPage />} />
           <Route path={"/assesmenttype"} element={<TypeAssesmentPage />} />
-          <Route path={"/curriculum"} element={<CurriculumsTable />} />
-          <Route path={"/topic"} element={<TopicsTable />} />
+          <Route path={"/curriculum"} element={<CurruculimPage />} />
+          <Route path={"/topic"} element={<TopicTablePage />} />
+
         </Routes>
       </div>
     </Provider>

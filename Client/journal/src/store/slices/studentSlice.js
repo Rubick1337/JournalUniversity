@@ -69,7 +69,8 @@ export const getStudentById = createAsyncThunk(
     async (id, { rejectWithValue }) => {
         try {
             const response = await StudentService.getStudentById(id);
-            return response.data;
+            console.log(response);
+            return response;
         } catch (error) {
             return rejectWithValue(error.response?.data || error.message);
         }

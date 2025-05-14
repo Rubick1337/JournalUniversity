@@ -11,10 +11,17 @@ const MainPage = () => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedDay, setSelectedDay] = useState(null);
     const [weekType, setWeekType] = useState('');
+    const [formattedDate, setFormattedDate] = useState('');
 
-    const handleDaySelect = (day, dayOfWeek) => {
-        setSelectedDate(day);
+    const handleDaySelect = (date, dayOfWeek) => {
+        setSelectedDate(date);
         setSelectedDay(dayOfWeek);
+
+        // Форматируем дату в DD.MM.YYYY
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        setFormattedDate(`${day}.${month}.${year}`);
     };
 
     return (
@@ -27,7 +34,7 @@ const MainPage = () => {
                 </div>
                 <div className="container__student__schedule">
                     <StudentList group="АСОИР-221" />
-                    {selectedDay && <Schedule selectedDay={selectedDay} weekType={weekType} />}
+                    {selectedDay && <Schedule selectedDay={selectedDay} formattedDate={formattedDate} weekType={weekType} />}
                 </div>
             </main>
             <Footer />

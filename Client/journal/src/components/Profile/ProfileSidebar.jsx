@@ -11,14 +11,14 @@ const ProfileSidebar = ({ profile }) => {
                 {profile.name}
             </Typography>
             <div className="absences-section">
-                <h4 className="section-absences-title">Прогулы</h4>
+                <h4 className="section-title-profile">Прогулы</h4>
                 <div className="absences-container">
                     <div className="absence-item">
-                        <div className="absence-number excused">{profile.excusedAbsences}</div>
+                        <div className="absence-number excused">{profile.excusedAbsences || 0}</div>
                         <div className="absence-label">По уважительной</div>
                     </div>
                     <div className="absence-item">
-                        <div className="absence-number unexcused">{profile.unexcusedAbsences}</div>
+                        <div className="absence-number unexcused">{profile.unexcusedAbsences || 0}</div>
                         <div className="absence-label">Без уважительной</div>
                     </div>
                 </div>

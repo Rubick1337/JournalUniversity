@@ -17,6 +17,9 @@ import studentJournalReducer from "./slices/studentJournalSlice";
 import studentSlice from "./slices/studentSlice";
 import SubgroupSlice from "./slices/subgroupSlice";
 import StudentLabsSlice from "./slices/studentLabsSlice";
+import userSlice from "./slices/authSlice";
+import scheduleSlice from "./slices/scheduleSlice";
+
 
 const store = configureStore({
   reducer: {
@@ -38,6 +41,8 @@ const store = configureStore({
     students: studentSlice,
     subgroups: SubgroupSlice,
     studentLabs: StudentLabsSlice,
+    user: userSlice,
+    schedule: scheduleSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

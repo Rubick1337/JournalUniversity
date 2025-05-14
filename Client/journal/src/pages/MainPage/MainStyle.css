@@ -10,7 +10,7 @@
 .container__student__schedule
 {
     display: flex;
-    padding: 50px 180px;
+    padding: 50px 70px;
     justify-content: center;
     align-content: flex-start;
     gap: 310px;

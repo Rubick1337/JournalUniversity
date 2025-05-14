@@ -110,5 +110,16 @@ export const API_ENDPOINTS = {
     UPDATE: '/student/update/:id',
     DELETE: '/student/delete/:id',
     GETBYID: `/student/getById/:id`,
-  }
+  },
+  USER: {
+    LOGIN: '/user/login',
+    LOGOUT: '/user/logout',
+    CREATE: '/user/create',
+    REFRESH: '/user/refresh',
+  },
+  SCHEDULE: {
+    GET_FOR_STUDENT: '/schedule/getScheduleForStudent',
+    GET_SEMESTER_BY_DATE: '/schedule/getSemesterByDate',
+    GET_SCHEDULE_BY_DATE: '/schedule/getScheduleByDate',
+  },
 };

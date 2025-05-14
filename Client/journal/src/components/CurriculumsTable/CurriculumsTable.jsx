@@ -43,6 +43,13 @@ import { fetchEducationForms } from '../../store/slices/educationFormSlice';
 const CurriculumsTable = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const { user } = useSelector(state => state.user);
+    const userRole = user?.role_id;
+
+    // Определение прав доступа
+    const canEdit = [3, 4, 5].includes(userRole); // Роли 3,4,5 могут редактировать
+    const canViewOnly = userRole === 2; // Роль 2 может только просматривать
+
     const [anchorEl, setAnchorEl] = useState(null);
     const [searchAnchorEl, setSearchAnchorEl] = useState(null);
     const [currentRow, setCurrentRow] = useState(null);
@@ -81,7 +88,6 @@ const CurriculumsTable = () => {
     const educationForms = useSelector(state => state.educationForms.data || []);
 
     const [searchValues, setSearchValues] = useState({
-        idQuery: '',
         yearQuery: '',
         specialtyQuery: '',
         educationFormQuery: ''
@@ -95,9 +101,9 @@ const CurriculumsTable = () => {
             sortOrder: order,
             ...searchParams
         }));
-        dispatch(fetchAcademicSpecialties({}));
-        dispatch(fetchEducationForms({}));
-    }, [dispatch, meta.page, meta.limit, searchParams, orderBy, order]);
+        dispatch(fetchAcademicSpecialties());
+        dispatch(fetchEducationForms());
+    }, [dispatch, meta.page, meta.limit, orderBy, order, searchParams]);
 
     useEffect(() => {
         if (errors.length > 0) {
@@ -112,9 +118,7 @@ const CurriculumsTable = () => {
 
     useEffect(() => {
         if (curriculumsData.length > 0 && !rowsMounted) {
-            setTimeout(() => {
-                setRowsMounted(true);
-            }, 100);
+            setRowsMounted(true);
         }
     }, [curriculumsData, rowsMounted]);
 
@@ -145,17 +149,11 @@ const CurriculumsTable = () => {
 
     const handleResetSearch = () => {
         setSearchValues({
-            idQuery: '',
             yearQuery: '',
             specialtyQuery: '',
             educationFormQuery: ''
         });
-        dispatch(setSearchParams({
-            idQuery: '',
-            yearQuery: '',
-            specialtyQuery: '',
-            educationFormQuery: ''
-        }));
+        dispatch(setSearchParams({}));
         setSearchAnchorEl(null);
         setOrderBy('year_of_specialty_training');
         setOrder('asc');
@@ -202,19 +200,13 @@ const CurriculumsTable = () => {
     };
 
     const handleEdit = () => {
-        // Проверяем и логируем данные перед установкой
-        console.log('Current row data:', {
-            id: currentRow.id,
-            year: currentRow.year_of_specialty_training,
-            specialtyCode: currentRow.specialty?.code,
-            educationFormId: currentRow.education_form?.id
-        });
+        if (!currentRow) return;
 
         setEditCurriculum({
             id: currentRow.id,
             year_of_specialty_training: currentRow.year_of_specialty_training,
-            specialty_code: currentRow.specialty?.code || currentRow.specialty_code || '',
-            education_form_id: currentRow.education_form?.id || currentRow.education_form_id || ''
+            specialty_code: currentRow.specialty?.code || '',
+            education_form_id: currentRow.education_form?.id || ''
         });
 
         setOpenEditModal(true);
@@ -246,21 +238,13 @@ const CurriculumsTable = () => {
             showAlert('Все обязательные поля должны быть заполнены!', 'error');
             return;
         }
+
         const updateData = {
             year_of_specialty_training: editCurriculum.year_of_specialty_training,
-            academic_specialty: {
-                code: editCurriculum.specialty_code
-            },
-            education_form: {
-                id: editCurriculum.education_form_id
-            }
+            specialty_code: editCurriculum.specialty_code,
+            education_form_id: editCurriculum.education_form_id
         };
-        console.log('Editing curriculum:', {
-            id: editCurriculum.id,
-            year: editCurriculum.year_of_specialty_training,
-            specialty: editCurriculum.specialty_code,
-            educationForm: editCurriculum.education_form_id
-        });
+
         dispatch(updateCurriculum({
             id: editCurriculum.id,
             data: updateData
@@ -269,13 +253,6 @@ const CurriculumsTable = () => {
             .then(() => {
                 showAlert('Учебный план успешно обновлен!', 'success');
                 handleCloseModals();
-                dispatch(fetchCurriculums({
-                    page: meta.page,
-                    limit: meta.limit,
-                    sortBy: orderBy,
-                    sortOrder: order,
-                    ...searchParams
-                }));
             })
             .catch(error => {
                 showAlert(error.message || 'Ошибка при обновлении учебного плана', 'error');
@@ -290,20 +267,13 @@ const CurriculumsTable = () => {
 
         dispatch(createCurriculum({
             year_of_specialty_training: newCurriculum.year_of_specialty_training,
-            academic_specialty: { code: newCurriculum.specialty_code },
-            education_form: { id: newCurriculum.education_form_id }
+            specialty_code: newCurriculum.specialty_code,
+            education_form_id: newCurriculum.education_form_id
         }))
             .unwrap()
             .then(() => {
                 showAlert('Учебный план успешно добавлен!', 'success');
                 handleCloseModals();
-                dispatch(fetchCurriculums({
-                    page: meta.page,
-                    limit: meta.limit,
-                    sortBy: orderBy,
-                    sortOrder: order,
-                    ...searchParams
-                }));
             })
             .catch(error => {
                 showAlert(error.message || 'Ошибка при добавлении учебного плана', 'error');
@@ -312,9 +282,13 @@ const CurriculumsTable = () => {
 
     const handleDeleteConfirm = () => {
         dispatch(deleteCurriculum(currentRow.id))
+            .unwrap()
             .then(() => {
                 showAlert('Учебный план успешно удален!', 'success');
                 handleCloseModals();
+            })
+            .catch(error => {
+                showAlert(error.message || 'Ошибка при удалении учебного плана', 'error');
             });
     };
 
@@ -340,17 +314,16 @@ const CurriculumsTable = () => {
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 2 }}>
                     <Typography variant="h6">Список учебных планов</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <IconButton onClick={handleSearchMenuClick} className="action-button">
+                        <IconButton onClick={handleSearchMenuClick}>
                             <SearchIcon />
                         </IconButton>
-                        <IconButton onClick={handleResetSearch} className="action-button">
+                        <IconButton onClick={handleResetSearch}>
                             <RefreshIcon />
                         </IconButton>
                         <Menu
                             anchorEl={searchAnchorEl}
                             open={Boolean(searchAnchorEl)}
                             onClose={handleSearchMenuClose}
-                            sx={{ maxWidth: 320 }}
                         >
                             <Box sx={{ p: 2, width: 280 }}>
                                 <TextField
@@ -384,9 +357,6 @@ const CurriculumsTable = () => {
                                     <Button
                                         size="small"
                                         onClick={handleResetSearch}
-                                        disabled={!searchValues.idQuery && !searchValues.yearQuery &&
-                                            !searchValues.specialtyQuery && !searchValues.educationFormQuery}
-                                        className="action-button"
                                     >
                                         Сбросить
                                     </Button>
@@ -394,7 +364,6 @@ const CurriculumsTable = () => {
                                         size="small"
                                         variant="contained"
                                         onClick={handleSearch}
-                                        className="action-button"
                                     >
                                         Поиск
                                     </Button>
@@ -414,11 +383,7 @@ const CurriculumsTable = () => {
                     </TableHead>
                     <TableBody>
                         {curriculumsData.map((curriculum, index) => (
-                            <TableRow
-                                key={curriculum.id}
-                                className={`table-row ${rowsMounted ? 'show' : ''}`}
-                                style={{ transitionDelay: `${index * 50}ms` }}
-                            >
+                            <TableRow key={curriculum.id}>
                                 <TableCell>{curriculum.year_of_specialty_training}</TableCell>
                                 <TableCell>
                                     {curriculum.specialty?.code} - {curriculum.specialty?.name}
@@ -427,18 +392,14 @@ const CurriculumsTable = () => {
                                     {curriculum.education_form?.name}
                                 </TableCell>
                                 <TableCell>
-                                    <IconButton
-                                        onClick={() => handleDetails(curriculum.id)}
-                                        className="action-button"
-                                    >
+                                    <IconButton onClick={() => handleDetails(curriculum.id)}>
                                         <InfoIcon />
                                     </IconButton>
-                                    <IconButton
-                                        onClick={(e) => handleMenuClick(e, curriculum)}
-                                        className="action-button"
-                                    >
-                                        <MoreVertIcon />
-                                    </IconButton>
+                                    {canEdit && (
+                                        <IconButton onClick={(e) => handleMenuClick(e, curriculum)}>
+                                            <MoreVertIcon />
+                                        </IconButton>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -452,172 +413,151 @@ const CurriculumsTable = () => {
                     page={meta.page - 1}
                     onPageChange={handlePageChange}
                     onRowsPerPageChange={handleRowsPerPageChange}
-                    labelRowsPerPage="Строк на странице:"
-                    labelDisplayedRows={({ from, to, count }) =>
-                        `${from}-${to} из ${count !== -1 ? count : `более ${to}`}`
-                    }
                 />
-                <Menu
-                    anchorEl={anchorEl}
-                    open={Boolean(anchorEl)}
-                    onClose={handleMenuClose}
-                >
-                    <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
-                    <MenuItem onClick={handleDelete}>Удалить</MenuItem>
-                </Menu>
-                <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
-                    <Box
-                        className={`modal-fade ${(openEditModal || openDeleteModal || openAddModal) ? 'active' : ''}`}
-                        sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: '50%',
-                            width: 400,
-                            bgcolor: 'background.paper',
-                            boxShadow: 24,
-                            borderRadius: 1,
-                            p: 0
-                        }}
+                {canEdit && (
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleMenuClose}
                     >
-                        <Box sx={{
-                            bgcolor: '#1976d2',
-                            color: 'white',
-                            p: 2,
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            borderTopLeftRadius: 1,
-                            borderTopRightRadius: 1
-                        }}>
-                            <Typography variant="h6">
-                                {openEditModal && "Редактировать учебный план"}
-                                {openDeleteModal && "Удалить учебный план"}
-                                {openAddModal && "Добавить учебный план"}
-                            </Typography>
-                            <IconButton onClick={handleCloseModals} sx={{ color: 'white' }}>
-                                <CloseIcon />
-                            </IconButton>
-                        </Box>
-                        <Box sx={{ p: 3 }}>
-                            {openEditModal && (
-                                <div>
-                                    <TextField
-                                        label="Год подготовки"
-                                        type="number"
-                                        fullWidth
-                                        margin="normal"
-                                        value={editCurriculum.year_of_specialty_training}
-                                        onChange={(e) => setEditCurriculum({ ...editCurriculum, year_of_specialty_training: e.target.value })}
-                                    />
-                                    <TextField
-                                        select
-                                        label="Специальность"
-                                        fullWidth
-                                        margin="normal"
-                                        value={editCurriculum.specialty_code}
-                                        onChange={(e) => setEditCurriculum({ ...editCurriculum, specialty_code: e.target.value })}
-                                    >
-                                        {academicSpecialties.map((specialty) => (
-                                            <MenuItem key={specialty.code} value={specialty.code}>
-                                                {specialty.code} - {specialty.name}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                    <TextField
-                                        select
-                                        label="Форма обучения"
-                                        fullWidth
-                                        margin="normal"
-                                        value={editCurriculum.education_form_id}
-                                        onChange={(e) => setEditCurriculum({ ...editCurriculum, education_form_id: e.target.value })}
-                                    >
-                                        {educationForms.map((form) => (
-                                            <MenuItem key={form.id} value={form.id}>
-                                                {form.name}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
-                                        <Button onClick={handleSaveEdit} color="primary" className="action-button">Сохранить</Button>
-                                    </Box>
-                                </div>
-                            )}
-                            {openDeleteModal && (
-                                <div>
-                                    <Typography>Вы уверены, что хотите удалить учебный план {currentRow?.year_of_specialty_training}?</Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
-                                        <Button onClick={handleDeleteConfirm} color="error" className="action-button">Удалить</Button>
-                                    </Box>
-                                </div>
-                            )}
-                            {openAddModal && (
-                                <div>
-                                    <TextField
-                                        label="Год подготовки"
-                                        type="number"
-                                        fullWidth
-                                        margin="normal"
-                                        value={newCurriculum.year_of_specialty_training}
-                                        onChange={(e) => setNewCurriculum({ ...newCurriculum, year_of_specialty_training: e.target.value })}
-                                    />
-                                    <TextField
-                                        select
-                                        label="Специальность"
-                                        fullWidth
-                                        margin="normal"
-                                        value={newCurriculum.specialty_code}
-                                        onChange={(e) => setNewCurriculum({ ...newCurriculum, specialty_code: e.target.value })}
-                                    >
-                                        {academicSpecialties.map((specialty) => (
-                                            <MenuItem key={specialty.code} value={specialty.code}>
-                                                {specialty.code} - {specialty.name}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                    <TextField
-                                        select
-                                        label="Форма обучения"
-                                        fullWidth
-                                        margin="normal"
-                                        value={newCurriculum.education_form_id}
-                                        onChange={(e) => setNewCurriculum({ ...newCurriculum, education_form_id: e.target.value })}
-                                    >
-                                        {educationForms.map((form) => (
-                                            <MenuItem key={form.id} value={form.id}>
-                                                {form.name}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-                                        <Button onClick={handleCloseModals} className="action-button">Отмена</Button>
-                                        <Button onClick={handleSaveAdd} color="primary" className="action-button">Добавить</Button>
-                                    </Box>
-                                </div>
-                            )}
-                        </Box>
+                        <MenuItem onClick={handleEdit}>Редактировать</MenuItem>
+                        <MenuItem onClick={handleDelete}>Удалить</MenuItem>
+                    </Menu>
+                )}
+                <Modal open={openEditModal || openDeleteModal || openAddModal} onClose={handleCloseModals}>
+                    <Box sx={{
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        width: 400,
+                        bgcolor: 'background.paper',
+                        boxShadow: 24,
+                        p: 4
+                    }}>
+                        <Typography variant="h6" component="h2" sx={{ mb: 2 }}>
+                            {openEditModal && "Редактировать учебный план"}
+                            {openDeleteModal && "Удалить учебный план"}
+                            {openAddModal && "Добавить учебный план"}
+                        </Typography>
+                        {openEditModal && (
+                            <Box>
+                                <TextField
+                                    label="Год подготовки"
+                                    type="number"
+                                    fullWidth
+                                    margin="normal"
+                                    value={editCurriculum.year_of_specialty_training}
+                                    onChange={(e) => setEditCurriculum({ ...editCurriculum, year_of_specialty_training: e.target.value })}
+                                />
+                                <TextField
+                                    select
+                                    label="Специальность"
+                                    fullWidth
+                                    margin="normal"
+                                    value={editCurriculum.specialty_code}
+                                    onChange={(e) => setEditCurriculum({ ...editCurriculum, specialty_code: e.target.value })}
+                                >
+                                    {academicSpecialties.map((specialty) => (
+                                        <MenuItem key={specialty.code} value={specialty.code}>
+                                            {specialty.code} - {specialty.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                                <TextField
+                                    select
+                                    label="Форма обучения"
+                                    fullWidth
+                                    margin="normal"
+                                    value={editCurriculum.education_form_id}
+                                    onChange={(e) => setEditCurriculum({ ...editCurriculum, education_form_id: e.target.value })}
+                                >
+                                    {educationForms.map((form) => (
+                                        <MenuItem key={form.id} value={form.id}>
+                                            {form.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                    <Button onClick={handleCloseModals} sx={{ mr: 1 }}>Отмена</Button>
+                                    <Button variant="contained" onClick={handleSaveEdit}>Сохранить</Button>
+                                </Box>
+                            </Box>
+                        )}
+                        {openDeleteModal && (
+                            <Box>
+                                <Typography>Вы уверены, что хотите удалить учебный план?</Typography>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                    <Button onClick={handleCloseModals} sx={{ mr: 1 }}>Отмена</Button>
+                                    <Button variant="contained" color="error" onClick={handleDeleteConfirm}>Удалить</Button>
+                                </Box>
+                            </Box>
+                        )}
+                        {openAddModal && (
+                            <Box>
+                                <TextField
+                                    label="Год подготовки"
+                                    type="number"
+                                    fullWidth
+                                    margin="normal"
+                                    value={newCurriculum.year_of_specialty_training}
+                                    onChange={(e) => setNewCurriculum({ ...newCurriculum, year_of_specialty_training: e.target.value })}
+                                />
+                                <TextField
+                                    select
+                                    label="Специальность"
+                                    fullWidth
+                                    margin="normal"
+                                    value={newCurriculum.specialty_code}
+                                    onChange={(e) => setNewCurriculum({ ...newCurriculum, specialty_code: e.target.value })}
+                                >
+                                    {academicSpecialties.map((specialty) => (
+                                        <MenuItem key={specialty.code} value={specialty.code}>
+                                            {specialty.code} - {specialty.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                                <TextField
+                                    select
+                                    label="Форма обучения"
+                                    fullWidth
+                                    margin="normal"
+                                    value={newCurriculum.education_form_id}
+                                    onChange={(e) => setNewCurriculum({ ...newCurriculum, education_form_id: e.target.value })}
+                                >
+                                    {educationForms.map((form) => (
+                                        <MenuItem key={form.id} value={form.id}>
+                                            {form.name}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+                                    <Button onClick={handleCloseModals} sx={{ mr: 1 }}>Отмена</Button>
+                                    <Button variant="contained" onClick={handleSaveAdd}>Добавить</Button>
+                                </Box>
+                            </Box>
+                        )}
                     </Box>
                 </Modal>
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                    <Button
-                        variant="contained"
-                        startIcon={<AddCircleOutlineIcon />}
-                        onClick={handleAdd}
-                    >
-                        Добавить учебный план
-                    </Button>
-                </Box>
+                {canEdit && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                        <Button
+                            variant="contained"
+                            startIcon={<AddCircleOutlineIcon />}
+                            onClick={handleAdd}
+                        >
+                            Добавить учебный план
+                        </Button>
+                    </Box>
+                )}
             </TableContainer>
 
-            <div className={`alert-slide ${alertState.open ? 'active' : ''}`}>
-                <Alert
-                    open={alertState.open}
-                    message={alertState.message}
-                    severity={alertState.severity}
-                    onClose={handleCloseAlert}
-                />
-            </div>
+            <Alert
+                open={alertState.open}
+                message={alertState.message}
+                severity={alertState.severity}
+                onClose={handleCloseAlert}
+            />
         </>
     );
 };
