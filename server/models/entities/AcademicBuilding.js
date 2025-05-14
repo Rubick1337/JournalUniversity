@@ -11,6 +11,7 @@ const AcademicBuilding = sequelize.define("AcademicBuilding", {
   },
   name: { type: DataTypes.STRING(255), allowNull: false },
   address: { type: DataTypes.STRING(255), allowNull: false },
-});
+},
+{timestamps: false});
 
 module.exports = { AcademicBuilding };

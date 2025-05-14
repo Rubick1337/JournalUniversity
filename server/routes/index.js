@@ -29,7 +29,9 @@ initializeRoute('curriculumSubject', 'curriculumSubject');
 initializeRoute('subjectType', 'subjectType');
 initializeRoute('topic', 'topic');
 initializeRoute('student', 'student');
+initializeRoute('user', 'user');
 initializeRoute('lesson', 'lesson');
+initializeRoute('schedule', 'schedule');
 
 
 module.exports = router;

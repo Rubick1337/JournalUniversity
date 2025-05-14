@@ -6,7 +6,7 @@ const { Subject } = require("./Subject");
 const { Subgroup } = require("./Subgroup");
 const { Teacher } = require("./Teacher");
 const { Topic } = require("./Topic");
-
+const {Pair} = require('./Pair')
 
 const { Audience } = require("./Audience");
 const { SubjectType } = require("./SubjectType");
@@ -33,7 +33,14 @@ const Lesson = sequelize.define("Lesson", {
     },
     allowNull: true,
   },
-
+  pair_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: Pair,
+      key: "id",
+    },
+    allowNull: false
+  },
   date: { type: DataTypes.DATE, allowNull: false },
 
 

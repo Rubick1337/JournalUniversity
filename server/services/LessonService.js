@@ -9,6 +9,8 @@ const {
   Audience, 
   SubjectType,
   Person,
+  TeachingPosition,
+  Pair,
   Op, 
   Sequelize 
 } = require("../models/index");
@@ -18,6 +20,7 @@ class LessonService {
     try {
       const lesson = await Lesson.create({
         group_id: data.group_id,
+        pair_id: data.pair_id,
         subgroup_id: data.subgroup_id || null,
         date: data.date,
         subject_id: data.subject_id,
@@ -74,7 +77,9 @@ class LessonService {
       audienceQuery: "",
       subjectTypeQuery: "",
       dateFrom: "",
-      dateTo: ""
+      dateTo: "",
+      teachingPositionQuery: "",
+      pairQuery: ""
     },
   }) {
     try {
@@ -132,12 +137,23 @@ class LessonService {
         {
           model: Teacher,
           as: "TeacherForLesson",
-          include: [{
-            model: Person,
-            as: "person",
-            attributes: ["id", "surname", "name", "middlename"],
-          }],
-          required: !!query.teacherQuery,
+          include: [
+            {
+              model: Person,
+              as: "person",
+              attributes: ["id", "surname", "name", "middlename"],
+            },
+            {
+              model: TeachingPosition,
+              as: "teachingPosition",
+              attributes: ["id", "name"],
+              required: !!query.teachingPositionQuery,
+              where: query.teachingPositionQuery
+                ? { name: { [Op.iLike]: `%${query.teachingPositionQuery}%` } }
+                : undefined
+            }
+          ],
+          required: !!query.teacherQuery || !!query.teachingPositionQuery,
           where: query.teacherQuery
             ? {
                 '$person.surname$': { [Op.iLike]: `%${query.teacherQuery}%` }
@@ -156,10 +172,10 @@ class LessonService {
         {
           model: Audience,
           as: "AudienceForLesson",
-          attributes: ["id", "name"],
+          attributes: ["id", "number"],
           required: !!query.audienceQuery,
           where: query.audienceQuery
-            ? { name: { [Op.iLike]: `%${query.audienceQuery}%` } }
+            ? { number: { [Op.iLike]: `%${query.audienceQuery}%` } }
             : undefined
         },
         {
@@ -169,6 +185,21 @@ class LessonService {
           required: !!query.subjectTypeQuery,
           where: query.subjectTypeQuery
             ? { name: { [Op.iLike]: `%${query.subjectTypeQuery}%` } }
+            : undefined
+        },
+        {
+          model: Pair,
+          as: "PairForLesson",
+          attributes: ["id", "name", "start_time", "end_time"],
+          required: !!query.pairQuery,
+          where: query.pairQuery
+            ? {
+                [Op.or]: [
+                  { number: { [Op.iLike]: `%${query.pairQuery}%` } },
+                  { start_time: { [Op.iLike]: `%${query.pairQuery}%` } },
+                  { end_time: { [Op.iLike]: `%${query.pairQuery}%` } }
+                ]
+              }
             : undefined
         }
       ];
@@ -246,11 +277,18 @@ class LessonService {
         {
           model: Teacher,
           as: "TeacherForLesson",
-          include: [{
-            model: Person,
-            as: "person",
-            attributes: ["id", "surname", "name", "middlename"]
-          }]
+          include: [
+            {
+              model: Person,
+              as: "person",
+              attributes: ["id", "surname", "name", "middlename"]
+            },
+            {
+              model: TeachingPosition,
+              as: "teachingPosition",
+              attributes: ["id", "name"]
+            }
+          ]
         },
         {
           model: Topic,
@@ -260,12 +298,17 @@ class LessonService {
         {
           model: Audience,
           as: "AudienceForLesson",
-          attributes: ["id", "name"]
+          attributes: ["id", "number"]
         },
         {
           model: SubjectType,
           as: "SubjectTypeForLesson",
           attributes: ["id", "name"]
+        },
+        {
+          model: Pair,
+          as: "PairForLesson",
+          attributes: ["id", "name", "start", "e"]
         }
       ]
     });
