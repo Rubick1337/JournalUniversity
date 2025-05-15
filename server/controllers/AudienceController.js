@@ -3,9 +3,8 @@ const AudienceService = require("../services/AudienceService");
 class AudienceController {
   getAll = async (req, res, next) => {
     try {
-      const numberAudienceQuery = req.query.numberAudienceQuery || null;
-      const academicBuildingIdQuery = req.query.academicBuildingIdQuery || null;
-
+      const numberAudienceQuery = req.query.numberAudienceQuery ?? null;
+      const academicBuildingIdQuery = req.query.academicBuildingIdQuery ?? null;
       const result = await AudienceService.getAll(
         numberAudienceQuery,
         academicBuildingIdQuery

@@ -13,6 +13,7 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Autocomplete,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -20,14 +21,17 @@ import {
 } from "@mui/icons-material";
 import styles from "./LessonInfo.module.css";
 import { getPairsOnDate } from "../../store/slices/lessonSlice";
+import { getAllAcademicBuilding } from "../../store/slices/academicBuildingSlice";
+import { getAllAudience } from "../../store/slices/audienceSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 const LessonCreateForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { pairs } = useSelector((state) => state.lesson);
-
-  // Функция для получения сегодняшней даты в формате YYYY-MM-DD
+  const { data: academicBuildings, isLoading: buildingsLoading } = useSelector((state) => state.academicBuilding);
+  const { data: audiences, isLoading: audiencesLoading } = useSelector((state) => state.audience);
+  
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -39,12 +43,30 @@ const LessonCreateForm = () => {
   const [formData, setFormData] = useState({
     date: getTodayDate(),
     pair: "",
+    audience: null, // Теперь храним объект аудитории
   });
+  const [academicBuildingId, setAcademicBuildingId] = useState("");
+  const [audienceSearch, setAudienceSearch] = useState("");
 
-  // Загрузка пар при монтировании и изменении даты
+  // Загрузка корпусов при монтировании
+  useEffect(() => {
+    dispatch(getAllAcademicBuilding());
+  }, [dispatch]);
+
+  // Загрузка пар при изменении даты
   useEffect(() => {
     dispatch(getPairsOnDate(formData.date));
   }, [formData.date, dispatch]);
+
+  // Загрузка аудиторий при изменении корпуса или поискового запроса
+  useEffect(() => {
+    if (academicBuildingId) {
+      dispatch(getAllAudience({
+        numberAudienceQuery: audienceSearch,
+        academicBuildingIdQuery: academicBuildingId
+      }));
+    }
+  }, [academicBuildingId, audienceSearch, dispatch]);
 
   const handleBack = () => {
     navigate("/schedule");
@@ -58,13 +80,27 @@ const LessonCreateForm = () => {
     }));
   };
 
+  const handleBuildingChange = (e) => {
+    setAcademicBuildingId(e.target.value);
+    setFormData(prev => ({...prev, audience: null})); // Сброс выбранной аудитории при смене корпуса
+  };
+
+  const handleAudienceChange = (event, newValue) => {
+    setFormData(prev => ({...prev, audience: newValue}));
+  };
+
+  const handleAudienceInputChange = (event, newInputValue) => {
+    setAudienceSearch(newInputValue);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.audience) return;
+    
     const responseData = {
       date: formData.date,
       pair_id: formData.pair,
-      audience_id: 5,
-
+      audience_id: formData.audience.id,
       group_id: 1,
       subgroup_id: null,
       subject_id: 5,
@@ -138,13 +174,62 @@ const LessonCreateForm = () => {
           </Box>
         )}
 
+        <Box mt={3}>
+          <FormControl fullWidth>
+            <InputLabel>Выберите корпус</InputLabel>
+            <Select
+              value={academicBuildingId}
+              onChange={handleBuildingChange}
+              label="Выберите корпус"
+              required
+              disabled={buildingsLoading}
+            >
+              {academicBuildings?.map((building) => (
+                <MenuItem key={building.id} value={building.id}>
+                  {building.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+
+        <Box mt={3}>
+          <Autocomplete
+            options={audiences || []}
+            getOptionLabel={(option) => option.number}
+            value={formData.audience}
+            onChange={handleAudienceChange}
+            onInputChange={handleAudienceInputChange}
+            inputValue={audienceSearch}
+            disabled={!academicBuildingId}
+            loading={audiencesLoading}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Выберите аудиторию"
+                required
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {audiencesLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            noOptionsText={audienceSearch ? "Ничего не найдено" : "Введите название аудитории"}
+          />
+        </Box>
+
         <Box mt={4} display="flex" justifyContent="flex-end">
           <Button
             variant="contained"
             color="primary"
             startIcon={<SaveIcon />}
             type="submit"
-            disabled={pairs.isLoading}
+            disabled={pairs.isLoading || !formData.pair || !formData.audience}
           >
             Сохранить занятие
           </Button>

@@ -17,7 +17,6 @@ class AudienceService {
       }
       // Если задан поиск по номеру аудитории
 
-      
 
       if (numberAudienceQuery) {
         whereCondition[Op.and] = [

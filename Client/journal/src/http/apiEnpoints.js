@@ -136,4 +136,10 @@ export const API_ENDPOINTS = {
     CREATE: "/lesson/create",
     GET_PAIRS_ON_DATE: "/lesson/getPairsOnDate",
   },
+  ACADEMIC_BUILDING: {
+    GETALL: "/academicBuilding/getAll",
+  },
+  AUDIENCE: {
+    GETALL: "/audience/getAll",
+  },
 };

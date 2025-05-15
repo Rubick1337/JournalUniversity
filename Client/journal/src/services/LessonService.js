@@ -2,7 +2,7 @@ import $api from "../http/index";
 import { API_ENDPOINTS } from "../http/apiEnpoints";
 import BaseService from "./BaseService";
 
-class AbsenteeismService extends BaseService {
+class LessonService extends BaseService {
   async create(data) {
     const endpoint = API_ENDPOINTS.LESSON.CREATE;
     const response = await BaseService.request("post", endpoint, data);
@@ -54,4 +54,4 @@ class AbsenteeismService extends BaseService {
   // }
 }
 
-export default new AbsenteeismService();
+export default new LessonService();
