@@ -1,30 +1,37 @@
 const ApiError = require("../error/ApiError");
-const { Teacher, Person, Department, TeachingPosition, Op, Sequelize } = require("../models/index");
+const {
+  Teacher,
+  Person,
+  Department,
+  TeachingPosition,
+  Op,
+  Sequelize,
+} = require("../models/index");
 
 class TeacherService {
   async create(data) {
     try {
-      console.log('=== Данные для создания учителя ===');
-      console.log('Исходные данные:', data);
 
       // Проверяем все возможные варианты именования
       const teacherData = {
         person_id: data.person_id || data.person?.id || data.name?.id,
         department_id: data.department_id || data.department,
-        teaching_position_id: data.teacher_position_id || data.teaching_position_id || data.position
+        teaching_position_id:
+          data.teacher_position_id ||
+          data.teaching_position_id ||
+          data.position,
       };
 
-      console.log('Данные для создания:', teacherData);
 
       // Валидация
       if (!teacherData.teaching_position_id) {
-        throw new Error('Teacher position ID is required');
+        throw new Error("Teacher position ID is required");
       }
 
       const teacher = await Teacher.create({
         person_id: teacherData.person_id,
         department_id: teacherData.department_id,
-        teaching_position_id: teacherData.teaching_position_id // Используем правильное имя поля
+        teaching_position_id: teacherData.teaching_position_id, // Используем правильное имя поля
       });
 
       return await this._getTeacherWithAssociations(teacher.id);
@@ -43,7 +50,7 @@ class TeacherService {
       await teacher.update({
         person_id: updateData.person_id,
         department_id: updateData.department_id,
-        teaching_position_id: updateData.teaching_position_id // Исправлено с teacher_position_id
+        teaching_position_id: updateData.teaching_position_id, // Исправлено с teacher_position_id
       });
 
       return await this._getTeacherWithAssociations(teacherId);
@@ -53,30 +60,26 @@ class TeacherService {
   }
 
   async getAll({
-                 page = 1,
-                 limit = 10,
-                 sortBy = "id",
-                 sortOrder = "ASC",
-                 query = {
-                   idQuery: "",
-                   personQuery: "",
-                   departmentQuery: "",
-                   positionQuery: "",
-                 },
-               }) {
+    page = 1,
+    limit = 10,
+    sortBy = "id",
+    sortOrder = "ASC",
+    query = {
+      idQuery: "",
+      personQuery: "",
+      departmentQuery: "",
+      positionQuery: "",
+    },
+  }) {
     try {
       const offset = (page - 1) * limit;
-
       const where = {};
 
       if (query.idQuery) {
         where[Op.and] = [
-          Sequelize.where(
-              Sequelize.cast(Sequelize.col("Teacher.id"), "TEXT"),
-              {
-                [Op.iLike]: `%${query.idQuery}%`,
-              }
-          ),
+          Sequelize.where(Sequelize.cast(Sequelize.col("Teacher.id"), "TEXT"), {
+            [Op.iLike]: `%${query.idQuery}%`,
+          }),
         ];
       }
 
@@ -87,14 +90,24 @@ class TeacherService {
           attributes: ["id", "surname", "name", "middlename"],
           required: !!query.personQuery,
           where: query.personQuery
-              ? {
-                [Op.or]: [
-                  { surname: { [Op.iLike]: `%${query.personQuery}%` } },
-                  { name: { [Op.iLike]: `%${query.personQuery}%` } },
-                  { middlename: { [Op.iLike]: `%${query.personQuery}%` } },
+            ? {
+                [Op.and]: [
+                  Sequelize.where(
+                    Sequelize.fn(
+                      "concat",
+                      Sequelize.col("person.surname"),
+                      " ",
+                      Sequelize.col("person.name"),
+                      " ",
+                      Sequelize.col("person.middlename")
+                    ),
+                    {
+                      [Op.iLike]: `%${query.personQuery}%`,
+                    }
+                  ),
                 ],
               }
-              : undefined,
+            : undefined,
         },
         {
           model: Department,
@@ -102,13 +115,13 @@ class TeacherService {
           attributes: ["id", "name", "full_name"],
           required: !!query.departmentQuery,
           where: query.departmentQuery
-              ? {
+            ? {
                 [Op.or]: [
                   { name: { [Op.iLike]: `%${query.departmentQuery}%` } },
                   { full_name: { [Op.iLike]: `%${query.departmentQuery}%` } },
                 ],
               }
-              : undefined,
+            : undefined,
         },
         {
           model: TeachingPosition,
@@ -116,24 +129,30 @@ class TeacherService {
           attributes: ["id", "name"],
           required: !!query.positionQuery,
           where: query.positionQuery
-              ? {
+            ? {
                 name: { [Op.iLike]: `%${query.positionQuery}%` },
               }
-              : undefined,
+            : undefined,
         },
       ];
 
       // Обработка сортировки
       let order;
-      if (sortBy.includes('person.')) {
-        const field = sortBy.split('.')[1];
-        order = [[{ model: Person, as: 'person' }, field, sortOrder]];
-      } else if (sortBy.includes('department.')) {
-        const field = sortBy.split('.')[1];
-        order = [[{ model: Department, as: 'department' }, field, sortOrder]];
-      } else if (sortBy.includes('teachingPosition.')) {
-        const field = sortBy.split('.')[1];
-        order = [[{ model: TeachingPosition, as: 'teachingPosition' }, field, sortOrder]];
+      if (sortBy.includes("person.")) {
+        const field = sortBy.split(".")[1];
+        order = [[{ model: Person, as: "person" }, field, sortOrder]];
+      } else if (sortBy.includes("department.")) {
+        const field = sortBy.split(".")[1];
+        order = [[{ model: Department, as: "department" }, field, sortOrder]];
+      } else if (sortBy.includes("teachingPosition.")) {
+        const field = sortBy.split(".")[1];
+        order = [
+          [
+            { model: TeachingPosition, as: "teachingPosition" },
+            field,
+            sortOrder,
+          ],
+        ];
       } else {
         order = [[sortBy, sortOrder]];
       }
@@ -159,7 +178,7 @@ class TeacherService {
         },
       };
     } catch (error) {
-      console.error('Error in TeacherService.getAll:', error);
+      console.error("Error in TeacherService.getAll:", error);
       throw ApiError.internal("Error fetching teachers: " + error.message);
     }
   }

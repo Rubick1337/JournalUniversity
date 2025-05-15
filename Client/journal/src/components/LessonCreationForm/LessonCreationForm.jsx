@@ -14,6 +14,7 @@ import {
   FormControl,
   InputLabel,
   Autocomplete,
+  Chip,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -23,15 +24,27 @@ import styles from "./LessonInfo.module.css";
 import { getPairsOnDate } from "../../store/slices/lessonSlice";
 import { getAllAcademicBuilding } from "../../store/slices/academicBuildingSlice";
 import { getAllAudience } from "../../store/slices/audienceSlice";
+import { fetchTeachers } from "../../store/slices/teacherSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 const LessonCreateForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { pairs } = useSelector((state) => state.lesson);
-  const { data: academicBuildings, isLoading: buildingsLoading } = useSelector((state) => state.academicBuilding);
-  const { data: audiences, isLoading: audiencesLoading } = useSelector((state) => state.audience);
+  const { data: academicBuildings, isLoading: buildingsLoading } = useSelector(
+    (state) => state.academicBuilding
+  );
+  const { data: audiences, isLoading: audiencesLoading } = useSelector(
+    (state) => state.audience
+  );
   
+  const teachersState = useSelector((state) => state.teachers || {});
+  const teachers = teachersState.data || [];
+  const teachersLoading = teachersState.isLoading || false;
+  
+  const { teacher_id } = useSelector((state) => state.user);
+  const isTeacher = teacher_id != null;
+
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -43,10 +56,12 @@ const LessonCreateForm = () => {
   const [formData, setFormData] = useState({
     date: getTodayDate(),
     pair: "",
-    audience: null, // Теперь храним объект аудитории
+    audience: null,
+    teacher: null,
   });
   const [academicBuildingId, setAcademicBuildingId] = useState("");
   const [audienceSearch, setAudienceSearch] = useState("");
+  const [teacherSearch, setTeacherSearch] = useState("");
 
   // Загрузка корпусов при монтировании
   useEffect(() => {
@@ -61,12 +76,26 @@ const LessonCreateForm = () => {
   // Загрузка аудиторий при изменении корпуса или поискового запроса
   useEffect(() => {
     if (academicBuildingId) {
-      dispatch(getAllAudience({
-        numberAudienceQuery: audienceSearch,
-        academicBuildingIdQuery: academicBuildingId
-      }));
+      dispatch(
+        getAllAudience({
+          numberAudienceQuery: audienceSearch,
+          academicBuildingIdQuery: academicBuildingId,
+        })
+      );
     }
   }, [academicBuildingId, audienceSearch, dispatch]);
+
+  // Загрузка преподавателей при изменении поискового запроса
+  useEffect(() => {
+    const params = {
+      personQuery: teacherSearch,
+      page: 1,
+      limit: 10,
+    };
+    if (teacherSearch.length > 2) {
+      dispatch(fetchTeachers(params));
+    }
+  }, [teacherSearch, dispatch]);
 
   const handleBack = () => {
     navigate("/schedule");
@@ -82,29 +111,37 @@ const LessonCreateForm = () => {
 
   const handleBuildingChange = (e) => {
     setAcademicBuildingId(e.target.value);
-    setFormData(prev => ({...prev, audience: null})); // Сброс выбранной аудитории при смене корпуса
+    setFormData((prev) => ({ ...prev, audience: null }));
   };
 
   const handleAudienceChange = (event, newValue) => {
-    setFormData(prev => ({...prev, audience: newValue}));
+    setFormData((prev) => ({ ...prev, audience: newValue }));
   };
 
   const handleAudienceInputChange = (event, newInputValue) => {
     setAudienceSearch(newInputValue);
   };
 
+  const handleTeacherChange = (event, newValue) => {
+    setFormData((prev) => ({ ...prev, teacher: newValue }));
+  };
+
+  const handleTeacherInputChange = (event, newInputValue) => {
+    setTeacherSearch(newInputValue);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.audience) return;
-    
+    if (!formData.audience || !formData.teacher) return;
+
     const responseData = {
       date: formData.date,
       pair_id: formData.pair,
       audience_id: formData.audience.id,
+      teacher_person_id: formData.teacher.person.id,
       group_id: 1,
       subgroup_id: null,
       subject_id: 5,
-      teacher_person_id: 10,
       topic_id: null,
       subject_type_id: 3,
     };
@@ -175,6 +212,70 @@ const LessonCreateForm = () => {
         )}
 
         <Box mt={3}>
+          <Autocomplete
+            options={teachers}
+            getOptionLabel={(teacher) => 
+              `${teacher.person.surname} ${teacher.person.name} ${teacher.person.middlename || ''}`
+            }
+            value={formData.teacher}
+            onChange={handleTeacherChange}
+            onInputChange={handleTeacherInputChange}
+            inputValue={teacherSearch}
+            loading={teachersLoading}
+            renderOption={(props, teacher) => (
+              <li {...props}>
+                <div>
+                  <div>{`${teacher.person.surname} ${teacher.person.name} ${teacher.person.middlename || ''}`}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
+                    {teacher.department.name} • {teacher.teachingPosition.name}
+                  </div>
+                </div>
+              </li>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Выберите преподавателя"
+                required
+                InputProps={{
+                  ...params.InputProps,
+                  endAdornment: (
+                    <>
+                      {teachersLoading ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
+                      {params.InputProps.endAdornment}
+                    </>
+                  ),
+                }}
+              />
+            )}
+            noOptionsText={
+              teacherSearch
+                ? "Ничего не найдено"
+                : "Введите ФИО преподавателя (минимум 3 символа)"
+            }
+          />
+        </Box>
+
+        {formData.teacher && (
+          <Box mt={2} display="flex" gap={1}>
+            <Chip 
+              label={formData.teacher.department.name} 
+              size="small" 
+              color="primary"
+              variant="outlined"
+            />
+            <Chip 
+              label={formData.teacher.teachingPosition.name} 
+              size="small" 
+              color="secondary"
+              variant="outlined"
+            />
+          </Box>
+        )}
+
+        <Box mt={3}>
           <FormControl fullWidth>
             <InputLabel>Выберите корпус</InputLabel>
             <Select
@@ -212,14 +313,20 @@ const LessonCreateForm = () => {
                   ...params.InputProps,
                   endAdornment: (
                     <>
-                      {audiencesLoading ? <CircularProgress color="inherit" size={20} /> : null}
+                      {audiencesLoading ? (
+                        <CircularProgress color="inherit" size={20} />
+                      ) : null}
                       {params.InputProps.endAdornment}
                     </>
                   ),
                 }}
               />
             )}
-            noOptionsText={audienceSearch ? "Ничего не найдено" : "Введите название аудитории"}
+            noOptionsText={
+              audienceSearch
+                ? "Ничего не найдено"
+                : "Введите название аудитории"
+            }
           />
         </Box>
 
@@ -229,7 +336,12 @@ const LessonCreateForm = () => {
             color="primary"
             startIcon={<SaveIcon />}
             type="submit"
-            disabled={pairs.isLoading || !formData.pair || !formData.audience}
+            disabled={
+              pairs.isLoading || 
+              !formData.pair || 
+              !formData.audience || 
+              !formData.teacher
+            }
           >
             Сохранить занятие
           </Button>
