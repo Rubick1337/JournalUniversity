@@ -134,5 +134,6 @@ export const API_ENDPOINTS = {
   },
   LESSON: {
     CREATE: "/lesson/create",
+    GET_PAIRS_ON_DATE: "/lesson/getPairsOnDate",
   },
 };

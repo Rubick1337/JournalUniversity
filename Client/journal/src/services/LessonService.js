@@ -8,6 +8,14 @@ class AbsenteeismService extends BaseService {
     const response = await BaseService.request("post", endpoint, data);
     return response;
   }
+  async getPairsOnDate(date) {
+    const endpoint = API_ENDPOINTS.LESSON.GET_PAIRS_ON_DATE;
+    const params = new URLSearchParams();
+    params.append("date", date);
+    const url = `${endpoint}?${params.toString()}`;
+    const response = await BaseService.request("get", url);
+    return response;
+  }
 
   // async update(code, data) {
   //     const response = await BaseService.request("put", API_ENDPOINTS.ACADEMIC_SPECIALTY.UPDATE.replace(":code", code), data);

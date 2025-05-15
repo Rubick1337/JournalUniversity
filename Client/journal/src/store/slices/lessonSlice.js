@@ -13,33 +13,51 @@ export const createAvsenteeism = createAsyncThunk(
   }
 );
 
+export const getPairsOnDate = createAsyncThunk(
+  "lesson/getPairsOnDate",
+  async (date, { rejectWithValue }) => {
+    try {
+      const response = await LessonService.getPairsOnDate(date);
+      return response.data; // Возвращаем response.data, так как данные приходят в поле data
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
 // Slice
 const lessonSlice = createSlice({
   name: "lesson",
   initialState: {
-
+    pairs: {
+      isLoading: false,
+      errors: null, // Исправлено опечатку erros -> errors
+      data: [],
+    },
+    studentlesson: { // Добавлено для совместимости с существующим кодом
+      isLoading: false,
+      errors: null,
+      data: [],
+    }
   },
   reducers: {},
-//   extraReducers: (builder) => {
-//     builder
+  extraReducers: (builder) => {
+    builder
+      // Обработчики для getPairsOnDate
+      .addCase(getPairsOnDate.pending, (state) => {
+        state.pairs.isLoading = true;
+        state.pairs.errors = null;
+      })
+      .addCase(getPairsOnDate.fulfilled, (state, action) => {
+        state.pairs.isLoading = false;
+        state.pairs.data = action.payload;
+      })
+      .addCase(getPairsOnDate.rejected, (state, action) => {
+        state.pairs.isLoading = false;
+        state.pairs.errors = action.payload;
+      })
 
-//       .addCase(getForStudent.pending, (state) => {
-//         state.studentlesson.isLoading = true;
-//         state.studentlesson.errors = [];
-//       })
-//       .addCase(getForStudent.fulfilled, (state, action) => {
-//         state.studentlesson.isLoading = false;
-//         state.studentlesson.data = action.payload;
-//       })
-//       .addCase(getForStudent.rejected, (state, action) => {
-//         state.studentlesson.isLoading = false;
-//         state.studentlesson.errors = Array.isArray(action.payload)
-//           ? action.payload
-//           : [{ message: action.payload }];
-//       });
-//   },
+  },
 });
-
-export const {} = lessonSlice.actions;
 
 export default lessonSlice.reducer;
