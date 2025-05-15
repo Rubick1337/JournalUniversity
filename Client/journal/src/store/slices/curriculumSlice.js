@@ -210,7 +210,8 @@ const curriculumSlice = createSlice({
       })
       .addCase(getStudentSubjects.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.currentStudentSubjects = action.payload.data;
+        console.log("Payload from getStudentSubjects:", action.payload);
+        state.currentStudentSubjects = action.payload;
       })
       .addCase(getStudentSubjects.rejected, (state, action) => {
         state.isLoading = false;

@@ -15,6 +15,8 @@ import {
     selectSelectedSubjectId,
     selectLabsStats,
 } from '../../store/slices/studyPlanSlice';
+import { useSearchParams } from 'react-router-dom';
+
 import {
     Card,
     CardContent,
@@ -69,7 +71,6 @@ const StudentTopicsView = () => {
     const dispatch = useDispatch();
     const { user } = useSelector(state => state.user);
     const studentId = user?.student_id;
-    const subjectId = useSelector(selectSelectedSubjectId);
     const paginatedTopics = useSelector(selectPaginatedTopics);
     const pageCount = useSelector(selectPageCount);
     const loading = useSelector(selectLoading);
@@ -77,6 +78,8 @@ const StudentTopicsView = () => {
     const searchTerm = useSelector(selectSearchTerm);
     const currentPage = useSelector(selectCurrentPage);
     const labsStats = useSelector(selectLabsStats);
+    const [searchParams] = useSearchParams();
+    const subjectId = searchParams.get('subjectId');
 
     useEffect(() => {
         if (studentId && subjectId) {

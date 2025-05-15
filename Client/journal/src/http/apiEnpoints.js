@@ -83,6 +83,8 @@ export const API_ENDPOINTS = {
     UPDATE: '/curriculumSubject/update/:curriculumId/:subjectId/:assessmentTypeId/:semester',
     DELETE: '/curriculumSubject/delete/:curriculumId/:subjectId/:assessmentTypeId/:semester',
     GET_BY_COMPOSITED_ID: `/curriculumSubject/getByCompositeId/:curriculumId/:subjectId/:assessmentTypeId/:semester`,
+
+
   },
   TOPIC: {
     GETALL: "/topic/getAll",

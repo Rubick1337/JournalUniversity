@@ -79,6 +79,7 @@ class CurriculumService extends BaseService {
   async getStudentSubjects() {
     const endpoint = API_ENDPOINTS.CURRICULUM.GET_STUDENT_SUBJECTS;
     const response = await BaseService.request("get",endpoint);
+    console.log("API Response:", response);
     return response.data;
   }
 }

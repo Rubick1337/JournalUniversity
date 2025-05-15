@@ -16,9 +16,6 @@ const {
 class StudyPlanService {
   getTopicsProgressForSubject = async (studentId, subjectId) => {
     try {
-      console.log("Dasdqweqwdqwdqwwdqd")
-      console.log(studentId)
-      console.log(subjectId)
       // 1. Получаем студента по ID
       const student = await Student.findByPk(studentId);
       if (!student) {

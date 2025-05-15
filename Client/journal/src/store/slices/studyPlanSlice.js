@@ -33,6 +33,7 @@ const studyPlanSlice = createSlice({
     initialState: {
         topics: [],
         labsStats: null,
+        labsStatsBySubject: {}, // объект для хранения статистики по всем предметам
         loading: false,
         error: null,
         searchTerm: '',
@@ -81,7 +82,9 @@ const studyPlanSlice = createSlice({
             })
             .addCase(fetchLabsStats.fulfilled, (state, action) => {
                 state.loading = false;
-                state.labsStats = action.payload;
+                const { subjectId } = action.meta.arg; // получаем ID предмета из аргументов
+                state.labsStats = action.payload; // для совместимости
+                state.labsStatsBySubject[subjectId] = action.payload; // сохраняем по ID предмета
             })
             .addCase(fetchLabsStats.rejected, (state, action) => {
                 state.loading = false;
@@ -98,7 +101,7 @@ export const selectError = (state) => state.studyPlan.error;
 export const selectSearchTerm = (state) => state.studyPlan.searchTerm;
 export const selectCurrentPage = (state) => state.studyPlan.currentPage;
 export const selectItemsPerPage = (state) => state.studyPlan.itemsPerPage;
-export const selectSelectedSubjectId = (state) => state.studyPlan.selectedSubjectId;
+export const selectLabsStatsBySubject = (state) => state.studyPlan.labsStatsBySubject;
 
 export const selectFilteredTopics = (state) => {
     const topics = selectTopics(state) || []; // Fallback to empty array if undefined

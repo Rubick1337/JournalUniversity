@@ -35,6 +35,7 @@ import { getRefreshToken } from "./services/tokenStorage";
 import { useNavigate } from "react-router-dom";
 import TopicTablePage from "./pages/TopicTablePage/TopicTablePage";
 import CurruculimPage from "./pages/CurruculimPage/CurruculimPage";
+import GradeStudentPage from "./pages/GradeStudentPage/GradeStudentPage";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ function App() {
           <Route path={"/curriculum"} element={<CurruculimPage />} />
           <Route path={"/topic"} element={<TopicTablePage />} />
           <Route path={"/topics"} element={<CurriculumsTable />} />
-
+          <Route path={"/grades"} element={<GradeStudentPage />} />
         </Routes>
       </div>
     </Provider>
