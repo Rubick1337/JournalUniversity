@@ -37,4 +37,8 @@ initializeRoute('grade', 'grade');
 initializeRoute('absenteeism', 'absenteeism');
 
 
+// initializeRoute('audience', 'audience');
+initializeRoute('academicBuilding', 'academicBuilding');
+
+
 module.exports = router;
