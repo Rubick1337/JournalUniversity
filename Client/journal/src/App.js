@@ -44,6 +44,7 @@ function App() {
     const refreshToken = getRefreshToken();
 
     if (refreshToken) {
+
       dispatch(refreshUser(refreshToken))
           .unwrap()
     } else {

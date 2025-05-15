@@ -34,6 +34,7 @@ initializeRoute('lesson', 'lesson');
 initializeRoute('schedule', 'schedule');
 initializeRoute('studyPlan', 'studyPlan');
 initializeRoute('grade', 'grade');
+initializeRoute('absenteeism', 'absenteeism');
 
 
 module.exports = router;
