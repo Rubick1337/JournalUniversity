@@ -1,5 +1,20 @@
+// StudentTopicsView.js
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import {
+    fetchTopicsProgress,
+    fetchLabsStats,
+    selectPaginatedTopics,
+    selectPageCount,
+    selectLoading,
+    selectError,
+    selectSearchTerm,
+    selectCurrentPage,
+    setSearchTerm,
+    setCurrentPage,
+    selectSelectedSubjectId,
+    selectLabsStats,
+} from '../../store/slices/studyPlanSlice';
 import {
     Card,
     CardContent,
@@ -13,17 +28,11 @@ import {
     Paper,
     Fade,
     Zoom,
+    CircularProgress,
+    Divider,
     styled
 } from '@mui/material';
-import { Search as SearchIcon } from '@mui/icons-material';
-import {
-    fetchStudentLabs,
-    selectStudentData,
-    selectPaginatedLabs,
-    selectPageCount,
-    setSearchTerm,
-    setCurrentPage
-} from '../../store/slices/studentLabsSlice'; // Изменен путь импорта
+import { Search as SearchIcon, School as SchoolIcon } from '@mui/icons-material';
 
 const StyledCard = styled(Card)(({ theme }) => ({
     height: '100%',
@@ -36,40 +45,45 @@ const StyledCard = styled(Card)(({ theme }) => ({
     },
 }));
 
-const GradeChip = styled(Chip)(({ theme, grade }) => ({
+const ScoreChip = styled(Chip)(({ theme, score }) => ({
     fontWeight: 600,
-    ...(grade === 'отлично' && {
+    ...(score === 5 && {
         backgroundColor: theme.palette.success.light,
         color: theme.palette.success.contrastText,
     }),
-    ...(grade === 'зачет' && {
-        backgroundColor: theme.palette.primary.light,
-        color: theme.palette.primary.contrastText,
-    }),
-    ...(grade === 'хорошо' && {
+    ...(score === 4 && {
         backgroundColor: theme.palette.info.light,
         color: theme.palette.info.contrastText,
     }),
-    ...(grade === 'удовлетворительно' && {
+    ...(score === 3 && {
         backgroundColor: theme.palette.warning.light,
         color: theme.palette.warning.contrastText,
     }),
-    ...(!grade && {
+    ...(!score && {
         backgroundColor: theme.palette.grey[300],
         color: theme.palette.grey[800],
     }),
 }));
 
-const StudentLabsCardView = () => {
+const StudentTopicsView = () => {
     const dispatch = useDispatch();
-    const studentData = useSelector(selectStudentData);
-    const paginatedLabs = useSelector(selectPaginatedLabs);
+    const { user } = useSelector(state => state.user);
+    const studentId = user?.student_id;
+    const subjectId = useSelector(selectSelectedSubjectId);
+    const paginatedTopics = useSelector(selectPaginatedTopics);
     const pageCount = useSelector(selectPageCount);
-    const { loading, error } = useSelector(state => state.studentLabs);
+    const loading = useSelector(selectLoading);
+    const error = useSelector(selectError);
+    const searchTerm = useSelector(selectSearchTerm);
+    const currentPage = useSelector(selectCurrentPage);
+    const labsStats = useSelector(selectLabsStats);
 
     useEffect(() => {
-        dispatch(fetchStudentLabs());
-    }, [dispatch]);
+        if (studentId && subjectId) {
+            dispatch(fetchTopicsProgress({ studentId, subjectId }));
+            dispatch(fetchLabsStats({ studentId, subjectId }));
+        }
+    }, [dispatch, studentId, subjectId]);
 
     const handleSearchChange = (e) => {
         dispatch(setSearchTerm(e.target.value));
@@ -81,124 +95,120 @@ const StudentLabsCardView = () => {
 
     if (loading) {
         return (
-            <Box sx={{
-                p: { xs: 2, sm: 3, md: 4 },
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '100vh'
-            }}>
-                <Typography variant="h6">Загрузка данных...</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                <CircularProgress />
             </Box>
         );
     }
 
     if (error) {
         return (
-            <Box sx={{
-                p: { xs: 2, sm: 3, md: 4 },
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: '100vh'
-            }}>
-                <Typography variant="h6" color="error">
-                    Ошибка загрузки данных: {error}
-                </Typography>
+            <Box sx={{ p: 2, color: 'error.main' }}>
+                <Typography>Ошибка: {error}</Typography>
             </Box>
         );
     }
 
     return (
-        <Box sx={{
-            p: { xs: 2, sm: 3, md: 4 },
-            background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%)',
-            minHeight: '100vh'
-        }}>
+        <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
             <Fade in timeout={500}>
-                <Paper elevation={3} sx={{
-                    p: 3,
-                    mb: 4,
-                    borderRadius: 2,
-                    background: 'white'
-                }}>
-                    <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 3,
-                        flexDirection: { xs: 'column', sm: 'row' }
-                    }}>
-                        <Avatar
-                            alt={studentData.student}
-                            sx={{
-                                width: 80,
-                                height: 80,
-                                mr: { sm: 3 },
-                                mb: { xs: 2, sm: 0 },
-                                fontSize: '2rem',
-                                bgcolor: '#3f51b5'
-                            }}
-                        >
-                            {studentData.student.charAt(0)}
+                <Paper elevation={3} sx={{ p: 3, mb: 4, borderRadius: 2 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+                        <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
+                            <SchoolIcon />
                         </Avatar>
-                        <Box>
-                            <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
-                                {studentData.student}
-                            </Typography>
-                            <Typography variant="subtitle1" color="text.secondary">
-                                {studentData.discipline} • {studentData.group}
-                            </Typography>
-                        </Box>
+                        <Typography variant="h5">Прогресс по темам</Typography>
                     </Box>
+
+                    {labsStats && (
+                        <Box sx={{ mb: 3, p: 2, bgcolor: 'background.paper', borderRadius: 1 }}>
+                            <Typography variant="subtitle1" gutterBottom>
+                                Статистика по лабораторным работам:
+                            </Typography>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Typography variant="body2">Всего работ: {labsStats.stats.totalLabs}</Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Typography variant="body2">Выполнено: {labsStats.stats.completedLabs}</Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Typography variant="body2">
+                                        Процент выполнения: {labsStats.stats.completionPercentage}%
+                                    </Typography>
+                                </Grid>
+                                <Grid item xs={12} sm={6} md={3}>
+                                    <Typography variant="body2">
+                                        Часов выполнено: {labsStats.stats.completedHours}/{labsStats.stats.totalHours}
+                                    </Typography>
+                                </Grid>
+                            </Grid>
+                        </Box>
+                    )}
 
                     <TextField
                         fullWidth
-                        label="Поиск по теме лабораторной работы"
+                        label="Поиск по названию темы или типу занятия"
                         variant="outlined"
+                        value={searchTerm}
                         onChange={handleSearchChange}
                         InputProps={{
-                            startAdornment: (
-                                <SearchIcon sx={{ color: 'action.active', mr: 1 }} />
-                            ),
+                            startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
                         }}
-                        sx={{
-                            mb: 3,
-                            '& .MuiOutlinedInput-root': {
-                                borderRadius: 2,
-                            }
-                        }}
+                        sx={{ mb: 3 }}
                     />
                 </Paper>
             </Fade>
 
-            {paginatedLabs.length > 0 ? (
+            {paginatedTopics.length > 0 ? (
                 <>
                     <Grid container spacing={3}>
-                        {paginatedLabs.map((lab, index) => (
-                            <Grid item xs={12} sm={6} md={4} key={index}>
+                        {paginatedTopics.map((topic, index) => (
+                            <Grid item xs={12} sm={6} md={4} key={topic.id}>
                                 <Zoom in timeout={500 + (index * 100)}>
                                     <StyledCard>
                                         <CardContent sx={{ flexGrow: 1 }}>
-                                            <Typography variant="h6" sx={{
-                                                fontWeight: 600,
-                                                mb: 3
-                                            }}>
-                                                {lab.topic}
+                                            <Typography variant="h6" gutterBottom>
+                                                {topic.topic.name}
                                             </Typography>
 
-                                            <Box sx={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                            }}>
-                                                <GradeChip
-                                                    label={lab.grade ? lab.grade : 'Не сдано'}
-                                                    grade={lab.grade}
-                                                    size="medium"
-                                                />
+                                            <Box sx={{ mb: 2 }}>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    Статус
+                                                    Неделя: {topic.weekNumber}
                                                 </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Часы: {topic.hours}
+                                                </Typography>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Тип: {topic.subjectType.name}
+                                                </Typography>
+                                                {topic.withDefense && (
+                                                    <Chip
+                                                        label="С защитой"
+                                                        size="small"
+                                                        color="secondary"
+                                                        sx={{ mt: 1 }}
+                                                    />
+                                                )}
+                                            </Box>
+
+                                            <Divider sx={{ my: 2 }} />
+
+                                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                <Box>
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        Оценка
+                                                    </Typography>
+                                                    <ScoreChip
+                                                        label={topic.progress.score || 'Не выполнено'}
+                                                        score={topic.progress.score}
+                                                    />
+                                                </Box>
+                                                {topic.progress.isCompleted && (
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {new Date(topic.progress.completionDate).toLocaleDateString()}
+                                                    </Typography>
+                                                )}
                                             </Box>
                                         </CardContent>
                                     </StyledCard>
@@ -208,36 +218,24 @@ const StudentLabsCardView = () => {
                     </Grid>
 
                     {pageCount > 1 && (
-                        <Box sx={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            mt: 4,
-                            '& .MuiPaginationItem-root': {
-                                borderRadius: 1,
-                            }
-                        }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
                             <Pagination
                                 count={pageCount}
+                                page={currentPage}
                                 onChange={handlePageChange}
                                 color="primary"
-                                shape="rounded"
-                                size="large"
                             />
                         </Box>
                     )}
                 </>
             ) : (
                 <Fade in timeout={500}>
-                    <Paper elevation={0} sx={{
-                        p: 4,
-                        textAlign: 'center',
-                        backgroundColor: 'transparent'
-                    }}>
+                    <Paper elevation={0} sx={{ p: 4, textAlign: 'center' }}>
                         <Typography variant="h6" color="text.secondary">
-                            Ничего не найдено
+                            Темы не найдены
                         </Typography>
                         <Typography variant="body1" sx={{ mt: 1 }}>
-                            Попробуйте изменить параметры поиска
+                            {searchTerm ? 'Попробуйте изменить параметры поиска' : 'Нет данных для отображения'}
                         </Typography>
                     </Paper>
                 </Fade>
@@ -246,4 +244,4 @@ const StudentLabsCardView = () => {
     );
 };
 
-export default StudentLabsCardView;
+export default StudentTopicsView;
