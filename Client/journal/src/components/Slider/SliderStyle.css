@@ -20,7 +20,7 @@
 
 .slide-content {
     position: absolute;
-    bottom: 70px;
+    bottom: -8px;
     left: 28px;
     color: white;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
@@ -45,7 +45,7 @@
 .slide-content h2 {
     color: #FFF;
     font-family: Poppins;
-    font-size: 26px;
+    font-size: 16px;
     font-style: normal;
     font-weight: 400;
     line-height: normal;

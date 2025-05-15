@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import { useNavigate } from "react-router-dom"; // ⬅️ добавлено
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Mousewheel } from "swiper/modules";
 import "swiper/css";
@@ -7,21 +7,31 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./SliderStyle.css";
 import backgroundImage from "../../images/background.png";
-import { useDispatch } from "react-redux";
-import {getStudentSubjects} from '../../store/slices/curriculumSlice'
+import { useDispatch, useSelector } from "react-redux";
+import { getStudentSubjects } from '../../store/slices/curriculumSlice';
+
 const Slider = ({ studentId }) => {
-    const [disciplines, setDisciplines] = useState([]);
     const [expanded, setExpanded] = useState(false);
     const swiperRef = useRef(null);
-const dispatch = useDispatch();
+    const dispatch = useDispatch();
+    const navigate = useNavigate(); // ⬅️ навигация
+
+    const { currentStudentSubjects, isLoading, errors } = useSelector(
+        (state) => state.curriculums
+    );
 
     useEffect(() => {
-        dispatch(getStudentSubjects())
-        axios
-            .get("/TestData/disciplines.json")
-            .then((response) => setDisciplines(response.data[studentId] || []))
-            .catch((error) => console.error("Ошибка загрузки данных:", error));
-    }, [studentId]);
+        if (studentId) {
+            dispatch(getStudentSubjects({ studentId }));
+        }
+    }, [studentId, dispatch]);
+
+    const subjectsToDisplay = currentStudentSubjects?.map(item => ({
+        id: item.subject.id,
+        name: item.subject.name,
+        assessmentType: item.assessmentType.name,
+        totalHours: item.hours.all
+    })) || [];
 
     const handleSliderClick = (e) => {
         if (expanded && swiperRef.current) {
@@ -37,10 +47,13 @@ const dispatch = useDispatch();
         }
     };
 
-    const handlePlayClick = (e) => {
+    const handlePlayClick = (subjectId) => (e) => {
         e.stopPropagation();
-        console.log("Play button clicked");
+        navigate(`/grades?studentId=${studentId}&subjectId=${subjectId}`);
     };
+
+    if (isLoading) return <div>Загрузка предметов...</div>;
+    if (errors.length > 0) return <div>Ошибка при загрузке предметов: {errors[0].message}</div>;
 
     return (
         <div
@@ -65,21 +78,23 @@ const dispatch = useDispatch();
                 loop={true}
                 mousewheel={true}
             >
-                {disciplines.length > 0 ? (
-                    disciplines.map((discipline) => (
-                        <SwiperSlide key={discipline.id}>
+                {subjectsToDisplay.length > 0 ? (
+                    subjectsToDisplay.map((subject) => (
+                        <SwiperSlide key={subject.id}>
                             <div
                                 className="swiper-slide"
                                 style={{ backgroundImage: `url(${backgroundImage})` }}
                             >
                                 <button
                                     className="play-button"
-                                    onClick={handlePlayClick}
+                                    onClick={handlePlayClick(subject.id)}
                                 >
                                     &#9655;
                                 </button>
                                 <div className="slide-content">
-                                    <h2>{discipline.name}</h2>
+                                    <h2>{subject.name}</h2>
+                                    <p>Тип аттестации: {subject.assessmentType}</p>
+                                    <p>Часов: {subject.totalHours}</p>
                                 </div>
                             </div>
                         </SwiperSlide>

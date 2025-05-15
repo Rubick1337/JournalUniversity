@@ -83,6 +83,8 @@ export const API_ENDPOINTS = {
     UPDATE: '/curriculumSubject/update/:curriculumId/:subjectId/:assessmentTypeId/:semester',
     DELETE: '/curriculumSubject/delete/:curriculumId/:subjectId/:assessmentTypeId/:semester',
     GET_BY_COMPOSITED_ID: `/curriculumSubject/getByCompositeId/:curriculumId/:subjectId/:assessmentTypeId/:semester`,
+
+
   },
   TOPIC: {
     GETALL: "/topic/getAll",
@@ -127,5 +129,8 @@ export const API_ENDPOINTS = {
   ABSENTEEISM: {
     CREATE: '/absenteeism/create',
     GET_FOR_STUDENT: '/absenteeism/getForStudent',
+  STUDY_PLAN: {
+    GET_TOPICS_PROGRESS: '/studyPlan/getStydentProgressForSubject',
+    GET_LABS_STATS: '/studyPlan/getLabsStatsForStudent',
   },
 };
