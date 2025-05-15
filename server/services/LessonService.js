@@ -110,7 +110,7 @@ class LessonService {
         {
           model: Group,
           as: "GroupForLesson",
-          attributes: ["id", "name"],
+          // attributes: ["id", "name"],
           required: !!query.groupQuery,
           where: query.groupQuery
             ? { name: { [Op.iLike]: `%${query.groupQuery}%` } }
@@ -119,7 +119,7 @@ class LessonService {
         {
           model: Subgroup,
           as: "SubgroupForLesson",
-          attributes: ["id", "name"],
+          // attributes: ["id", "name"],
           required: !!query.subgroupQuery,
           where: query.subgroupQuery
             ? { name: { [Op.iLike]: `%${query.subgroupQuery}%` } }
@@ -128,7 +128,7 @@ class LessonService {
         {
           model: Subject,
           as: "SubjectForLesson",
-          attributes: ["id", "name"],
+          // attributes: ["id", "name"],
           required: !!query.subjectQuery,
           where: query.subjectQuery
             ? { name: { [Op.iLike]: `%${query.subjectQuery}%` } }
@@ -141,12 +141,12 @@ class LessonService {
             {
               model: Person,
               as: "person",
-              attributes: ["id", "surname", "name", "middlename"],
+              // attributes: ["id", "surname", "name", "middlename"],
             },
             {
               model: TeachingPosition,
               as: "teachingPosition",
-              attributes: ["id", "name"],
+              // attributes: ["id", "name"],
               required: !!query.teachingPositionQuery,
               where: query.teachingPositionQuery
                 ? { name: { [Op.iLike]: `%${query.teachingPositionQuery}%` } }
@@ -163,7 +163,7 @@ class LessonService {
         {
           model: Topic,
           as: "TopicForLesson",
-          attributes: ["id", "name"],
+          // attributes: ["id", "name"],
           required: !!query.topicQuery,
           where: query.topicQuery
             ? { name: { [Op.iLike]: `%${query.topicQuery}%` } }
@@ -172,7 +172,7 @@ class LessonService {
         {
           model: Audience,
           as: "AudienceForLesson",
-          attributes: ["id", "number"],
+          // attributes: ["id", "number"],
           required: !!query.audienceQuery,
           where: query.audienceQuery
             ? { number: { [Op.iLike]: `%${query.audienceQuery}%` } }
@@ -181,7 +181,7 @@ class LessonService {
         {
           model: SubjectType,
           as: "SubjectTypeForLesson",
-          attributes: ["id", "name"],
+          // attributes: ["id", "name"],
           required: !!query.subjectTypeQuery,
           where: query.subjectTypeQuery
             ? { name: { [Op.iLike]: `%${query.subjectTypeQuery}%` } }
@@ -190,7 +190,7 @@ class LessonService {
         {
           model: Pair,
           as: "PairForLesson",
-          attributes: ["id", "name", "start_time", "end_time"],
+          // attributes: ["id", "name", "start_time", "end_time"],
           required: !!query.pairQuery,
           where: query.pairQuery
             ? {
@@ -262,17 +262,17 @@ class LessonService {
         {
           model: Group,
           as: "GroupForLesson",
-          attributes: ["id", "name"]
+          // attributes: ["id", "name"]
         },
         {
           model: Subgroup,
           as: "SubgroupForLesson",
-          attributes: ["id", "name"]
+          // attributes: ["id", "name"]
         },
         {
           model: Subject,
           as: "SubjectForLesson",
-          attributes: ["id", "name"]
+          // attributes: ["id", "name"]
         },
         {
           model: Teacher,
@@ -281,34 +281,34 @@ class LessonService {
             {
               model: Person,
               as: "person",
-              attributes: ["id", "surname", "name", "middlename"]
+              // attributes: ["id", "surname", "name", "middlename"]
             },
             {
               model: TeachingPosition,
               as: "teachingPosition",
-              attributes: ["id", "name"]
+              // attributes: ["id", "name"]
             }
           ]
         },
         {
           model: Topic,
           as: "TopicForLesson",
-          attributes: ["id", "name"]
+          // attributes: ["id", "name"]
         },
         {
           model: Audience,
           as: "AudienceForLesson",
-          attributes: ["id", "number"]
+          // attributes: ["id", "number"]
         },
         {
           model: SubjectType,
           as: "SubjectTypeForLesson",
-          attributes: ["id", "name"]
+          // attributes: ["id", "name"]
         },
         {
           model: Pair,
           as: "PairForLesson",
-          attributes: ["id", "name", "start", "e"]
+          // attributes: ["id", "name", "start"]
         }
       ]
     });

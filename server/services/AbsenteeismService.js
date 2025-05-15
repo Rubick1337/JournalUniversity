@@ -1,5 +1,7 @@
 const ApiError = require("../error/ApiError");
 const { Absenteeism, Lesson, Student, Op, Sequelize } = require("../models/index");
+const ScheduleService = require("./ScheduleService");
+const StudentService = require("./StudentService");
 
 class AbsenteeismService {
   // Создание новой записи о прогуле
@@ -157,16 +159,56 @@ class AbsenteeismService {
         {
           model: Lesson,
           as: "lesson",
-          attributes: ["id", "name", "date", "start_time", "end_time"],
+          // attributes: ["id", "name", "date", "start_time", "end_time"],
         },
         {
           model: Student,
           as: "student",
-          attributes: ["id", "surname", "name", "middlename", "group_id"],
+          // attributes: ["id", "surname", "name", "middlename", "group_id"],
         },
       ],
     });
   }
+
+getForStudent = async (studentId) => {
+  try {
+    const student = await StudentService.getById(studentId);
+    const semester = await ScheduleService.getCurrentSemester();
+    const { start, end } = semester;
+    
+    const absenteeisms = await Absenteeism.findAll({
+      where: {
+        student_id: student.id
+      },
+      include: [
+        {
+          model: Lesson,
+          as: 'lesson',
+          where: {
+            date: {
+              [Op.between]: [start, end]
+            }
+          }
+        }
+      ]
+    });
+    // Calculate total hours
+    const totals = absenteeisms.reduce((acc, absenteeism) => {
+      return {
+        excusedHours: acc.excusedHours + (absenteeism.count_excused_hour || 0),
+        unexcusedHours: acc.unexcusedHours + (absenteeism.count_unexcused_hour || 0)
+      };
+    }, { excusedHours: 0, unexcusedHours: 0 });
+
+    return {
+      semester,
+      totals,
+    };
+
+  } catch (err) {
+    throw err;
+  }
+}
 }
 
 module.exports = new AbsenteeismService();

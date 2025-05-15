@@ -19,6 +19,7 @@ import SubgroupSlice from "./slices/subgroupSlice";
 import StudentLabsSlice from "./slices/studentLabsSlice";
 import userSlice from "./slices/authSlice";
 import scheduleSlice from "./slices/scheduleSlice";
+import absenteeismSlice from "./slices/absenteeismSlice";
 import studyPlanSlice from "./slices/studyPlanSlice";
 
 
@@ -44,6 +45,7 @@ const store = configureStore({
     studentLabs: StudentLabsSlice,
     user: userSlice,
     schedule: scheduleSlice,
+    absenteeism: absenteeismSlice
     studyPlan: studyPlanSlice,
   },
   middleware: (getDefaultMiddleware) =>

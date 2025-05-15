@@ -66,7 +66,7 @@ const Lesson = sequelize.define("Lesson", {
       model: Topic,
       key: "id",
     },
-    allowNull: false,
+    allowNull: true,
   },
   audience_id: {
     type: DataTypes.INTEGER,

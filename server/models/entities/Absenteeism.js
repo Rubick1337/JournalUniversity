@@ -4,9 +4,9 @@ const { DataTypes } = require("sequelize");
 
 const Absenteeism = sequelize.define("Absenteeism", {
   id: {
-    type: DataTypes.UUID,
+    type: DataTypes.INTEGER,
     primaryKey: true,
-    defaultValue: DataTypes.UUIDV4,
+    autoIncrement: true
   },
   count_excused_hour: {
     type: DataTypes.INTEGER,

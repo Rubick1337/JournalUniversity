@@ -12,4 +12,7 @@ absenteeismRouter.delete(`/delete/:${NAME_OF_ID_absenteeism_PARAM}`, absenteeism
 absenteeismRouter.post(`/create`, absenteeismController.create);
 absenteeismRouter.put(`/update/:${NAME_OF_ID_absenteeism_PARAM}`, absenteeismController.update);
 
+absenteeismRouter.get(`/getForStudent`, absenteeismController.getForStudent);
+
+
 module.exports = absenteeismRouter;

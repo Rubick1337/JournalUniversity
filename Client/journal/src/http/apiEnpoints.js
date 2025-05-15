@@ -126,6 +126,9 @@ export const API_ENDPOINTS = {
     GET_SEMESTER_BY_DATE: '/schedule/getSemesterByDate',
     GET_SCHEDULE_BY_DATE: '/schedule/getScheduleByDate',
   },
+  ABSENTEEISM: {
+    CREATE: '/absenteeism/create',
+    GET_FOR_STUDENT: '/absenteeism/getForStudent',
   STUDY_PLAN: {
     GET_TOPICS_PROGRESS: '/studyPlan/getStydentProgressForSubject',
     GET_LABS_STATS: '/studyPlan/getLabsStatsForStudent',
