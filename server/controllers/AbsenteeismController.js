@@ -5,7 +5,9 @@ class AbsenteeismController {
   create = async (req, res, next) => {
     try {
       const result = await AbsenteeismService.create(req.body);
-      return res.status(200).json({ message: "Запись о прогуле создана", data: result });
+      return res
+        .status(200)
+        .json({ message: "Запись о прогуле создана", data: result });
     } catch (err) {
       console.error(err);
       next(err);
@@ -68,7 +70,9 @@ class AbsenteeismController {
     try {
       const { absenteeismId } = req.params;
       const result = await AbsenteeismService.update(absenteeismId, req.body);
-      return res.status(200).json({ message: "Запись о прогуле обновлена", data: result });
+      return res
+        .status(200)
+        .json({ message: "Запись о прогуле обновлена", data: result });
     } catch (err) {
       console.error(err);
       next(err);
@@ -83,9 +87,26 @@ class AbsenteeismController {
       if (!result) {
         return res
           .status(404)
-          .json({ message: `Запись о прогуле с ID ${absenteeismId} не найдена` });
+          .json({
+            message: `Запись о прогуле с ID ${absenteeismId} не найдена`,
+          });
       }
       return res.status(204).send();
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
+
+  getForStudent = async (req, res, next) => {
+    try {
+      //TODO after JWT
+      //   const studentId = req.studentIdFromJWT;
+      const studentId = req.query.studentId;
+      const data = await AbsenteeismService.getForStudent(studentId);
+      return res.status(200).json({
+        data: data,
+      });
     } catch (err) {
       console.error(err);
       next(err);

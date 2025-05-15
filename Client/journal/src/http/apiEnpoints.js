@@ -124,4 +124,8 @@ export const API_ENDPOINTS = {
     GET_SEMESTER_BY_DATE: '/schedule/getSemesterByDate',
     GET_SCHEDULE_BY_DATE: '/schedule/getScheduleByDate',
   },
+  ABSENTEEISM: {
+    CREATE: '/absenteeism/create',
+    GET_FOR_STUDENT: '/absenteeism/getForStudent',
+  },
 };

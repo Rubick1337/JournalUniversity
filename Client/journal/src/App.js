@@ -35,6 +35,7 @@ import { getRefreshToken } from "./services/tokenStorage";
 import { useNavigate } from "react-router-dom";
 import TopicTablePage from "./pages/TopicTablePage/TopicTablePage";
 import CurruculimPage from "./pages/CurruculimPage/CurruculimPage";
+
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
