@@ -113,7 +113,38 @@ class CurriculumController {
       next(err);
     }
   };
-  
+  getNumberSemesterInCurriculum = async (req, res, next) => {
+    try {
+      //TODO Student Id from JWT
+      // const studentId = req.studentIdFromJwt;
+      const yearStartEducation = req.query.yearStartEducation;
+      const date = req.query.date;
+      const result =
+        await CurriculumSubjectService.getNumberSemesterInCurriculum(
+          yearStartEducation,
+          date
+        );
+      return res.status(200).json({ data: result });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
+  getStudentSubjects= async (req, res, next) => {
+    try {
+      //TODO Student Id from JWT
+      // const studentId = req.studentIdFromJwt;
+      const studentId = 5;
+      const result =
+        await CurriculumSubjectService.getStudentSubjects(
+          studentId,
+        );
+      return res.status(200).json({ data: result });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
 }
 
 module.exports = new CurriculumController();
