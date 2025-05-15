@@ -32,6 +32,8 @@ initializeRoute('student', 'student');
 initializeRoute('user', 'user');
 initializeRoute('lesson', 'lesson');
 initializeRoute('schedule', 'schedule');
+initializeRoute('studyPlan', 'studyPlan');
+initializeRoute('grade', 'grade');
 
 
 module.exports = router;
