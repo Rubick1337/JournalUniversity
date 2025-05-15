@@ -406,81 +406,120 @@ class CurriculumSubjectService {
       throw error;
     }
   };
-  getNumberSemesterInCurriculum = async (yearStartEducation, date = new Date()) => {
+  getNumberSemesterInCurriculum = async (
+    yearStartEducation,
+    date = new Date()
+  ) => {
     try {
-        // Преобразуем входные параметры
-        const startYear = parseInt(yearStartEducation);
-        const currentDate = new Date(date);
-        
-        // Проверяем валидность года начала обучения
-        if (isNaN(startYear)) {
-            throw new Error('Invalid start year');
-        }
+      // Преобразуем входные параметры
+      const startYear = parseInt(yearStartEducation);
+      const currentDate = new Date(date);
 
-        // Получаем текущий год и месяц
-        const currentYear = currentDate.getFullYear();
-        const currentMonth = currentDate.getMonth() + 1; // Месяцы 1-12
+      // Проверяем валидность года начала обучения
+      if (isNaN(startYear)) {
+        throw new Error("Invalid start year");
+      }
 
-        // Вычисляем разницу в годах между текущим годом и годом начала обучения
-        const yearDiff = currentYear - startYear;
+      // Получаем текущий год и месяц
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1; // Месяцы 1-12
 
-        // Определяем текущий семестр
-        let semester;
-        
-        if (currentMonth >= 9 || currentMonth === 1) {
-            // Осенний семестр: сентябрь-декабрь и январь
-            semester = 1 + 2 * yearDiff;
-        } else if (currentMonth >= 2 && currentMonth <= 8) {
-            // Весенний семестр: февраль-август
-            semester = 2 + 2 * (currentYear - startYear - (currentMonth < 9 ? 1 : 0));
-        } else {
-            // На всякий случай (не должно происходить)
-            throw new Error('Invalid month calculation');
-        }
+      // Вычисляем разницу в годах между текущим годом и годом начала обучения
+      const yearDiff = currentYear - startYear;
 
-        // Корректировка для января (он относится к осеннему семестру предыдущего года)
-        if (currentMonth === 1) {
-            semester = 1 + 2 * (yearDiff - 1);
-        }
+      // Определяем текущий семестр
+      let semester;
 
-        return semester;
+      if (currentMonth >= 9 || currentMonth === 1) {
+        // Осенний семестр: сентябрь-декабрь и январь
+        semester = 1 + 2 * yearDiff;
+      } else if (currentMonth >= 2 && currentMonth <= 8) {
+        // Весенний семестр: февраль-август
+        semester =
+          2 + 2 * (currentYear - startYear - (currentMonth < 9 ? 1 : 0));
+      } else {
+        // На всякий случай (не должно происходить)
+        throw new Error("Invalid month calculation");
+      }
+
+      // Корректировка для января (он относится к осеннему семестру предыдущего года)
+      if (currentMonth === 1) {
+        semester = 1 + 2 * (yearDiff - 1);
+      }
+
+      return semester;
     } catch (err) {
-        console.error("Error calculating semester number:", err);
-        throw err;
-    };
-  }
-
-  getStudentSubjects = async (studentId) => {
-    try {
-      const curriculum = await this.getCurrentCurriculumForStudent(studentId);
-      const numberSemester = await this.getNumberSemesterInCurriculum(
-        curriculum.year_of_specialty_training
-      );
-      return {afds: curriculum, dfas:numberSemester}
-      // 3. Формируем уникальный список дисциплин
-      const uniqueSubjects = [];
-      const subjectIds = new Set();
-
-      studyPlans.forEach((plan) => {
-        if (plan.subject && !subjectIds.has(plan.subject.id)) {
-          subjectIds.add(plan.subject.id);
-          uniqueSubjects.push({
-            id: plan.subject.id,
-            name: plan.subject.name,
-            shortName: plan.subject.short_name,
-            departmentId: plan.subject.department_id,
-            studyPlanId: plan.id,
-            startDate: plan.start_date,
-          });
-        }
-      });
-
-      return uniqueSubjects;
-    } catch (error) {
-      console.error("Ошибка при получении дисциплин учебного плана:", error);
-      throw error;
+      console.error("Error calculating semester number:", err);
+      throw err;
     }
   };
+
+  async getStudentSubjects(studentId) {
+    try {
+      // 1. Получаем текущий учебный план студента
+      const curriculum = await this.getCurrentCurriculumForStudent(studentId);
+
+      // 2. Определяем текущий семестр
+      const currentSemester = await this.getNumberSemesterInCurriculum(
+        curriculum.year_of_specialty_training
+      );
+
+      // 3. Получаем все предметы для текущего семестра
+      const curriculumSubjects = await CurriculumSubject.findAll({
+        where: {
+          curriculum_id: curriculum.id,
+          semester: currentSemester,
+        },
+        include: [
+          {
+            model: Subject,
+            as: "subject",
+            attributes: ["id", "name"],
+            include: [
+              {
+                association: "department",
+                attributes: ["id", "name", "full_name"],
+              },
+            ],
+          },
+          {
+            model: AssessmentType,
+            as: "assessmentType",
+            attributes: ["id", "name"],
+          },
+        ],
+        attributes: [
+          "all_hours",
+          "lecture_hours",
+          "lab_hours",
+          "practice_hours",
+          "semester",
+        ],
+      });
+
+      // 4. Форматируем результат
+      return curriculumSubjects.map((item) => ({
+        id: item.id,
+        subject: {
+          id: item.subject.id,
+          name: item.subject.name,
+          department: item.subject.department,
+        },
+        assessmentType: item.assessmentType,
+        hours: {
+          all: item.all_hours,
+          lecture: item.lecture_hours,
+          lab: item.lab_hours,
+          practice: item.practice_hours,
+        },
+      }));
+    } catch (error) {
+      console.error("Error getting student subjects:", error);
+      throw ApiError.internal(
+        "Error getting student subjects: " + error.message
+      );
+    }
+  }
 }
 
 module.exports = new CurriculumSubjectService();
