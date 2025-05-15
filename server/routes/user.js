@@ -9,6 +9,8 @@ const NAME_OF_ID_TEACHER_POSITION_PARAM = 'id'
 userRouter.post(`/create`, userController.create);
 userRouter.post(`/login`, userController.login);
 userRouter.post(`/logout`, userController.logout);
+
+
 // userRouter.put(`/update/:${NAME_OF_ID_TEACHER_POSITION_PARAM}`, userController.update);
     
 module.exports = userRouter;

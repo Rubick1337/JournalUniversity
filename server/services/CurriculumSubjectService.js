@@ -5,9 +5,14 @@ const {
   Subject,
   AssessmentType,
   AcademicSpecialty,
+  Student,
   Op,
   Sequelize,
+  Group,
 } = require("../models/index");
+const GroupService = require("./GroupService");
+const ScheduleService = require("./ScheduleService");
+const StudentService = require("./StudentService");
 
 class CurriculumSubjectService {
   async create(curriculumId, data) {
@@ -25,9 +30,13 @@ class CurriculumSubjectService {
       }
 
       // Проверяем существование assessment type
-      const assessmentType = await AssessmentType.findByPk(data.assessment_type_id);
+      const assessmentType = await AssessmentType.findByPk(
+        data.assessment_type_id
+      );
       if (!assessmentType) {
-        throw ApiError.notFound(`Assessment type with id ${data.assessment_type_id} not found`);
+        throw ApiError.notFound(
+          `Assessment type with id ${data.assessment_type_id} not found`
+        );
       }
 
       // Проверяем, не существует ли уже такой записи
@@ -41,7 +50,9 @@ class CurriculumSubjectService {
       });
 
       if (existingRecord) {
-        throw ApiError.badRequest('This subject with the same assessment type and semester already exists in the curriculum');
+        throw ApiError.badRequest(
+          "This subject with the same assessment type and semester already exists in the curriculum"
+        );
       }
 
       const curriculumSubject = await CurriculumSubject.create({
@@ -73,7 +84,9 @@ class CurriculumSubjectService {
     try {
       // Проверяем, что curriculumId в compositeId совпадает с переданным curriculumId
       if (compositeId.curriculumId !== curriculumId) {
-        throw ApiError.badRequest('Curriculum ID in composite ID does not match the provided curriculum ID');
+        throw ApiError.badRequest(
+          "Curriculum ID in composite ID does not match the provided curriculum ID"
+        );
       }
 
       const curriculumSubject = await CurriculumSubject.findOne({
@@ -92,15 +105,21 @@ class CurriculumSubjectService {
       }
 
       // Если пытаемся изменить subject_id, assessment_type_id или semester, проверяем, что новая запись не существует
-      if (updateData.subject_id || updateData.assessment_type_id || updateData.semester) {
+      if (
+        updateData.subject_id ||
+        updateData.assessment_type_id ||
+        updateData.semester
+      ) {
         const newSubjectId = updateData.subject_id || compositeId.subjectId;
-        const newAssessmentTypeId = updateData.assessment_type_id || compositeId.assessmentTypeId;
+        const newAssessmentTypeId =
+          updateData.assessment_type_id || compositeId.assessmentTypeId;
         const newSemester = updateData.semester || compositeId.semester;
 
-        if (newSubjectId !== compositeId.subjectId || 
-            newAssessmentTypeId !== compositeId.assessmentTypeId || 
-            newSemester !== compositeId.semester) {
-          
+        if (
+          newSubjectId !== compositeId.subjectId ||
+          newAssessmentTypeId !== compositeId.assessmentTypeId ||
+          newSemester !== compositeId.semester
+        ) {
           const existingRecord = await CurriculumSubject.findOne({
             where: {
               curriculum_id: curriculumId,
@@ -111,14 +130,17 @@ class CurriculumSubjectService {
           });
 
           if (existingRecord) {
-            throw ApiError.badRequest('A record with the new subject, assessment type and semester combination already exists in this curriculum');
+            throw ApiError.badRequest(
+              "A record with the new subject, assessment type and semester combination already exists in this curriculum"
+            );
           }
         }
       }
 
       await curriculumSubject.update({
         subject_id: updateData.subject_id || compositeId.subjectId,
-        assessment_type_id: updateData.assessment_type_id || compositeId.assessmentTypeId,
+        assessment_type_id:
+          updateData.assessment_type_id || compositeId.assessmentTypeId,
         semester: updateData.semester || compositeId.semester,
         all_hours: updateData.all_hours,
         lecture_hours: updateData.lecture_hours,
@@ -189,9 +211,9 @@ class CurriculumSubjectService {
           required: !!query.subjectQuery,
           include: [
             {
-              association: 'department',
-              attributes: ['id', 'name', 'full_name']
-            }
+              association: "department",
+              attributes: ["id", "name", "full_name"],
+            },
           ],
           where: query.subjectQuery
             ? {
@@ -249,7 +271,9 @@ class CurriculumSubjectService {
     try {
       // Проверяем, что curriculumId в compositeId совпадает с переданным curriculumId
       if (compositeId.curriculumId !== curriculumId) {
-        throw ApiError.badRequest('Curriculum ID in composite ID does not match the provided curriculum ID');
+        throw ApiError.badRequest(
+          "Curriculum ID in composite ID does not match the provided curriculum ID"
+        );
       }
 
       const curriculumSubject = await CurriculumSubject.findOne({
@@ -281,15 +305,18 @@ class CurriculumSubjectService {
     try {
       // Проверяем, что curriculumId в compositeId совпадает с переданным curriculumId
       if (compositeId.curriculumId !== curriculumId) {
-        throw ApiError.badRequest('Curriculum ID in composite ID does not match the provided curriculum ID');
+        throw ApiError.badRequest(
+          "Curriculum ID in composite ID does not match the provided curriculum ID"
+        );
       }
 
-      const curriculumSubject = await this._getCurriculumSubjectWithAssociations(
-        curriculumId,
-        compositeId.subjectId,
-        compositeId.assessmentTypeId,
-        compositeId.semester
-      );
+      const curriculumSubject =
+        await this._getCurriculumSubjectWithAssociations(
+          curriculumId,
+          compositeId.subjectId,
+          compositeId.assessmentTypeId,
+          compositeId.semester
+        );
 
       if (!curriculumSubject) {
         throw ApiError.notFound(
@@ -340,10 +367,10 @@ class CurriculumSubjectService {
           attributes: ["id", "name"],
           include: [
             {
-              association: 'department', 
-              attributes: ['id', 'name', 'full_name']
-            }
-          ]
+              association: "department",
+              attributes: ["id", "name", "full_name"],
+            },
+          ],
         },
         {
           model: AssessmentType,
@@ -353,6 +380,77 @@ class CurriculumSubjectService {
       ],
     });
   }
+
+  getCurrentCurriculumForStudent = async (studentId) => {
+    try {
+      // Находим студента
+      const student = await StudentService.getById(studentId);
+      const group = await GroupService.getById(student.group_id);
+
+      // Находим самый свежий учебный план
+      const curriculum = await Curriculum.findOne({
+        where: {
+          specialty_code: group.specialty_code,
+          year_of_specialty_training: {
+            [Op.gte]: group.graduation_year,
+          },
+        },
+        order: [["year_of_specialty_training", "DESC"]], // Сортируем по году обучения в обратном порядке
+      });
+
+      if (!curriculum) {
+        throw new Error("Curriculum not found for student");
+      }
+      return curriculum;
+    } catch (error) {
+      console.error("Error :", error);
+      throw error;
+    }
+  };
+  getNumberSemesterInCurriculum = async (yearStartEducaation, date) => {
+    try {
+      //TODO расчитать номер семестра. учеба начинается 01.09.yearStartEducaation и заканчивается в 31.01.yearStartEducaation+1 
+      /* это 1 семестер
+      на период с 01.02.yearStartEducaation+1 до 31.08.yearStartEducaation+1 это вессений (2)
+      и так далее до текущий даты. То есть смотрим, какой месяц сегодня. Если с 09-12и 01 тогда 1+2*разница годов
+      если 02-08 тогда просто 2*разница
+      
+      */
+    } catch (err) {
+      next(err);      
+    }
+  };
+  getStudentSubjects = async (studentId) => {
+    try {
+      const curriculum = await this.getCurrentCurriculumForStudent(studentId);
+      const numberSemester = await this.getNumberSemesterInCurriculum(
+        curriculum.id
+      );
+
+      // 3. Формируем уникальный список дисциплин
+      const uniqueSubjects = [];
+      const subjectIds = new Set();
+
+      studyPlans.forEach((plan) => {
+        if (plan.subject && !subjectIds.has(plan.subject.id)) {
+          subjectIds.add(plan.subject.id);
+          uniqueSubjects.push({
+            id: plan.subject.id,
+            name: plan.subject.name,
+            shortName: plan.subject.short_name,
+            departmentId: plan.subject.department_id,
+            studyPlanId: plan.id,
+            startDate: plan.start_date,
+          });
+        }
+      });
+
+      return uniqueSubjects;
+    } catch (error) {
+      console.error("Ошибка при получении дисциплин учебного плана:", error);
+      throw error;
+    }
+  };
 }
 
 module.exports = new CurriculumSubjectService();

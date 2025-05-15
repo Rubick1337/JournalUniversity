@@ -78,6 +78,7 @@ function App() {
           <Route path={"/assesmenttype"} element={<TypeAssesmentPage />} />
           <Route path={"/curriculum"} element={<CurruculimPage />} />
           <Route path={"/topic"} element={<TopicTablePage />} />
+          <Route path={"/topics"} element={<CurriculumsTable />} />
 
         </Routes>
       </div>

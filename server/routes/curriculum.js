@@ -4,6 +4,7 @@ const curriculumController = require('../controllers/CurriculumController');
 //TODO validate
 curriculumRouter.get(`/getAll`, curriculumController.getAll);
 curriculumRouter.get(`/getById/:id`, curriculumController.getById);
+curriculumRouter.get(`/getCurrentCurriculumForStudent`, curriculumController.getCurrentCurriculumForStudent);
 curriculumRouter.delete(`/delete/:id`, curriculumController.delete);
 curriculumRouter.post(`/create`, curriculumController.create);
 curriculumRouter.put(`/update/:id`, curriculumController.update);

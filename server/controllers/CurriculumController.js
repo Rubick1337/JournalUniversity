@@ -3,6 +3,7 @@ const CurriculumCreationDTO = require("../DTOs/ForCreation/CurriculumDtoForCreat
 const CurriculumDataDto = require("../DTOs/Data/CurriculumDto");
 const CurriculumUpdateDto = require("../DTOs/ForUpdate/CurriculumDtoForUpdate");
 const MetaDataDto = require("../DTOs/Data/MetaDataDto");
+const CurriculumSubjectService = require("../services/CurriculumSubjectService");
 
 class CurriculumController {
   create = async (req, res, next) => {
@@ -27,7 +28,7 @@ class CurriculumController {
         idQuery = "",
         yearQuery = "",
         specialtyQuery = "",
-        educationFormQuery = ""
+        educationFormQuery = "",
       } = req.query;
 
       const { data, meta } = await CurriculumService.getAll({
@@ -39,10 +40,10 @@ class CurriculumController {
           idQuery,
           yearQuery,
           specialtyQuery,
-          educationFormQuery
+          educationFormQuery,
         },
       });
-      
+
       const dataDto = data.map((obj) => new CurriculumDataDto(obj));
       const metaDto = new MetaDataDto(meta);
       return res.status(200).json({
@@ -97,6 +98,22 @@ class CurriculumController {
       next(err);
     }
   };
+  getCurrentCurriculumForStudent = async (req, res, next) => {
+    try {
+      //TODO Student Id from JWT
+      // const studentId = req.studentIdFromJwt;
+      const studentId = 5;
+      const result =
+        await CurriculumSubjectService.getCurrentCurriculumForStudent(
+          studentId
+        );
+      return res.status(200).json({ data: result });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
+  
 }
 
 module.exports = new CurriculumController();

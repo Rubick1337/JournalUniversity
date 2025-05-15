@@ -170,7 +170,11 @@ class CurriculumService {
         },
       ],
     });
+
+
+    
   }
+  
 }
 
 module.exports = new CurriculumService();

@@ -34,16 +34,17 @@ const {Schedule} = require('./Schedule')
 const {ScheduleDetails} = require('./ScheduleDetails')
 // const { Absenteeism } = require("./Absenteeism");
 // const { AcademicPerformance } = require("./AcademicPerformance");
-// const { Grade } = require("./Grade");
 const { Lesson } = require("./Lesson");
 const { TypeOfSemester } = require("./TypeOfSemester");
-// const { PlannedTask } = require("./PlannedTask");
-// const { PlannedTaskTopic } = require("./PlannedTaskTopic");
-// const { Topic } = require("./Topic");
+const { StudyPlan } = require("./StudyPlan");
 // const { TotalScoreType } = require("./TotalScoreType");
 
 const {Role, initializeRoles} = require('./Role')
 const {User} = require('./User')
+
+const { AssessmentMethod, initializeAssessmentMethod } = require('./AssessmentMethod')
+const {StudyPlanTopics} = require('./StudyPlanTopics')
+const { Grade } = require("./Grade");
 
 const initModels = async () => {
   // await initializeTeachingPositions();
@@ -56,6 +57,7 @@ const initModels = async () => {
   // await initializeEducationForm();
   // await initializeSubjectType();
   // await initializeRoles();
+  // await initializeAssessmentMethod();
 };
 module.exports = {
   initModels,
@@ -84,12 +86,16 @@ Schedule,
 ScheduleDetails,
   // Absenteeism,
   // AcademicPerformance,
-  // Grade,
   // PlannedTask,
   // PlannedTaskTopic,
   // TotalScoreType,
   Role,
   User,
   TypeOfSemester,
+  StudyPlan,
+  AssessmentMethod,
+  StudyPlanTopics,
+    Grade,
+
 };
 
