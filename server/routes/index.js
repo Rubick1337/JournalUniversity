@@ -37,7 +37,7 @@ initializeRoute('grade', 'grade');
 initializeRoute('absenteeism', 'absenteeism');
 
 
-// initializeRoute('audience', 'audience');
+initializeRoute('audience', 'audience');
 initializeRoute('academicBuilding', 'academicBuilding');
 
 

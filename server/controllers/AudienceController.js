@@ -1,33 +1,23 @@
-// const AcademicSpecialtyService = require("../services/AcademicSpecialtyService");
+const AudienceService = require("../services/AudienceService");
 
 class AudienceController {
-  create = async (req, res, next) => {
+  getAll = async (req, res, next) => {
     try {
-        //TODO add implementation
-        throw new Error("not implementation")
+      const numberAudienceQuery = req.query.numberAudienceQuery || null;
+      const academicBuildingIdQuery = req.query.academicBuildingIdQuery || null;
+
+      const result = await AudienceService.getAll(
+        numberAudienceQuery,
+        academicBuildingIdQuery
+      );
+      return res.status(200).json({
+        data: result,
+      });
     } catch (err) {
       console.error(err);
       next(err);
     }
   };
-  update = async (req, res, next) => {
-    try {
-        //TODO add implementation
-        throw new Error("not implementation")
-    } catch (err) {
-      console.error(err);
-      next(err);
-    }
-  };
-  delete = async (req,res,next) => {
-    try {
-        //TODO add implementation
-        throw new Error("not implementation")
-    } catch (err) {
-      console.error(err);
-      next(err);
-    }
-  }
 }
 
 module.exports = new AudienceController();
