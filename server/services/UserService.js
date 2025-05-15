@@ -75,6 +75,27 @@ class UserService {
       loginErr: "User not found",
     });
   }
+  async refresh(refreshToken) {
+    const user = await this.doesUserExistByRefresh(refreshToken);
+    const tokens = await TokenService.getTokenForUser(user);
+    user.token = tokens.refreshToken;
+    await user.save();
+
+    // Извлеки нужные поля пользователя
+    const userData = {
+      id: user.id,
+      role_id: user.role_id,
+      student_id: user.student_id,
+      teacher_id: user.teacher_id,
+    };
+
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: userData
+    };
+  }
+
 }
 
 module.exports = new UserService();

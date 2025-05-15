@@ -148,6 +148,28 @@ class UserController {
   //       next(err);
   //     }
   //   };
+  refreshToken = async (req, res, next) => {
+    try {
+      // Получаем refreshToken из куки
+      const refreshToken = req.cookies[NAME_COOKIE_REFRESH_TOKEN];
+
+      if (!refreshToken) {
+        return res.status(400).json({ message: "Refresh token not found" });
+      }
+
+      // Вызываем сервис для обновления токенов
+      const tokens = await UserService.refresh(refreshToken);
+
+      // Сохраняем новый refreshToken в куки
+      this.saveTokenInRequest(tokens.refreshToken, res);
+
+      // Возвращаем новые токены
+      return res.status(200).json(tokens);
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
 }
 
 module.exports = new UserController();

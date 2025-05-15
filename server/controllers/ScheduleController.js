@@ -5,8 +5,7 @@ class ScheduleController {
     try {
       //TODO after JWT
       //   const studentId = req.studentIdFromJWT;
-      const studentId = 5;
-
+      const studentId  = req.query.studentId;
       const date = req.query.date;
       const weekdayNumber = req.query.weekdayNumber;
       const weekType = req.query.weekType;

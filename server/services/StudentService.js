@@ -208,7 +208,7 @@ class StudentService {
         {
           model: Person,
           as: "person",
-          attributes: ["id", "surname", "name", "middlename"],
+          attributes: ["id", "surname", "name", "middlename", "phone_number", "email"],
         },
         {
           model: Group,
@@ -223,7 +223,7 @@ class StudentService {
         {
           model: Person,
           as: "perent",
-          attributes: ["id", "surname", "name", "middlename"],
+          attributes: ["id", "surname", "name", "middlename", "phone_number", "email"],
         },
       ],
     });
