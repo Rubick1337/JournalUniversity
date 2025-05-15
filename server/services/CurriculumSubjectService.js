@@ -386,7 +386,6 @@ class CurriculumSubjectService {
       // Находим студента
       const student = await StudentService.getById(studentId);
       const group = await GroupService.getById(student.group_id);
-
       // Находим самый свежий учебный план
       const curriculum = await Curriculum.findOne({
         where: {
@@ -407,26 +406,57 @@ class CurriculumSubjectService {
       throw error;
     }
   };
-  getNumberSemesterInCurriculum = async (yearStartEducaation, date) => {
+  getNumberSemesterInCurriculum = async (yearStartEducation, date = new Date()) => {
     try {
-      //TODO расчитать номер семестра. учеба начинается 01.09.yearStartEducaation и заканчивается в 31.01.yearStartEducaation+1 
-      /* это 1 семестер
-      на период с 01.02.yearStartEducaation+1 до 31.08.yearStartEducaation+1 это вессений (2)
-      и так далее до текущий даты. То есть смотрим, какой месяц сегодня. Если с 09-12и 01 тогда 1+2*разница годов
-      если 02-08 тогда просто 2*разница
-      
-      */
+        // Преобразуем входные параметры
+        const startYear = parseInt(yearStartEducation);
+        const currentDate = new Date(date);
+        
+        // Проверяем валидность года начала обучения
+        if (isNaN(startYear)) {
+            throw new Error('Invalid start year');
+        }
+
+        // Получаем текущий год и месяц
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1; // Месяцы 1-12
+
+        // Вычисляем разницу в годах между текущим годом и годом начала обучения
+        const yearDiff = currentYear - startYear;
+
+        // Определяем текущий семестр
+        let semester;
+        
+        if (currentMonth >= 9 || currentMonth === 1) {
+            // Осенний семестр: сентябрь-декабрь и январь
+            semester = 1 + 2 * yearDiff;
+        } else if (currentMonth >= 2 && currentMonth <= 8) {
+            // Весенний семестр: февраль-август
+            semester = 2 + 2 * (currentYear - startYear - (currentMonth < 9 ? 1 : 0));
+        } else {
+            // На всякий случай (не должно происходить)
+            throw new Error('Invalid month calculation');
+        }
+
+        // Корректировка для января (он относится к осеннему семестру предыдущего года)
+        if (currentMonth === 1) {
+            semester = 1 + 2 * (yearDiff - 1);
+        }
+
+        return semester;
     } catch (err) {
-      next(err);      
-    }
-  };
+        console.error("Error calculating semester number:", err);
+        throw err;
+    };
+  }
+
   getStudentSubjects = async (studentId) => {
     try {
       const curriculum = await this.getCurrentCurriculumForStudent(studentId);
       const numberSemester = await this.getNumberSemesterInCurriculum(
-        curriculum.id
+        curriculum.year_of_specialty_training
       );
-
+      return {afds: curriculum, dfas:numberSemester}
       // 3. Формируем уникальный список дисциплин
       const uniqueSubjects = [];
       const subjectIds = new Set();
