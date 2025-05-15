@@ -45,6 +45,7 @@ const {User} = require('./User')
 const { AssessmentMethod, initializeAssessmentMethod } = require('./AssessmentMethod')
 const {StudyPlanTopics} = require('./StudyPlanTopics')
 const { Grade } = require("./Grade");
+const { Absenteeism } = require("./Absenteeism");
 
 const initModels = async () => {
   // await initializeTeachingPositions();
@@ -96,6 +97,8 @@ ScheduleDetails,
   AssessmentMethod,
   StudyPlanTopics,
     Grade,
+    Absenteeism,
+
 
 };
 

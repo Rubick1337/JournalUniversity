@@ -7,13 +7,16 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "./SliderStyle.css";
 import backgroundImage from "../../images/background.png";
-
+import { useDispatch } from "react-redux";
+import {getStudentSubjects} from '../../store/slices/curriculumSlice'
 const Slider = ({ studentId }) => {
     const [disciplines, setDisciplines] = useState([]);
     const [expanded, setExpanded] = useState(false);
     const swiperRef = useRef(null);
+const dispatch = useDispatch();
 
     useEffect(() => {
+        dispatch(getStudentSubjects())
         axios
             .get("/TestData/disciplines.json")
             .then((response) => setDisciplines(response.data[studentId] || []))

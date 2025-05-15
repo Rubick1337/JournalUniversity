@@ -66,6 +66,8 @@ export const API_ENDPOINTS = {
     UPDATE: '/curriculum/update/:id',
     DELETE: '/curriculum/delete/:id',
     GETBYID: `/curriculum/getById/:id`,
+    GET_STUDENT_SUBJECTS: `/curriculum/getStudentSubjects`,
+    
   },
 
   ASSESSMENT_TYPE: {
