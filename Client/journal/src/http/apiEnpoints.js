@@ -129,6 +129,7 @@ export const API_ENDPOINTS = {
   ABSENTEEISM: {
     CREATE: '/absenteeism/create',
     GET_FOR_STUDENT: '/absenteeism/getForStudent',
+  },
   STUDY_PLAN: {
     GET_TOPICS_PROGRESS: '/studyPlan/getStydentProgressForSubject',
     GET_LABS_STATS: '/studyPlan/getLabsStatsForStudent',

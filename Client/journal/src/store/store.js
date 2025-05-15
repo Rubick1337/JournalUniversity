@@ -45,7 +45,7 @@ const store = configureStore({
     studentLabs: StudentLabsSlice,
     user: userSlice,
     schedule: scheduleSlice,
-    absenteeism: absenteeismSlice
+    absenteeism: absenteeismSlice,
     studyPlan: studyPlanSlice,
   },
   middleware: (getDefaultMiddleware) =>
