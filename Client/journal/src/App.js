@@ -73,6 +73,7 @@ function App() {
           <Route path="/tablegroups" element={<GroupTablePage />} />
           <Route path="*" element={<NotFoundPage />} />
           <Route path="/raiting" element={<StudentRaitingPage />} />
+          <Route path="/infolesson/" element={<InfoLessonPage />} />
           <Route path="/infolesson/:id" element={<InfoLessonPage />} />
           <Route path="/personinfo" element={<ContactTablePage />} />
           <Route path={"/positions"} element={<PositionTeacherPage />} />

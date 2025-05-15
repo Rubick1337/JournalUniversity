@@ -14,6 +14,7 @@ const {
   Op, 
   Sequelize 
 } = require("../models/index");
+const ScheduleService = require("./ScheduleService");
 
 class LessonService {
   async create(data) {
@@ -312,6 +313,16 @@ class LessonService {
         }
       ]
     });
+  }
+
+  getPairsOnDate = async(date)=> {
+    const weekdayNumber = ScheduleService.getDayOfWeek(date);
+    const weekType = ScheduleService.getWeekType(date);
+    const pairs = await Pair.findAll({where: {
+      weekday_number: weekdayNumber,
+      week_type_name:weekType,
+    }})
+    return pairs;
   }
 }
 

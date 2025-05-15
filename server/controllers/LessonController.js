@@ -1,6 +1,5 @@
 const LessonService = require("../services/LessonService");
 
-
 class LessonController {
   create = async (req, res, next) => {
     try {
@@ -28,7 +27,7 @@ class LessonController {
         audienceQuery = "",
         subjectTypeQuery = "",
         dateFrom = "",
-        dateTo = ""
+        dateTo = "",
       } = req.query;
 
       const { data, meta } = await LessonService.getAll({
@@ -46,7 +45,7 @@ class LessonController {
           audienceQuery,
           subjectTypeQuery,
           dateFrom,
-          dateTo
+          dateTo,
         },
       });
 
@@ -94,6 +93,19 @@ class LessonController {
           .json({ message: `Not found lesson by id ${lessonId}` });
       }
       return res.status(204).send();
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
+
+  getPairsOnDate = async (req, res, next) => {
+    try {
+      const date = req.query.date || null;
+      const result = await LessonService.getPairsOnDate(date);
+      return res.status(200).json({
+        data: result,
+      });
     } catch (err) {
       console.error(err);
       next(err);

@@ -6,6 +6,7 @@ const NAME_OF_ID_lesson_PARAM = 'lessonId'
 
 lessonRouter.get(`/getAll`, lessonController.getAll);
 lessonRouter.get(`/getById/:${NAME_OF_ID_lesson_PARAM}`, lessonController.getById);
+lessonRouter.get(`/getPairsOnDate`, lessonController.getPairsOnDate);
 lessonRouter.delete(`/delete/:${NAME_OF_ID_lesson_PARAM}`, lessonController.delete);
 lessonRouter.post(`/create`, lessonController.create);
 lessonRouter.put(`/update/:${NAME_OF_ID_lesson_PARAM}`, lessonController.update);

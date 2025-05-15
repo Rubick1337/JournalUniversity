@@ -24,19 +24,18 @@ class ScheduleService {
 
   // Метод для определения дня недели (1-7, где 1 - понедельник)
   getDayOfWeek = (date) => {
-    const day = date.getDay();
+    const targetDate = date ? new Date(date) : new Date();
+
+    const day = targetDate.getDay();
     return day === 0 ? 7 : day; // Воскресенье (0) преобразуем в 7
   };
   // Метод для определения типа недели (Верхняя/Нижняя)
   getWeekType = (date, startWithUpper = START_WITH_UPPER) => {
-    const startOfYear = new Date(date.getFullYear(), 0, 1);
-    const diffInDays = Math.floor((date - startOfYear) / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.ceil((diffInDays + startOfYear.getDay() + 1) / 7);
+    const targetDate = date ? new Date(date) : new Date();
 
-    console.log(`Date: ${date.toISOString()}`);
-    console.log(`Start of Year: ${startOfYear.toISOString()}`);
-    console.log(`Difference in Days: ${diffInDays}`);
-    console.log(`Week Number: ${weekNumber}`);
+    const startOfYear = new Date(targetDate.getFullYear(), 0, 1);
+    const diffInDays = Math.floor((targetDate - startOfYear) / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.ceil((diffInDays + startOfYear.getDay() + 1) / 7);
 
     // Определяем тип недели с учетом параметра startWithUpper
     const weekType =
@@ -145,7 +144,8 @@ class ScheduleService {
             weekdayNumber: weekdayNumber === null,
             weekType: weekType === null,
           },
-        },scheduleDetails
+        },
+        scheduleDetails,
         /* scheduleDetails: scheduleDetails.map((detail) => ({
           id: detail.id,
           pair: detail.PairInSchedule
