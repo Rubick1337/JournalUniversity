@@ -159,10 +159,10 @@ class UserController {
 
       // Вызываем сервис для обновления токенов
       const tokens = await UserService.refresh(refreshToken);
-
+      console.log("te", tokens)
       // Сохраняем новый refreshToken в куки
       this.saveTokenInRequest(tokens.refreshToken, res);
-
+      
       // Возвращаем новые токены
       return res.status(200).json(tokens);
     } catch (err) {

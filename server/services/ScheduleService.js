@@ -1,3 +1,4 @@
+const { where } = require("sequelize");
 const ApiError = require("../error/ApiError");
 const {
   Pair,
@@ -12,6 +13,11 @@ const {
   Person,
   Op,
   Sequelize,
+  Lesson,
+  Group,
+  Subgroup,
+  TeachingPosition,
+  Topic,
 } = require("../models/index");
 const START_WITH_UPPER = false;
 
@@ -34,7 +40,9 @@ class ScheduleService {
     const targetDate = date ? new Date(date) : new Date();
 
     const startOfYear = new Date(targetDate.getFullYear(), 0, 1);
-    const diffInDays = Math.floor((targetDate - startOfYear) / (1000 * 60 * 60 * 24));
+    const diffInDays = Math.floor(
+      (targetDate - startOfYear) / (1000 * 60 * 60 * 24)
+    );
     const weekNumber = Math.ceil((diffInDays + startOfYear.getDay() + 1) / 7);
 
     // Определяем тип недели с учетом параметра startWithUpper
@@ -247,6 +255,102 @@ class ScheduleService {
       return semester;
     } catch (error) {
       console.error("Error finding current semester:", error);
+      throw error;
+    }
+  };
+  getLessonsForStudent = async ({ studentId, date }) => {
+    try {
+      // Получаем данные студента
+      const student = await StudentService.getById(studentId);
+      if (!student) {
+        throw ApiError.badRequest("Student not found");
+      }
+
+      // Определяем переданную дату или текущую дату
+      const targetDate = date ? new Date(date) : new Date();
+
+      //TODO добавить обработчик на будущее даты
+
+      const result = await Lesson.findAll({
+        where: {
+          group_id: student.group.id,
+          subgroup_id: student.subgroup.id,
+          date: targetDate,
+        },
+        include: [
+          {
+            model: Group,
+            as: "GroupForLesson",
+            // attributes: ["id", "name"]
+          },
+          {
+            model: Subgroup,
+            as: "SubgroupForLesson",
+            // attributes: ["id", "name"]
+          },
+          {
+            model: Subject,
+            as: "SubjectForLesson",
+            // attributes: ["id", "name"]
+          },
+          {
+            model: Teacher,
+            as: "TeacherForLesson",
+            include: [
+              {
+                model: Person,
+                as: "person",
+                // attributes: ["id", "surname", "name", "middlename"]
+              },
+              {
+                model: TeachingPosition,
+                as: "teachingPosition",
+                // attributes: ["id", "name"]
+              },
+            ],
+          },
+          {
+            model: Topic,
+            as: "TopicForLesson",
+            // attributes: ["id", "name"]
+          },
+          {
+            model: Audience,
+            as: "AudienceForLesson",
+            include: [
+              {
+                model: AcademicBuilding,
+                as: "academicBuilding",
+              },
+            ],
+            // attributes: ["id", "number"]
+          },
+          {
+            model: SubjectType,
+            as: "SubjectTypeForLesson",
+            // attributes: ["id", "name"]
+          },
+          {
+            model: Pair,
+            as: "PairForLesson",
+            // attributes: ["id", "name", "start"]
+          },
+        ],
+      });
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  };
+  getScheduleForTeacher = async ({
+    teacherId,
+    date,
+    weekdayNumber,
+    weekType,
+  }) => {
+    try {
+    } catch (error) {
+      console.error("Error:", error);
       throw error;
     }
   };

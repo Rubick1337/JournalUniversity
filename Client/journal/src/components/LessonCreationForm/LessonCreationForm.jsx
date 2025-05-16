@@ -15,36 +15,63 @@ import {
   InputLabel,
   Autocomplete,
   Chip,
+  Collapse,
+  Alert,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Save as SaveIcon,
+  ExpandMore as ExpandMoreIcon,
+  ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material";
 import styles from "./LessonInfo.module.css";
-import { getPairsOnDate } from "../../store/slices/lessonSlice";
+import {
+  createLesson,
+  getPairsOnDate,
+  clearCreateLessonState,
+} from "../../store/slices/lessonSlice";
 import { getAllAcademicBuilding } from "../../store/slices/academicBuildingSlice";
+import { getAllSubjectTypes } from "../../store/slices/subjectTypeSlice";
 import { getAllAudience } from "../../store/slices/audienceSlice";
+import { fetchSubjects } from "../../store/slices/subjectSlice";
 import { fetchTeachers } from "../../store/slices/teacherSlice";
+import { fetchGroups } from "../../store/slices/groupSlice";
+import { fetchSubgroups } from "../../store/slices/subgroupSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 const LessonCreateForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { pairs } = useSelector((state) => state.lesson);
+
+  // Получение данных из Redux store
+  const { pairs, createLesson: createLessonState } = useSelector(
+    (state) => state.lesson
+  );
   const { data: academicBuildings, isLoading: buildingsLoading } = useSelector(
     (state) => state.academicBuilding
+  );
+  const { data: subjectTypes, isLoading: subjectTypeLoading } = useSelector(
+    (state) => state.subjectType
   );
   const { data: audiences, isLoading: audiencesLoading } = useSelector(
     (state) => state.audience
   );
-  
+  const { data: subjects, isLoading: subjectsLoading } = useSelector(
+    (state) => state.subjects || {}
+  );
+  const { data: groups, isLoading: groupsLoading } = useSelector(
+    (state) => state.groups || {}
+  );
+  const { data: subgroups, isLoading: subgroupsLoading } = useSelector(
+    (state) => state.subgroups || {}
+  );
   const teachersState = useSelector((state) => state.teachers || {});
   const teachers = teachersState.data || [];
   const teachersLoading = teachersState.isLoading || false;
-  
   const { teacher_id } = useSelector((state) => state.user);
   const isTeacher = teacher_id != null;
 
+  // Состояния формы
   const getTodayDate = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -58,22 +85,44 @@ const LessonCreateForm = () => {
     pair: "",
     audience: null,
     teacher: null,
+    subject_type: "",
+    subject: null,
+    group: null,
+    subgroup: null,
   });
+
   const [academicBuildingId, setAcademicBuildingId] = useState("");
   const [audienceSearch, setAudienceSearch] = useState("");
   const [teacherSearch, setTeacherSearch] = useState("");
+  const [subjectSearch, setSubjectSearch] = useState("");
+  const [groupSearch, setGroupSearch] = useState("");
 
-  // Загрузка корпусов при монтировании
+  // Состояния для управления раскрытием разделов
+  const [expandedSections, setExpandedSections] = useState({
+    timeInfo: true,
+    subjectInfo: true,
+    groupInfo: true,
+    teacherInfo: true,
+    locationInfo: true,
+  });
+
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  // Эффекты для загрузки данных
   useEffect(() => {
     dispatch(getAllAcademicBuilding());
+    dispatch(getAllSubjectTypes());
   }, [dispatch]);
 
-  // Загрузка пар при изменении даты
   useEffect(() => {
     dispatch(getPairsOnDate(formData.date));
   }, [formData.date, dispatch]);
 
-  // Загрузка аудиторий при изменении корпуса или поискового запроса
   useEffect(() => {
     if (academicBuildingId) {
       dispatch(
@@ -85,7 +134,6 @@ const LessonCreateForm = () => {
     }
   }, [academicBuildingId, audienceSearch, dispatch]);
 
-  // Загрузка преподавателей при изменении поискового запроса
   useEffect(() => {
     const params = {
       personQuery: teacherSearch,
@@ -97,6 +145,27 @@ const LessonCreateForm = () => {
     }
   }, [teacherSearch, dispatch]);
 
+  useEffect(() => {
+    if (subjectSearch.length > 2) {
+      dispatch(fetchSubjects({ nameQuery: subjectSearch }));
+    }
+  }, [subjectSearch, dispatch]);
+
+  useEffect(() => {
+    if (groupSearch.length > 2) {
+      dispatch(fetchGroups({ nameQuery: groupSearch }));
+    }
+  }, [groupSearch, dispatch]);
+
+  useEffect(() => {
+    if (formData.group?.id) {
+      dispatch(fetchSubgroups({ groupIdQuery: formData.group.id }));
+    } else {
+      setFormData((prev) => ({ ...prev, subgroup: null }));
+    }
+  }, [formData.group, dispatch]);
+
+  // Обработчики событий
   const handleBack = () => {
     navigate("/schedule");
   };
@@ -130,23 +199,60 @@ const LessonCreateForm = () => {
     setTeacherSearch(newInputValue);
   };
 
+  const handleSubjectChange = (event, newValue) => {
+    setFormData((prev) => ({ ...prev, subject: newValue }));
+  };
+
+  const handleSubjectInputChange = (event, newInputValue) => {
+    setSubjectSearch(newInputValue);
+  };
+
+  const handleGroupChange = (event, newValue) => {
+    setFormData((prev) => ({ ...prev, group: newValue, subgroup: null }));
+  };
+
+  const handleGroupInputChange = (event, newInputValue) => {
+    setGroupSearch(newInputValue);
+  };
+
+  const handleSubgroupChange = (event, newValue) => {
+    setFormData((prev) => ({ ...prev, subgroup: newValue }));
+  };
+  // Эффект для перенаправления после успешного создания занятия
+  useEffect(() => {
+    if (createLessonState.data?.id) {
+      // Перенаправляем на страницу созданного занятия
+      navigate(`/infolesson/${createLessonState.data.id}`);
+      // Очищаем состояние создания занятия
+      dispatch(clearCreateLessonState());
+    }
+  }, [createLessonState.data, navigate, dispatch]);
+
+  // Обработчик отправки формы
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.audience || !formData.teacher) return;
+    if (
+      !formData.audience ||
+      !formData.teacher ||
+      !formData.subject_type ||
+      !formData.subject ||
+      !formData.group
+    )
+      return;
 
-    const responseData = {
+    const lessonData = {
       date: formData.date,
       pair_id: formData.pair,
       audience_id: formData.audience.id,
-      teacher_person_id: formData.teacher.person.id,
-      group_id: 1,
-      subgroup_id: null,
-      subject_id: 5,
+      teacher_person_id: formData.teacher.id,
+      group_id: formData.group.id,
+      subgroup_id: formData.subgroup?.id || null,
+      subject_id: formData.subject.id,
       topic_id: null,
-      subject_type_id: 3,
+      subject_type_id: formData.subject_type,
     };
-    console.log("Форма отправлена:", responseData);
-    alert("Занятие сохранено!");
+
+    dispatch(createLesson(lessonData));
   };
 
   return (
@@ -168,182 +274,429 @@ const LessonCreateForm = () => {
 
         <Divider className={styles.divider} />
 
-        <Box mt={3}>
-          <TextField
-            fullWidth
-            label="Дата"
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-            required
-          />
-        </Box>
-
-        {pairs.isLoading ? (
-          <Box display="flex" justifyContent="center" mt={3}>
-            <CircularProgress />
+        {/* Отображение ошибки при создании занятия */}
+        {createLessonState.errors && (
+          <Box mt={2}>
+            <Alert severity="error">
+              Ошибка при создании занятия:{" "}
+              {createLessonState.errors.message || "Неизвестная ошибка"}
+            </Alert>
           </Box>
-        ) : pairs.errors ? (
-          <Typography color="error" mt={2}>
-            Ошибка при загрузке пар:{" "}
-            {pairs.errors.message || "Неизвестная ошибка"}
-          </Typography>
-        ) : (
-          <Box mt={3}>
-            <FormControl fullWidth>
-              <InputLabel>Выберите пару</InputLabel>
-              <Select
-                name="pair"
-                value={formData.pair}
+        )}
+        {/* Раздел 1: Временные параметры */}
+        <Box mt={3}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            onClick={() => toggleSection("timeInfo")}
+            sx={{ cursor: "pointer" }}
+          >
+            <Typography variant="h6">Временные параметры</Typography>
+            {expandedSections.timeInfo ? (
+              <ExpandLessIcon />
+            ) : (
+              <ExpandMoreIcon />
+            )}
+          </Box>
+          <Collapse in={expandedSections.timeInfo}>
+            <Box mt={2}>
+              <TextField
+                fullWidth
+                label="Дата"
+                type="date"
+                name="date"
+                value={formData.date}
                 onChange={handleChange}
-                label="Выберите пару"
+                InputLabelProps={{ shrink: true }}
                 required
-              >
-                {pairs.data.map((pair) => (
-                  <MenuItem key={pair.id} value={pair.id}>
-                    {pair.name} ({pair.start} - {pair.break_end})
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        )}
-
-        <Box mt={3}>
-          <Autocomplete
-            options={teachers}
-            getOptionLabel={(teacher) => 
-              `${teacher.person.surname} ${teacher.person.name} ${teacher.person.middlename || ''}`
-            }
-            value={formData.teacher}
-            onChange={handleTeacherChange}
-            onInputChange={handleTeacherInputChange}
-            inputValue={teacherSearch}
-            loading={teachersLoading}
-            renderOption={(props, teacher) => (
-              <li {...props}>
-                <div>
-                  <div>{`${teacher.person.surname} ${teacher.person.name} ${teacher.person.middlename || ''}`}</div>
-                  <div style={{ fontSize: '0.8rem', color: '#666' }}>
-                    {teacher.department.name} • {teacher.teachingPosition.name}
-                  </div>
-                </div>
-              </li>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Выберите преподавателя"
-                required
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {teachersLoading ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
               />
+            </Box>
+
+            {pairs.isLoading ? (
+              <Box display="flex" justifyContent="center" mt={3}>
+                <CircularProgress />
+              </Box>
+            ) : pairs.errors ? (
+              <Typography color="error" mt={2}>
+                Ошибка при загрузке пар:{" "}
+                {pairs.errors.message || "Неизвестная ошибка"}
+              </Typography>
+            ) : (
+              <Box mt={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Выберите пару</InputLabel>
+                  <Select
+                    name="pair"
+                    value={formData.pair}
+                    onChange={handleChange}
+                    label="Выберите пару"
+                    required
+                  >
+                    {pairs.data.map((pair) => (
+                      <MenuItem key={pair.id} value={pair.id}>
+                        {pair.name} ({pair.start} - {pair.break_end})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
             )}
-            noOptionsText={
-              teacherSearch
-                ? "Ничего не найдено"
-                : "Введите ФИО преподавателя (минимум 3 символа)"
-            }
-          />
+          </Collapse>
         </Box>
 
-        {formData.teacher && (
-          <Box mt={2} display="flex" gap={1}>
-            <Chip 
-              label={formData.teacher.department.name} 
-              size="small" 
-              color="primary"
-              variant="outlined"
-            />
-            <Chip 
-              label={formData.teacher.teachingPosition.name} 
-              size="small" 
-              color="secondary"
-              variant="outlined"
-            />
-          </Box>
-        )}
+        <Divider sx={{ my: 3 }} />
 
-        <Box mt={3}>
-          <FormControl fullWidth>
-            <InputLabel>Выберите корпус</InputLabel>
-            <Select
-              value={academicBuildingId}
-              onChange={handleBuildingChange}
-              label="Выберите корпус"
-              required
-              disabled={buildingsLoading}
-            >
-              {academicBuildings?.map((building) => (
-                <MenuItem key={building.id} value={building.id}>
-                  {building.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+        {/* Раздел 2: Информация о предмете */}
+        <Box>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            onClick={() => toggleSection("subjectInfo")}
+            sx={{ cursor: "pointer" }}
+          >
+            <Typography variant="h6">Информация о предмете</Typography>
+            {expandedSections.subjectInfo ? (
+              <ExpandLessIcon />
+            ) : (
+              <ExpandMoreIcon />
+            )}
+          </Box>
+          <Collapse in={expandedSections.subjectInfo}>
+            <Box mt={2}>
+              <Autocomplete
+                options={subjects || []}
+                getOptionLabel={(subject) => subject.name}
+                value={formData.subject}
+                onChange={handleSubjectChange}
+                onInputChange={handleSubjectInputChange}
+                inputValue={subjectSearch}
+                loading={subjectsLoading}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Выберите дисциплину"
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {subjectsLoading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+                noOptionsText={
+                  subjectSearch
+                    ? "Ничего не найдено"
+                    : "Введите название дисциплины (минимум 3 символа)"
+                }
+              />
+            </Box>
+
+            <Box mt={3}>
+              <FormControl fullWidth>
+                <InputLabel>Тип занятия</InputLabel>
+                <Select
+                  name="subject_type"
+                  value={formData.subject_type}
+                  onChange={handleChange}
+                  label="Тип занятия"
+                  required
+                  disabled={subjectTypeLoading}
+                >
+                  {subjectTypes?.map((type) => (
+                    <MenuItem key={type.id} value={type.id}>
+                      {type.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          </Collapse>
         </Box>
 
-        <Box mt={3}>
-          <Autocomplete
-            options={audiences || []}
-            getOptionLabel={(option) => option.number}
-            value={formData.audience}
-            onChange={handleAudienceChange}
-            onInputChange={handleAudienceInputChange}
-            inputValue={audienceSearch}
-            disabled={!academicBuildingId}
-            loading={audiencesLoading}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Выберите аудиторию"
-                required
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
-                    <>
-                      {audiencesLoading ? (
-                        <CircularProgress color="inherit" size={20} />
-                      ) : null}
-                      {params.InputProps.endAdornment}
-                    </>
-                  ),
-                }}
-              />
+        <Divider sx={{ my: 3 }} />
+
+        {/* Раздел 3: Группа и подгруппа */}
+        <Box>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            onClick={() => toggleSection("groupInfo")}
+            sx={{ cursor: "pointer" }}
+          >
+            <Typography variant="h6">Группа и подгруппа</Typography>
+            {expandedSections.groupInfo ? (
+              <ExpandLessIcon />
+            ) : (
+              <ExpandMoreIcon />
             )}
-            noOptionsText={
-              audienceSearch
-                ? "Ничего не найдено"
-                : "Введите название аудитории"
-            }
-          />
+          </Box>
+          <Collapse in={expandedSections.groupInfo}>
+            <Box mt={2}>
+              <Autocomplete
+                options={groups || []}
+                getOptionLabel={(group) => group.name}
+                value={formData.group}
+                onChange={handleGroupChange}
+                onInputChange={handleGroupInputChange}
+                inputValue={groupSearch}
+                loading={groupsLoading}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Выберите группу"
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {groupsLoading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+                noOptionsText={
+                  groupSearch
+                    ? "Ничего не найдено"
+                    : "Введите название группы (минимум 3 символа)"
+                }
+              />
+            </Box>
+
+            {formData.group && (
+              <Box mt={3}>
+                <FormControl fullWidth>
+                  <InputLabel>Выберите подгруппу</InputLabel>
+                  <Select
+                    value={formData.subgroup?.id || ""}
+                    onChange={(e) => {
+                      const selectedSubgroup = subgroups.find(
+                        (s) => s.id === e.target.value
+                      );
+                      handleSubgroupChange(null, selectedSubgroup);
+                    }}
+                    label="Выберите подгруппу"
+                    disabled={subgroupsLoading}
+                  >
+                    <MenuItem value="">
+                      <em>Не выбрано</em>
+                    </MenuItem>
+                    {subgroups?.map((subgroup) => (
+                      <MenuItem key={subgroup.id} value={subgroup.id}>
+                        {subgroup.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            )}
+          </Collapse>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Раздел 4: Преподаватель */}
+        <Box>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            onClick={() => toggleSection("teacherInfo")}
+            sx={{ cursor: "pointer" }}
+          >
+            <Typography variant="h6">Преподаватель</Typography>
+            {expandedSections.teacherInfo ? (
+              <ExpandLessIcon />
+            ) : (
+              <ExpandMoreIcon />
+            )}
+          </Box>
+          <Collapse in={expandedSections.teacherInfo}>
+            <Box mt={2}>
+              <Autocomplete
+                options={teachers}
+                getOptionLabel={(teacher) =>
+                  `${teacher.person.surname} ${teacher.person.name} ${
+                    teacher.person.middlename || ""
+                  }`
+                }
+                value={formData.teacher}
+                onChange={handleTeacherChange}
+                onInputChange={handleTeacherInputChange}
+                inputValue={teacherSearch}
+                loading={teachersLoading}
+                renderOption={(props, teacher) => (
+                  <li {...props}>
+                    <div>
+                      <div>{`${teacher.person.surname} ${teacher.person.name} ${
+                        teacher.person.middlename || ""
+                      }`}</div>
+                      <div style={{ fontSize: "0.8rem", color: "#666" }}>
+                        {teacher.department.name} •{" "}
+                        {teacher.teachingPosition.name}
+                      </div>
+                    </div>
+                  </li>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Выберите преподавателя"
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {teachersLoading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+                noOptionsText={
+                  teacherSearch
+                    ? "Ничего не найдено"
+                    : "Введите ФИО преподавателя (минимум 3 символа)"
+                }
+              />
+            </Box>
+
+            {formData.teacher && (
+              <Box mt={2} display="flex" gap={1}>
+                <Chip
+                  label={formData.teacher.department.name}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+                <Chip
+                  label={formData.teacher.teachingPosition.name}
+                  size="small"
+                  color="secondary"
+                  variant="outlined"
+                />
+              </Box>
+            )}
+          </Collapse>
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        {/* Раздел 5: Место проведения */}
+        <Box>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+            onClick={() => toggleSection("locationInfo")}
+            sx={{ cursor: "pointer" }}
+          >
+            <Typography variant="h6">Место проведения</Typography>
+            {expandedSections.locationInfo ? (
+              <ExpandLessIcon />
+            ) : (
+              <ExpandMoreIcon />
+            )}
+          </Box>
+          <Collapse in={expandedSections.locationInfo}>
+            <Box mt={2}>
+              <FormControl fullWidth>
+                <InputLabel>Выберите корпус</InputLabel>
+                <Select
+                  value={academicBuildingId}
+                  onChange={handleBuildingChange}
+                  label="Выберите корпус"
+                  required
+                  disabled={buildingsLoading}
+                >
+                  {academicBuildings?.map((building) => (
+                    <MenuItem key={building.id} value={building.id}>
+                      {building.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box mt={3}>
+              <Autocomplete
+                options={audiences || []}
+                getOptionLabel={(option) => option.number}
+                value={formData.audience}
+                onChange={handleAudienceChange}
+                onInputChange={handleAudienceInputChange}
+                inputValue={audienceSearch}
+                disabled={!academicBuildingId}
+                loading={audiencesLoading}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Выберите аудиторию"
+                    required
+                    InputProps={{
+                      ...params.InputProps,
+                      endAdornment: (
+                        <>
+                          {audiencesLoading ? (
+                            <CircularProgress color="inherit" size={20} />
+                          ) : null}
+                          {params.InputProps.endAdornment}
+                        </>
+                      ),
+                    }}
+                  />
+                )}
+                noOptionsText={
+                  audienceSearch
+                    ? "Ничего не найдено"
+                    : "Введите название аудитории"
+                }
+              />
+            </Box>
+          </Collapse>
         </Box>
 
         <Box mt={4} display="flex" justifyContent="flex-end">
           <Button
             variant="contained"
             color="primary"
-            startIcon={<SaveIcon />}
+            startIcon={
+              createLessonState.isLoading ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : (
+                <SaveIcon />
+              )
+            }
             type="submit"
             disabled={
-              pairs.isLoading || 
-              !formData.pair || 
-              !formData.audience || 
-              !formData.teacher
+              createLessonState.isLoading ||
+              pairs.isLoading ||
+              !formData.pair ||
+              !formData.audience ||
+              !formData.teacher ||
+              !formData.subject_type ||
+              !formData.subject ||
+              !formData.group
             }
           >
-            Сохранить занятие
+            {createLessonState.isLoading
+              ? "Сохранение..."
+              : "Сохранить занятие"}
           </Button>
         </Box>
       </Paper>

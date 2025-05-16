@@ -24,6 +24,7 @@ import studyPlanSlice from "./slices/studyPlanSlice";
 import lessonSlice from "./slices/lessonSlice";
 import academicBuildingSlice from "./slices/academicBuildingSlice";
 import audienceSlice from "./slices/audienceSlice";
+import subjectTypeSlice from "./slices/subjectTypeSlice";
 
 
 const store = configureStore({
@@ -52,7 +53,8 @@ const store = configureStore({
     studyPlan: studyPlanSlice,
     lesson: lessonSlice,
     academicBuilding: academicBuildingSlice,
-    audience: audienceSlice
+    audience: audienceSlice,
+    subjectType: subjectTypeSlice
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

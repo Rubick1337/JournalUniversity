@@ -26,10 +26,7 @@ const handleValidationMiddlename = body("middlename");
 const handleValidationPhone = body("phone");
 const handleValidationEmail = body("email");
 
-const validateUpdate = [
-  handleValidationPersonId,
-  handleValidationErrors
-];
+const validateUpdate = [handleValidationSurname,handleValidationErrors];
 const validateCreate = [
   handleValidationSurname,
   handleValidationName,

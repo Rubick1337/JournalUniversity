@@ -1,5 +1,13 @@
+const { model } = require("../db");
 const ApiError = require("../error/ApiError");
-const { Absenteeism, Lesson, Student, Op, Sequelize } = require("../models/index");
+const {
+  Absenteeism,
+  Lesson,
+  Student,
+  Op,
+  Sequelize,
+  Person,
+} = require("../models/index");
 const ScheduleService = require("./ScheduleService");
 const StudentService = require("./StudentService");
 
@@ -25,7 +33,9 @@ class AbsenteeismService {
     try {
       const absenteeism = await Absenteeism.findByPk(absenteeismId);
       if (!absenteeism) {
-        throw ApiError.notFound(`Запись о прогуле с ID ${absenteeismId} не найдена`);
+        throw ApiError.notFound(
+          `Запись о прогуле с ID ${absenteeismId} не найдена`
+        );
       }
 
       await absenteeism.update({
@@ -37,21 +47,21 @@ class AbsenteeismService {
 
       return await this._getAbsenteeismWithAssociations(absenteeismId);
     } catch (error) {
-      throw ApiError.badRequest("Ошибка при обновлении записи о прогуле", error);
+      throw ApiError.badRequest(
+        "Ошибка при обновлении записи о прогуле",
+        error
+      );
     }
   }
 
-  // Получение всех записей с пагинацией и фильтрацией
   async getAll({
     page = 1,
     limit = 10,
     sortBy = "createdAt",
     sortOrder = "DESC",
     query = {
-      lessonQuery: "",
-      studentQuery: "",
-      excusedQuery: "",
-      unexcusedQuery: "",
+      lessonIdQuery: "",
+      studentIdQuery: "",
     },
   }) {
     try {
@@ -59,49 +69,31 @@ class AbsenteeismService {
 
       const where = {};
 
-      // Фильтрация по уважительным часам
-      if (query.excusedQuery) {
-        where.count_excused_hour = { [Op.eq]: parseInt(query.excusedQuery) };
+      if (query.lessonIdQuery) {
+        where.lesson_id = query.lessonIdQuery;
       }
 
-      // Фильтрация по неуважительным часам
-      if (query.unexcusedQuery) {
-        where.count_unexcused_hour = { [Op.eq]: parseInt(query.unexcusedQuery) };
+      if (query.studentIdQuery) {
+        where.student_id = query.studentIdQuery;
       }
 
       const include = [
         {
-          model: Lesson,
-          as: "lesson",
-          required: !!query.lessonQuery,
-          where: query.lessonQuery
-            ? {
-                [Op.or]: [
-                  { name: { [Op.iLike]: `%${query.lessonQuery}%` }}
-                ],
-              }
-            : undefined,
-        },
-        {
           model: Student,
           as: "student",
-          required: !!query.studentQuery,
-          where: query.studentQuery
-            ? {
-                [Op.or]: [
-                  { surname: { [Op.iLike]: `%${query.studentQuery}%`} },
-                  { name: { [Op.iLike]: `%${query.studentQuery}%` }},
-                  { middlename: { [Op.iLike]: `%${query.studentQuery}%` }}
-                ],
-              }
-            : undefined,
+          attributes: ["id"],
+          include: [
+            {
+              model: Person,
+              as: "person",
+              attributes: ["id", "surname", "name", "middlename"],
+            },
+          ],
         },
       ];
-
       const { count, rows } = await Absenteeism.findAndCountAll({
         where,
         include,
-        order: [[sortBy, sortOrder]],
         limit,
         offset,
         distinct: true,
@@ -119,10 +111,11 @@ class AbsenteeismService {
         },
       };
     } catch (error) {
-      throw ApiError.internal("Ошибка при получении записей о прогулах: " + error.message);
+      throw ApiError.internal(
+        "Ошибка при получении записей о прогулах: " + error.message
+      );
     }
   }
-
   // Удаление записи о прогуле
   async delete(absenteeismId) {
     try {
@@ -133,22 +126,30 @@ class AbsenteeismService {
       await absenteeism.destroy();
       return absenteeism;
     } catch (error) {
-      throw ApiError.internal("Ошибка при удалении записи о прогуле: " + error.message);
+      throw ApiError.internal(
+        "Ошибка при удалении записи о прогуле: " + error.message
+      );
     }
   }
 
   // Получение записи по ID
   async getById(absenteeismId) {
     try {
-      const absenteeism = await this._getAbsenteeismWithAssociations(absenteeismId);
+      const absenteeism = await this._getAbsenteeismWithAssociations(
+        absenteeismId
+      );
 
       if (!absenteeism) {
-        throw ApiError.notFound(`Запись о прогуле с ID ${absenteeismId} не найдена`);
+        throw ApiError.notFound(
+          `Запись о прогуле с ID ${absenteeismId} не найдена`
+        );
       }
 
       return absenteeism;
     } catch (error) {
-      throw ApiError.internal("Ошибка при получении записи о прогуле: " + error.message);
+      throw ApiError.internal(
+        "Ошибка при получении записи о прогуле: " + error.message
+      );
     }
   }
 
@@ -164,51 +165,62 @@ class AbsenteeismService {
         {
           model: Student,
           as: "student",
+          include: [
+            {
+              model: Person,
+              as: "person",
+              attributes: ["id", "surname", "name", "middlename"],
+            },
+          ],
           // attributes: ["id", "surname", "name", "middlename", "group_id"],
         },
       ],
     });
   }
 
-getForStudent = async (studentId) => {
-  try {
-    const student = await StudentService.getById(studentId);
-    const semester = await ScheduleService.getCurrentSemester();
-    const { start, end } = semester;
-    
-    const absenteeisms = await Absenteeism.findAll({
-      where: {
-        student_id: student.id
-      },
-      include: [
-        {
-          model: Lesson,
-          as: 'lesson',
-          where: {
-            date: {
-              [Op.between]: [start, end]
-            }
-          }
-        }
-      ]
-    });
-    // Calculate total hours
-    const totals = absenteeisms.reduce((acc, absenteeism) => {
+  getForStudent = async (studentId) => {
+    try {
+      const student = await StudentService.getById(studentId);
+      const semester = await ScheduleService.getCurrentSemester();
+      const { start, end } = semester;
+
+      const absenteeisms = await Absenteeism.findAll({
+        where: {
+          student_id: student.id,
+        },
+        include: [
+          {
+            model: Lesson,
+            as: "lesson",
+            where: {
+              date: {
+                [Op.between]: [start, end],
+              },
+            },
+          },
+        ],
+      });
+      // Calculate total hours
+      const totals = absenteeisms.reduce(
+        (acc, absenteeism) => {
+          return {
+            excusedHours:
+              acc.excusedHours + (absenteeism.count_excused_hour || 0),
+            unexcusedHours:
+              acc.unexcusedHours + (absenteeism.count_unexcused_hour || 0),
+          };
+        },
+        { excusedHours: 0, unexcusedHours: 0 }
+      );
+
       return {
-        excusedHours: acc.excusedHours + (absenteeism.count_excused_hour || 0),
-        unexcusedHours: acc.unexcusedHours + (absenteeism.count_unexcused_hour || 0)
+        semester,
+        totals,
       };
-    }, { excusedHours: 0, unexcusedHours: 0 });
-
-    return {
-      semester,
-      totals,
-    };
-
-  } catch (err) {
-    throw err;
-  }
-}
+    } catch (err) {
+      throw err;
+    }
+  };
 }
 
 module.exports = new AbsenteeismService();

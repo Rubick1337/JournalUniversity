@@ -17,6 +17,12 @@ class LessonService extends BaseService {
     return response;
   }
 
+async getLessonDataById(lessonId) {
+    const endpoint = API_ENDPOINTS.LESSON.GETBYID.replace(':lessonId', lessonId);
+    const response = await BaseService.request("get", endpoint);
+    return response;
+}
+
   // async update(code, data) {
   //     const response = await BaseService.request("put", API_ENDPOINTS.ACADEMIC_SPECIALTY.UPDATE.replace(":code", code), data);
   //     return response;

@@ -5,6 +5,7 @@ const NAME_OF_ID_schedule_PARAM = 'scheduleId'
 //TODO validate
 
 scheduleRouter.get(`/getScheduleForStudent`, scheduleController.getScheduleForStudent);
+scheduleRouter.get(`/getLessonsForStudent`, scheduleController.getLessonsForStudent);
 scheduleRouter.get(`/getSemesterByDate`, scheduleController.getSemesterByDate);
 scheduleRouter.get(`/getScheduleByDate`, scheduleController.getScheduleByDate);
 

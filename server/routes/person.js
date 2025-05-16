@@ -14,7 +14,7 @@ personRouter.get(`/getAllByFullName`, personController.getAllByFullName);
 //TODO валидация параметров
 personRouter.delete(`/delete/:personId`, personController.delete);
 //TODO валидация параметров
-personRouter.put('/update/:personId', personController.update)
+personRouter.put('/update/:personId',validateUpdate, personController.update)
 
 
 module.exports = personRouter;

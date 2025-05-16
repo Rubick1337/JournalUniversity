@@ -43,7 +43,7 @@ class StudentService {
     }
   }
 
-  async getAll({
+async getAll({
     page = 1,
     limit = 10,
     sortBy = "person.surname",
@@ -53,7 +53,9 @@ class StudentService {
       surnameQuery: "",
       nameQuery: "",
       groupQuery: "",
+      groupIdQuery: "",
       subgroupQuery: "",
+      subgroupIdQuery: "",
       parentQuery: "",
       reprimandQuery: ""
     },
@@ -86,7 +88,7 @@ class StudentService {
           required: true,
           where: {
             [Op.and]: [
-              query.surnameQuery ? { surname: { [Op.iLike]: `%${query.surnameQuery}%` } } : {},
+              query.surnameQuery ? { surname: { [Op.iLike]: `%${query.surnameQuery}%` }} : {},
               query.nameQuery ? { name: { [Op.iLike]: `%${query.nameQuery}%` } } : {},
             ]
           }
@@ -95,19 +97,25 @@ class StudentService {
           model: Group,
           as: "group",
           attributes: ["id", "name"],
-          required: !!query.groupQuery,
-          where: query.groupQuery
-            ? { name: { [Op.iLike]: `%${query.groupQuery}%` }}
-            : undefined,
+          required: !!query.groupQuery || !!query.groupIdQuery,
+          where: {
+            [Op.and]: [
+              query.groupQuery ? { name: { [Op.iLike]: `%${query.groupQuery}%` } } : {},
+              query.groupIdQuery ? { id: query.groupIdQuery } : {}
+            ]
+          }
         },
         {
           model: Subgroup,
           as: "subgroup",
           attributes: ["id", "name"],
-          required: !!query.subgroupQuery,
-          where: query.subgroupQuery
-            ? { name: { [Op.iLike]: `%${query.subgroupQuery}%` }}
-            : undefined,
+          required: !!query.subgroupQuery || !!query.subgroupIdQuery,
+          where: {
+            [Op.and]: [
+              query.subgroupQuery ? { name: { [Op.iLike]: `%${query.subgroupQuery}%` } } : {},
+              query.subgroupIdQuery ? { id: query.subgroupIdQuery } : {}
+            ]
+          }
         },
         {
           model: Person,
@@ -159,7 +167,6 @@ class StudentService {
       throw ApiError.internal("Error fetching students: " + error.message);
     }
   }
-  
   // Helper method to get the correct model for an association
   _getModelForAssociation(association) {
     switch (association) {

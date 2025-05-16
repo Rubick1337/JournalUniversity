@@ -1,8 +1,18 @@
 const ApiError = require("../error/ApiError");
 const COUNT_PASSWORD_HASH = 5;
-const { User, Op, Sequelize } = require("../models/index");
+const {
+  User,
+  Op,
+  Sequelize,
+  Group,
+  Subgroup,
+  Person,
+  Teacher,
+  Student,
+} = require("../models/index");
 const bcrypt = require("bcrypt");
 const TokenService = require("./TokenService");
+const { model } = require("../db");
 class UserService {
   getHashPassword = async (password) => {
     const passwordHash = await bcrypt.hash(password, COUNT_PASSWORD_HASH);
@@ -34,7 +44,23 @@ class UserService {
   // User => Student => Person
 
   async doesUserExist(login) {
-    const userInDB = await User.findOne({ where: { login } });
+    const userInDB = await User.findOne({
+      where: { login },
+      include: [
+        {
+          model: Student,
+          as: "student",
+          include: [
+            { model: Group, as: "group" },
+            { model: Subgroup, as: "subgroup" },
+          ],
+        },
+        {
+          model: Teacher,
+          as: "teacher",
+        },
+      ],
+    });
 
     if (!userInDB) {
       throw ApiError.badRequest("User not found", {
@@ -44,8 +70,6 @@ class UserService {
     return userInDB;
   }
   async verifyPassword(password, correctPassowrdHash) {
-    console.log("password ", password);
-    console.log("correctPassowrdHash ", correctPassowrdHash);
     const resultCompare = await bcrypt.compare(password, correctPassowrdHash);
     if (!resultCompare) {
       throw ApiError.badRequest("incorrect password", {
@@ -54,8 +78,24 @@ class UserService {
     }
   }
   async doesUserExistByRefresh(token) {
-    console.log("TETSTET", token)
-    const userInDB = await User.findOne({ where: { token } });
+    console.log("TETSTET", token);
+    const userInDB = await User.findOne({
+      where: { token },
+      include: [
+        {
+          model: Student,
+          as: "student",
+          include: [
+            { model: Group, as: "group" },
+            { model: Subgroup, as: "subgroup" },
+          ],
+        },
+        {
+          model: Teacher,
+          as: "teacher",
+        },
+      ],
+    });
 
     if (!userInDB) {
       throw ApiError.badRequest("User not found", {
@@ -81,21 +121,13 @@ class UserService {
     user.token = tokens.refreshToken;
     await user.save();
 
-    // Извлеки нужные поля пользователя
-    const userData = {
-      id: user.id,
-      role_id: user.role_id,
-      student_id: user.student_id,
-      teacher_id: user.teacher_id,
-    };
 
     return {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
-      user: userData
+      user:tokens.payload,
     };
   }
-
 }
 
 module.exports = new UserService();

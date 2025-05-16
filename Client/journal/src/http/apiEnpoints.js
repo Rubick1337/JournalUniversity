@@ -127,6 +127,10 @@ export const API_ENDPOINTS = {
   ABSENTEEISM: {
     CREATE: "/absenteeism/create",
     GET_FOR_STUDENT: "/absenteeism/getForStudent",
+
+    GETALL: "/absenteeism/getAll",
+    UPDATE: "/absenteeism/update/:absenteeismId",
+    DELETE: "/absenteeism/delete/:absenteeismId",
   },
   STUDY_PLAN: {
     GET_TOPICS_PROGRESS: "/studyPlan/getStydentProgressForSubject",
@@ -135,11 +139,17 @@ export const API_ENDPOINTS = {
   LESSON: {
     CREATE: "/lesson/create",
     GET_PAIRS_ON_DATE: "/lesson/getPairsOnDate",
+    GETBYID: "/lesson/getById/:lessonId",
+    GET_LESSONS_FOR_STUDENT: "/lesson/getLessonsForStudent",
+    
   },
   ACADEMIC_BUILDING: {
     GETALL: "/academicBuilding/getAll",
   },
   AUDIENCE: {
     GETALL: "/audience/getAll",
+  },
+  SUBJECT_TYPE: {
+    GETALL: "/subjectType/getAll",
   },
 };

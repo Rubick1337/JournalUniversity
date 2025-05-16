@@ -1,24 +1,26 @@
 const ApiError = require("../error/ApiError");
-const { 
-  Lesson, 
-  Group, 
-  Subgroup, 
-  Subject, 
-  Teacher, 
-  Topic, 
-  Audience, 
+const {
+  Lesson,
+  Group,
+  Subgroup,
+  Subject,
+  Teacher,
+  Topic,
+  Audience,
   SubjectType,
   Person,
   TeachingPosition,
   Pair,
-  Op, 
-  Sequelize 
+  Op,
+  Sequelize,
+  AcademicBuilding,
 } = require("../models/index");
 const ScheduleService = require("./ScheduleService");
 
 class LessonService {
   async create(data) {
     try {
+      console.log("===============", data);
       const lesson = await Lesson.create({
         group_id: data.group_id,
         pair_id: data.pair_id,
@@ -29,7 +31,7 @@ class LessonService {
         topic_id: data.topic_id,
         audience_id: data.audience_id,
         subject_type_id: data.subject_type_id,
-        has_marked_absences: data.has_marked_absences || false
+        has_marked_absences: data.has_marked_absences || false,
       });
 
       return await this._getLessonWithAssociations(lesson.id);
@@ -54,7 +56,7 @@ class LessonService {
         topic_id: updateData.topic_id,
         audience_id: updateData.audience_id,
         subject_type_id: updateData.subject_type_id,
-        has_marked_absences: updateData.has_marked_absences
+        has_marked_absences: updateData.has_marked_absences,
       });
 
       return await this._getLessonWithAssociations(lessonId);
@@ -80,7 +82,7 @@ class LessonService {
       dateFrom: "",
       dateTo: "",
       teachingPositionQuery: "",
-      pairQuery: ""
+      pairQuery: "",
     },
   }) {
     try {
@@ -98,12 +100,9 @@ class LessonService {
       // ID query
       if (query.idQuery) {
         where[Op.and] = [
-          Sequelize.where(
-            Sequelize.cast(Sequelize.col("Lesson.id"), "TEXT"),
-            {
-              [Op.iLike]: `%${query.idQuery}%`,
-            }
-          ),
+          Sequelize.where(Sequelize.cast(Sequelize.col("Lesson.id"), "TEXT"), {
+            [Op.iLike]: `%${query.idQuery}%`,
+          }),
         ];
       }
 
@@ -115,7 +114,7 @@ class LessonService {
           required: !!query.groupQuery,
           where: query.groupQuery
             ? { name: { [Op.iLike]: `%${query.groupQuery}%` } }
-            : undefined
+            : undefined,
         },
         {
           model: Subgroup,
@@ -124,7 +123,7 @@ class LessonService {
           required: !!query.subgroupQuery,
           where: query.subgroupQuery
             ? { name: { [Op.iLike]: `%${query.subgroupQuery}%` } }
-            : undefined
+            : undefined,
         },
         {
           model: Subject,
@@ -133,7 +132,7 @@ class LessonService {
           required: !!query.subjectQuery,
           where: query.subjectQuery
             ? { name: { [Op.iLike]: `%${query.subjectQuery}%` } }
-            : undefined
+            : undefined,
         },
         {
           model: Teacher,
@@ -151,15 +150,15 @@ class LessonService {
               required: !!query.teachingPositionQuery,
               where: query.teachingPositionQuery
                 ? { name: { [Op.iLike]: `%${query.teachingPositionQuery}%` } }
-                : undefined
-            }
+                : undefined,
+            },
           ],
           required: !!query.teacherQuery || !!query.teachingPositionQuery,
           where: query.teacherQuery
             ? {
-                '$person.surname$': { [Op.iLike]: `%${query.teacherQuery}%` }
+                "$person.surname$": { [Op.iLike]: `%${query.teacherQuery}%` },
               }
-            : undefined
+            : undefined,
         },
         {
           model: Topic,
@@ -168,16 +167,22 @@ class LessonService {
           required: !!query.topicQuery,
           where: query.topicQuery
             ? { name: { [Op.iLike]: `%${query.topicQuery}%` } }
-            : undefined
+            : undefined,
         },
         {
           model: Audience,
           as: "AudienceForLesson",
+          include: [
+            {
+              model: AcademicBuilding,
+              as: "academicBuilding",
+            },
+          ],
           // attributes: ["id", "number"],
           required: !!query.audienceQuery,
           where: query.audienceQuery
             ? { number: { [Op.iLike]: `%${query.audienceQuery}%` } }
-            : undefined
+            : undefined,
         },
         {
           model: SubjectType,
@@ -186,23 +191,22 @@ class LessonService {
           required: !!query.subjectTypeQuery,
           where: query.subjectTypeQuery
             ? { name: { [Op.iLike]: `%${query.subjectTypeQuery}%` } }
-            : undefined
+            : undefined,
         },
         {
           model: Pair,
           as: "PairForLesson",
-          // attributes: ["id", "name", "start_time", "end_time"],
           required: !!query.pairQuery,
           where: query.pairQuery
             ? {
                 [Op.or]: [
                   { number: { [Op.iLike]: `%${query.pairQuery}%` } },
                   { start_time: { [Op.iLike]: `%${query.pairQuery}%` } },
-                  { end_time: { [Op.iLike]: `%${query.pairQuery}%` } }
-                ]
+                  { end_time: { [Op.iLike]: `%${query.pairQuery}%` } },
+                ],
               }
-            : undefined
-        }
+            : undefined,
+        },
       ];
 
       const { count, rows } = await Lesson.findAndCountAll({
@@ -288,8 +292,8 @@ class LessonService {
               model: TeachingPosition,
               as: "teachingPosition",
               // attributes: ["id", "name"]
-            }
-          ]
+            },
+          ],
         },
         {
           model: Topic,
@@ -299,6 +303,12 @@ class LessonService {
         {
           model: Audience,
           as: "AudienceForLesson",
+          include: [
+            {
+              model: AcademicBuilding,
+              as: "academicBuilding"
+            }
+          ]
           // attributes: ["id", "number"]
         },
         {
@@ -310,20 +320,22 @@ class LessonService {
           model: Pair,
           as: "PairForLesson",
           // attributes: ["id", "name", "start"]
-        }
-      ]
+        },
+      ],
     });
   }
 
-  getPairsOnDate = async(date)=> {
+  getPairsOnDate = async (date) => {
     const weekdayNumber = ScheduleService.getDayOfWeek(date);
     const weekType = ScheduleService.getWeekType(date);
-    const pairs = await Pair.findAll({where: {
-      weekday_number: weekdayNumber,
-      week_type_name:weekType,
-    }})
+    const pairs = await Pair.findAll({
+      where: {
+        weekday_number: weekdayNumber,
+        week_type_name: weekType,
+      },
+    });
     return pairs;
-  }
+  };
 }
 
 module.exports = new LessonService();

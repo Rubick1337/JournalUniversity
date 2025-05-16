@@ -36,7 +36,7 @@ class SubgroupService {
     }
   }
 
-  async getAll({
+async getAll({
     page = 1,
     limit = 10,
     sortBy = "name",
@@ -45,6 +45,7 @@ class SubgroupService {
       idQuery: "",
       nameQuery: "",
       groupQuery: "",
+      groupIdQuery: "", // Добавляем новый параметр для поиска по ID группы
       leaderQuery: "",
     },
   }) {
@@ -73,12 +74,20 @@ class SubgroupService {
           model: Group,
           as: "group",
           attributes: ["id", "name"],
-          required: !!query.groupQuery,
-          where: query.groupQuery
-            ? {
-                name: { [Op.iLike]: `%${query.groupQuery}%` }
-              }
-            : undefined,
+          required: !!query.groupQuery || !!query.groupIdQuery, // Обновляем условие required
+          where: {
+            [Op.and]: [
+              query.groupQuery 
+                ? { name: { [Op.iLike]: `%${query.groupQuery}%` } }
+                : null,
+              query.groupIdQuery 
+                ? Sequelize.where(
+                    Sequelize.cast(Sequelize.col("group.id"), "TEXT"),
+                    { [Op.iLike]: `%${query.groupIdQuery}%` }
+                  )
+                : null
+            ].filter(Boolean) // Удаляем null значения из массива
+          }
         },
         {
           model: Person,

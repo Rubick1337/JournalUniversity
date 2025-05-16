@@ -20,7 +20,7 @@ class GroupController {
   };
   getCurrentSubjects = async (req, res, next) => {
     try {
-      const groupId = req.groupId || 1;
+      const groupId = req.groupId;
       const currentSubjects = await GroupService.getCurrentSubjectsByGroup(
         groupId
       );

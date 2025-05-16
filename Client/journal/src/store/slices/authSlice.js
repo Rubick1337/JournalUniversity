@@ -64,7 +64,10 @@ const getTokensFromLocalStorage = () => {
 const userSlice = createSlice({
     name: "user",
     initialState: {
-        user: null,
+        user: {
+            student_id: null,
+            teacher_id: null,
+        },
         tokens: getTokensFromLocalStorage(),
         isLoading: false,
         errors: [],

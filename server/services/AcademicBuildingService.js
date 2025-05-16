@@ -4,7 +4,9 @@ const { AcademicBuilding, Op, Sequelize } = require("../models/index");
 class AcademicBuildingService {
   async getAll() {
     try {
-      const result = await AcademicBuilding.findAll();
+      const result = await AcademicBuilding.findAll({
+        order: [["name", "ASC"]], 
+      });
       return result;
     } catch (err) {
       throw err;

@@ -28,7 +28,8 @@ class SubgroupController {
         idQuery = "",
         nameQuery = "",
         groupQuery = "",
-        leaderQuery = ""
+        leaderQuery = "",
+        groupIdQuery = ""
       } = req.query;
 
       const { data, meta } = await SubgroupService.getAll({
@@ -40,7 +41,8 @@ class SubgroupController {
           idQuery,
           nameQuery,
           groupQuery,
-          leaderQuery
+          leaderQuery,
+          groupIdQuery
         },
       });
       

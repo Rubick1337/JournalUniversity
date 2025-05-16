@@ -30,7 +30,9 @@ class StudentController {
         groupQuery = "",
         subgroupQuery = "",
         parentQuery = "",
-        reprimandQuery = ""
+        reprimandQuery = "",
+        groupIdQuery = "",
+        subgroupIdQuery = "",
       } = req.query;
 
       const { data, meta } = await StudentService.getAll({
@@ -45,11 +47,12 @@ class StudentController {
           groupQuery,
           subgroupQuery,
           parentQuery,
-          reprimandQuery
+          reprimandQuery,
+          groupIdQuery,
+          subgroupIdQuery,
         },
       });
-      console.log("=================", data)
-      
+
       const dataDto = data.map((obj) => new StudentFullDataDto(obj));
       const metaDto = new MetaDataDto(meta);
       return res.status(200).json({

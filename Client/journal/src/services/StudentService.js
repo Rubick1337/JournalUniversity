@@ -8,7 +8,9 @@ const addParamInEndpoint = (endpoint, paramName, paramValue) => {
   }
 
   const separator = endpoint.includes("?") ? "&" : "?";
-  return `${endpoint}${separator}${paramName}=${encodeURIComponent(paramValue)}`;
+  return `${endpoint}${separator}${paramName}=${encodeURIComponent(
+    paramValue
+  )}`;
 };
 
 class StudentService extends BaseService {
@@ -25,7 +27,7 @@ class StudentService extends BaseService {
   async updateStudent(id, data) {
     const response = await BaseService.request(
       "put",
-      API_ENDPOINTS.STUDENT.UPDATE.replace(':id', id),
+      API_ENDPOINTS.STUDENT.UPDATE.replace(":id", id),
       data
     );
     return response;
@@ -34,24 +36,26 @@ class StudentService extends BaseService {
   async deleteStudent(id) {
     const response = await BaseService.request(
       "delete",
-      API_ENDPOINTS.STUDENT.DELETE.replace(':id', id),
+      API_ENDPOINTS.STUDENT.DELETE.replace(":id", id)
     );
     return response;
   }
 
   async getAllStudents({
-                         limit,
-                         page,
-                         sortBy,
-                         sortOrder,
-                         idQuery,
-                         surnameQuery,
-                         nameQuery,
-                         groupQuery,
-                         subgroupQuery,
-                         parentQuery,
-                         reprimandQuery
-                       }) {
+    limit,
+    page,
+    sortBy,
+    sortOrder,
+    idQuery,
+    surnameQuery,
+    nameQuery,
+    groupQuery,
+    subgroupQuery,
+    parentQuery,
+    reprimandQuery,
+    groupIdQuery,
+    subgroupIdQuery
+  }) {
     let endpoint = API_ENDPOINTS.STUDENT.GETALL;
 
     endpoint = addParamInEndpoint(endpoint, "limit", limit);
@@ -65,6 +69,8 @@ class StudentService extends BaseService {
     endpoint = addParamInEndpoint(endpoint, "subgroupQuery", subgroupQuery);
     endpoint = addParamInEndpoint(endpoint, "parentQuery", parentQuery);
     endpoint = addParamInEndpoint(endpoint, "reprimandQuery", reprimandQuery);
+    endpoint = addParamInEndpoint(endpoint, "groupIdQuery", groupIdQuery);
+    endpoint = addParamInEndpoint(endpoint, "subgroupIdQuery", subgroupIdQuery);
 
     const response = await BaseService.request("get", endpoint);
     return response;
@@ -73,7 +79,7 @@ class StudentService extends BaseService {
   async getStudentById(id) {
     const response = await BaseService.request(
       "get",
-      API_ENDPOINTS.STUDENT.GETBYID.replace(':id', id),
+      API_ENDPOINTS.STUDENT.GETBYID.replace(":id", id)
     );
     return response.data;
   }

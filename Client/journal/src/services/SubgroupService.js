@@ -38,7 +38,7 @@ class SubgroupService extends BaseService {
     return response;
   }
 
-  async getAllSubgroups({limit, page, sortBy, sortOrder, idQuery, nameQuery,groupQuery}) {
+  async getAllSubgroups({limit, page, sortBy, sortOrder, idQuery, nameQuery,groupQuery,groupIdQuery}) {
     let endpoint = API_ENDPOINTS.SUBGROUP.GETALL;
     console.log("Dasdasw")
     console.log(groupQuery)
@@ -49,6 +49,7 @@ class SubgroupService extends BaseService {
     endpoint = addParamInEndpoint(endpoint, "idQuery", idQuery);
     endpoint = addParamInEndpoint(endpoint, "nameQuery", nameQuery);
     endpoint = addParamInEndpoint(endpoint, "groupQuery", groupQuery);
+    endpoint = addParamInEndpoint(endpoint, "groupIdQuery", groupIdQuery);
 
     const response = await BaseService.request(
         "get",

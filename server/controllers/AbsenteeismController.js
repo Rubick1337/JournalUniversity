@@ -20,30 +20,19 @@ class AbsenteeismController {
       const {
         limit = 10,
         page = 1,
-        sortBy = "createdAt",
-        sortOrder = "DESC",
-        lessonQuery = "",
-        studentQuery = "",
-        excusedQuery = "",
-        unexcusedQuery = "",
+        sortBy = "name",
+        sortOrder = "ASC",
+        lessonIdQuery = "",
+        studentIdQuery = "",
       } = req.query;
-
-      const { data, meta } = await AbsenteeismService.getAll({
-        page: parseInt(page),
-        limit: parseInt(limit),
-        sortBy,
-        sortOrder,
-        query: {
-          lessonQuery,
-          studentQuery,
-          excusedQuery,
-          unexcusedQuery,
-        },
+      const data = await AbsenteeismService.getAll({
+        limit,
+        page,
+        query: { lessonIdQuery, studentIdQuery },
       });
 
       return res.status(200).json({
         data: data,
-        meta: meta,
       });
     } catch (err) {
       console.error(err);
@@ -85,11 +74,9 @@ class AbsenteeismController {
       const { absenteeismId } = req.params;
       const result = await AbsenteeismService.delete(absenteeismId);
       if (!result) {
-        return res
-          .status(404)
-          .json({
-            message: `Запись о прогуле с ID ${absenteeismId} не найдена`,
-          });
+        return res.status(404).json({
+          message: `Запись о прогуле с ID ${absenteeismId} не найдена`,
+        });
       }
       return res.status(204).send();
     } catch (err) {

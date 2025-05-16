@@ -20,7 +20,7 @@ import DisciplinesTablePage from "./pages/DisciplinesTablePage/DisciplinesTableP
 import GroupTablePage from "./pages/GroupTablePage/GroupTablePage";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import StudentRaitingPage from "./pages/StudentRaitingPage/StudentRaitingPage";
-import InfoLessonPage from "./pages/InfoLessonPage/InfoLessonPage";
+import LessonCreationForm from "./pages/LessonCreationForm/LessonCreationForm";
 import ContactTablePage from "./pages/ContactPage/ContactPage";
 import PositionTeacherPage from "./pages/PositionTeacherPage/PositionTeacherPage";
 import RoutersPage from "./pages/RoutersPage/RoutersPage";
@@ -35,8 +35,9 @@ import { getRefreshToken } from "./services/tokenStorage";
 import { useNavigate } from "react-router-dom";
 import TopicTablePage from "./pages/TopicTablePage/TopicTablePage";
 import CurruculimPage from "./pages/CurruculimPage/CurruculimPage";
-
+// import {LessonPage} from './pages/LessonPage/LessonPage'
 import GradeStudentPage from "./pages/GradeStudentPage/GradeStudentPage";
+import LessonInformationPage from "./pages/LessonInformationPage/LessonInformationPage";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -73,8 +74,9 @@ function App() {
           <Route path="/tablegroups" element={<GroupTablePage />} />
           <Route path="*" element={<NotFoundPage />} />
           <Route path="/raiting" element={<StudentRaitingPage />} />
-          <Route path="/infolesson/" element={<InfoLessonPage />} />
-          <Route path="/infolesson/:id" element={<InfoLessonPage />} />
+          <Route path="/infolesson/" element={<LessonCreationForm />} />
+          <Route path="/infolesson/:lessonId" element={<LessonInformationPage/>} />
+          {/* <Route path="/infolesson/:id" element={<LessonPage />} /> */}
           <Route path="/personinfo" element={<ContactTablePage />} />
           <Route path={"/positions"} element={<PositionTeacherPage />} />
           <Route path={"/router"} element={<RoutersPage />} />
