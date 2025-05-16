@@ -1,9 +1,18 @@
 {
   "1": [
     { "id": 1, "name": "Frontend Development" },
-    { "id": 3, "name": "Data Science" }
+    { "id": 3, "name": "Data Science" },
+    { "id": 4, "name": "Machine Learning" },
+    { "id": 5, "name": "Cloud Computing" },
+    { "id": 6, "name": "Cybersecurity" },
+    { "id": 7, "name": "UI/UX Design" }
   ],
   "2": [
-    { "id": 2, "name": "Backend Development" }
+    { "id": 2, "name": "Backend Development" },
+    { "id": 8, "name": "DevOps Practices" },
+    { "id": 9, "name": "Technical Writing" },
+    { "id": 10, "name": "Microservices Architecture" },
+    { "id": 11, "name": "API Design" },
+    { "id": 12, "name": "Agile Methodologies" }
   ]
 }

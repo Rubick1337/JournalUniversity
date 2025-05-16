@@ -1,0 +1,196 @@
+.work-program-container {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+    line-height: 1.6;
+}
+
+h1, h2 {
+    color: #2c3e50;
+    margin-bottom: 20px;
+}
+
+h1 {
+    text-align: center;
+    font-size: 28px;
+    border-bottom: 2px solid #3498db;
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+}
+
+h2 {
+    font-size: 22px;
+    margin: 0 0 20px 0;
+    color: #3498db;
+}
+
+.info-card, .form-card, .data-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+/* Улучшенная таблица с информацией */
+.info-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.info-table th, .info-table td {
+    padding: 14px 20px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: top;
+}
+
+.info-table th {
+    width: 35%;
+    font-weight: 600;
+    color: #2c3e50;
+    padding-right: 30px;
+}
+
+.info-table td {
+    color: #555;
+    width: 65%;
+}
+
+.info-table tr:last-child td {
+    border-bottom: none;
+}
+
+.sub-header th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #3498db;
+    padding: 12px 20px;
+}
+
+/* Форма */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.form-input, .form-select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: #f9f9f9;
+}
+
+.form-input:focus, .form-select:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+    background-color: white;
+}
+
+.form-row {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 18px;
+}
+
+.form-row .form-group {
+    flex: 1;
+}
+
+/* Кнопки */
+.submit-btn {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 14px 24px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+    margin-top: 20px;
+}
+
+.submit-btn:hover {
+    background-color: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Таблица данных */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 15px;
+}
+
+.data-table th {
+    background-color: #3498db;
+    color: white;
+    padding: 14px 20px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.data-table td {
+    padding: 14px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.data-table tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.data-table tr:hover {
+    background-color: #f1f8ff;
+}
+
+.empty-message {
+    text-align: center;
+    color: #7f8c8d;
+    padding: 30px;
+    font-style: italic;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .info-table th,
+    .info-table td {
+        padding: 12px 15px;
+        display: block;
+        width: 100%;
+    }
+
+    .info-table th {
+        padding-bottom: 5px;
+    }
+
+    .info-table td {
+        padding-top: 5px;
+        padding-bottom: 15px;
+    }
+
+    .info-table tr:last-child td {
+        border-bottom: 1px solid #e0e0e0;
+    }
+}

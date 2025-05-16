@@ -13,11 +13,10 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
-    gap: 30px;
 }
 
 .title {
-    font-size: 24px;
+    font-size: 23px;
     font-weight: bold;
     margin-block: 0;
     width: 215px;

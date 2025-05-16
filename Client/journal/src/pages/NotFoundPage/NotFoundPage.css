@@ -1,0 +1,53 @@
+.not-found-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+.loading-dots {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    height: 50px;
+    margin-bottom: 20px;
+}
+
+.dot-not {
+    width: 15px;
+    height: 15px;
+    margin: 0 5px;
+    background-color: #333;
+    border-radius: 50%;
+    animation: bounce 1.5s infinite ease-in-out;
+}
+
+.dot-not-1 {
+    animation-delay: 0s;
+}
+
+.dot-not-2 {
+    animation-delay: 0.2s;
+}
+
+.dot-not-3 {
+    animation-delay: 0.4s;
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+.not-found-text {
+    color: #333;
+    font-size: 24px;
+    text-align: center;
+    margin-top: 20px;
+}

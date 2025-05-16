@@ -1,0 +1,57 @@
+{
+  "specialtyCode": "09.03.01",
+  "specialtyName": "Информатика и вычислительная техника",
+  "startYear": 2022,
+  "disciplines": [
+    { "id": 1, "name": "Информатика - ПОИТ" },
+    { "id": 2, "name": "Математика" },
+    { "id": 3, "name": "Физика" },
+    { "id": 4, "name": "Физика и Электроэнергетика" },
+    { "id": 5, "name": "Программирование" },
+    { "id": 6, "name": "Алгебра" }
+  ],
+  "departments": [
+    { "id": 1, "name": "Кафедра информатики" },
+    { "id": 2, "name": "Кафедра математики" },
+    { "id": 3, "name": "Кафедра физики" },
+    { "id": 4, "name": "Кафедра программирования" },
+    { "id": 5, "name": "Кафедра алгебры" }
+  ],
+  "formsOfAttestation": [
+    { "id": 1, "name": "Экзамен" },
+    { "id": 2, "name": "Зачет" },
+    { "id": 3, "name": "Курсовая работа" },
+    { "id": 4, "name": "Лабораторная работа" },
+    { "id": 5, "name": "Проект" }
+  ],
+  "tableData": [
+    {
+      "id": 1,
+      "discipline": "Информатика - ПОИТ",
+      "department": "Кафедра информатики",
+      "formOfAttestation": "Экзамен",
+      "semester": 1
+    },
+    {
+      "id": 2,
+      "discipline": "Математика",
+      "department": "Кафедра математики",
+      "formOfAttestation": "Зачет",
+      "semester": 2
+    },
+    {
+      "id": 3,
+      "discipline": "Программирование",
+      "department": "Кафедра программирования",
+      "formOfAttestation": "Лабораторная работа",
+      "semester": 1
+    },
+    {
+      "id": 4,
+      "discipline": "Алгебра",
+      "department": "Кафедра алгебры",
+      "formOfAttestation": "Проект",
+      "semester": 2
+    }
+  ]
+}
