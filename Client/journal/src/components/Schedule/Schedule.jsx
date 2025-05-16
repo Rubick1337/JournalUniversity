@@ -79,7 +79,7 @@ const Schedule = ({ selectedDay, formattedDate, weekType }) => {
 
     return (
         <div className="schedule-container">
-            <h1>Расписание на {formattedDate} ({selectedDay}, {weekType === 'upper' ? 'Вн' : 'Нн'})</h1>
+            <h1>Расписание на {formattedDate} ({selectedDay})</h1>
 
             {isLoading ? (
                 <p>Загрузка расписания...</p>

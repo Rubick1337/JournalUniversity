@@ -6,14 +6,17 @@ import Footer from "../../components/Footer/Footer";
 import Slider from "../../components/Slider/Slider";
 import Schedule from "../../components/Schedule/Schedule";
 import "./MainStyle.css";
+import {useSelector} from "react-redux";
 
 const MainPage = () => {
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedDay, setSelectedDay] = useState(null);
     const [weekType, setWeekType] = useState('');
     const [formattedDate, setFormattedDate] = useState('');
+    const { user } = useSelector(state => state.user);
 
     const handleDaySelect = (date, dayOfWeek) => {
+        console.log(date)
         setSelectedDate(date);
         setSelectedDay(dayOfWeek);
 
@@ -29,7 +32,7 @@ const MainPage = () => {
             <Header />
             <main>
                 <div className="container__slider__calendar">
-                    <Slider studentId={1} />
+                    <Slider studentId={user?.student_id} />
                     <Calendar onDaySelect={handleDaySelect} onWeekTypeSelect={setWeekType} />
                 </div>
                 <div className="container__student__schedule">
