@@ -32,7 +32,7 @@ import {
 } from "../../store/slices/lessonSlice";
 import { fetchAcademicBuildings } from "../../store/slices/academicBuildingSlice";
 import { getAllSubjectTypes } from "../../store/slices/subjectTypeSlice";
-import { getAllAudience } from "../../store/slices/audienceSlice";
+import { fetchAudiences } from "../../store/slices/audienceSlice";
 import { fetchSubjects } from "../../store/slices/subjectSlice";
 import { fetchTeachers } from "../../store/slices/teacherSlice";
 import { fetchGroups } from "../../store/slices/groupSlice";
@@ -54,7 +54,7 @@ const LessonCreateForm = () => {
     (state) => state.subjectType
   );
   const { data: audiences, isLoading: audiencesLoading } = useSelector(
-    (state) => state.audience
+    (state) => state.audiences
   );
   const { data: subjects, isLoading: subjectsLoading } = useSelector(
     (state) => state.subjects || {}
@@ -126,7 +126,7 @@ const LessonCreateForm = () => {
   useEffect(() => {
     if (academicBuildingId) {
       dispatch(
-        getAllAudience({
+        fetchAudiences({
           numberAudienceQuery: audienceSearch,
           academicBuildingIdQuery: academicBuildingId,
         })

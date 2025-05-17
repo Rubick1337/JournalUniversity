@@ -151,6 +151,10 @@ export const API_ENDPOINTS = {
   },
   AUDIENCE: {
     GETALL: "/audience/getAll",
+    CREATE: "/audience/create",
+    UPDATE: "/audience/update/:audienceId",
+    GETBYID: "/audience/getById/:audienceId",
+    DELETE: "/audience/delete/:audienceId",
   },
   SUBJECT_TYPE: {
     GETALL: "/subjectType/getAll",

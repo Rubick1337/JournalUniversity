@@ -53,7 +53,7 @@ const store = configureStore({
     studyPlan: studyPlanSlice,
     lesson: lessonSlice,
     academicBuildings: academicBuildingSlice,
-    audience: audienceSlice,
+    audiences: audienceSlice,
     subjectType: subjectTypeSlice
   },
   middleware: (getDefaultMiddleware) =>

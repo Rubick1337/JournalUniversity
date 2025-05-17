@@ -3,13 +3,14 @@ import { API_ENDPOINTS } from "../http/apiEnpoints";
 import BaseService from "./BaseService";
 const ID_FIELD_NAME = "academicBuildingId";
 class AcademicBuildingService extends BaseService {
-  async getAll(paramsData) {
+  async getAll(paramsData = {}) {
     const endpoint = API_ENDPOINTS.ACADEMIC_BUILDING.GETALL;
 
     const params = new URLSearchParams();
     if (paramsData.limit) {
       params.append("limit", paramsData.limit);
     }
+    console.log(paramsData)
     if (paramsData.page) {
       params.append("page", paramsData.page);
     }
