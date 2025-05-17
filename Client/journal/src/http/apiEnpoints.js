@@ -141,10 +141,13 @@ export const API_ENDPOINTS = {
     GET_PAIRS_ON_DATE: "/lesson/getPairsOnDate",
     GETBYID: "/lesson/getById/:lessonId",
     GET_LESSONS_FOR_STUDENT: "/lesson/getLessonsForStudent",
-    
   },
   ACADEMIC_BUILDING: {
     GETALL: "/academicBuilding/getAll",
+    CREATE: "/academicBuilding/create",
+    UPDATE: "/academicBuilding/update/:academicBuildingId",
+    GETBYID: "/academicBuilding/getById/:academicBuildingId",
+    DELETE: "/academicBuilding/delete/:academicBuildingId",
   },
   AUDIENCE: {
     GETALL: "/audience/getAll",

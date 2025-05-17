@@ -37,5 +37,17 @@ class AudienceService {
       throw err;
     }
   }
+  create = async(data)=> {
+    try {
+      const result = await Audience.create({
+        number: data.number,
+        capacity: data.capacity,
+        academic_building_id: data.academicBuildingId,
+      })
+      return result;
+    } catch (err) {
+      throw err;
+    }
+  }
 }
 module.exports = new AudienceService();

@@ -17,6 +17,18 @@ class AudienceController {
       next(err);
     }
   };
+  create = async (req, res, next) => {
+    try {
+      const data = req.body;
+      const result = await AudienceService.create(data);
+      return res.status(200).json({
+        data: result,
+      });
+    } catch (err) {
+      console.error(err);
+      next(err);
+    }
+  };
 }
 
 module.exports = new AudienceController();

@@ -38,6 +38,7 @@ import CurruculimPage from "./pages/CurruculimPage/CurruculimPage";
 // import {LessonPage} from './pages/LessonPage/LessonPage'
 import GradeStudentPage from "./pages/GradeStudentPage/GradeStudentPage";
 import LessonInformationPage from "./pages/LessonInformationPage/LessonInformationPage";
+import AcademicBuildingPage from "./pages/AcademicBuildingPage/AcademicBuildingPage";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -86,6 +87,7 @@ function App() {
           <Route path={"/topic"} element={<TopicTablePage />} />
           <Route path={"/topics"} element={<CurriculumsTable />} />
           <Route path={"/grades"} element={<GradeStudentPage />} />
+          <Route path={"/academicBuildings"} element={<AcademicBuildingPage/>} />
         </Routes>
       </div>
     </Provider>

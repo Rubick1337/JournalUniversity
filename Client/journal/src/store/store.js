@@ -52,7 +52,7 @@ const store = configureStore({
     absenteeism: absenteeismSlice,
     studyPlan: studyPlanSlice,
     lesson: lessonSlice,
-    academicBuilding: academicBuildingSlice,
+    academicBuildings: academicBuildingSlice,
     audience: audienceSlice,
     subjectType: subjectTypeSlice
   },

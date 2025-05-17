@@ -30,7 +30,7 @@ import {
   getPairsOnDate,
   clearCreateLessonState,
 } from "../../store/slices/lessonSlice";
-import { getAllAcademicBuilding } from "../../store/slices/academicBuildingSlice";
+import { fetchAcademicBuildings } from "../../store/slices/academicBuildingSlice";
 import { getAllSubjectTypes } from "../../store/slices/subjectTypeSlice";
 import { getAllAudience } from "../../store/slices/audienceSlice";
 import { fetchSubjects } from "../../store/slices/subjectSlice";
@@ -48,7 +48,7 @@ const LessonCreateForm = () => {
     (state) => state.lesson
   );
   const { data: academicBuildings, isLoading: buildingsLoading } = useSelector(
-    (state) => state.academicBuilding
+    (state) => state.academicBuildings
   );
   const { data: subjectTypes, isLoading: subjectTypeLoading } = useSelector(
     (state) => state.subjectType
@@ -115,7 +115,7 @@ const LessonCreateForm = () => {
 
   // Эффекты для загрузки данных
   useEffect(() => {
-    dispatch(getAllAcademicBuilding());
+    dispatch(fetchAcademicBuildings());
     dispatch(getAllSubjectTypes());
   }, [dispatch]);
 
