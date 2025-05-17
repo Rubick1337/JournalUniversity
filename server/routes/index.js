@@ -35,6 +35,7 @@ initializeRoute('schedule', 'schedule');
 initializeRoute('studyPlan', 'studyPlan');
 initializeRoute('grade', 'grade');
 initializeRoute('absenteeism', 'absenteeism');
+initializeRoute('typeOfSemester', 'typeOfSemester');
 
 
 initializeRoute('audience', 'audience');

@@ -23,6 +23,161 @@ const START_WITH_UPPER = false;
 
 const StudentService = require("./StudentService");
 class ScheduleService {
+
+
+    async create(data) {
+    try {
+      const schedule = await Schedule.create({
+        name: data.name,
+        start_date: data.start_date,
+        type_of_semester_id: data.type_of_semester_id,
+      });
+
+      return schedule;
+    } catch (error) {
+      throw ApiError.badRequest("Error creating schedule", error);
+    }
+  }
+
+  async update(scheduleId, updateData) {
+    try {
+      const schedule = await Schedule.findByPk(scheduleId);
+      if (!schedule) {
+        throw ApiError.notFound(
+          `Schedule with ID ${scheduleId} not found`
+        );
+      }
+
+      await schedule.update({
+        name: updateData.name,
+        start_date: updateData.start_date,
+        type_of_semester_id: updateData.type_of_semester_id,
+      });
+
+      return schedule;
+    } catch (error) {
+      throw ApiError.badRequest("Error updating schedule", error);
+    }
+  }
+
+  async getAll({
+    page = 1,
+    limit = 10,
+    sortBy = "name",
+    sortOrder = "ASC",
+    query = {
+      idQuery: "",
+      nameQuery: "",
+      dateQuery: "",
+      typeOfSemesterQuery: "",
+    },
+  }) {
+    try {
+      const offset = (page - 1) * limit;
+
+      const where = {};
+
+      if (query.nameQuery) {
+        where.name = { [Op.iLike]: `%${query.nameQuery}%` };
+      }
+
+      if (query.dateQuery) {
+        where.start_date = { [Op.gte]: new Date(query.dateQuery) };
+      }
+
+      // idQuery с явным приведением типа
+      if (query.idQuery) {
+        where[Op.and] = [
+          Sequelize.where(
+            Sequelize.cast(Sequelize.col("Schedule.id"), "TEXT"),
+            {
+              [Op.iLike]: `%${query.idQuery}%`,
+            }
+          ),
+        ];
+      }
+
+      const include = [];
+      
+      if (query.typeOfSemesterQuery) {
+        include.push({
+          model: TypeOfSemester,
+          as: 'typeOfSemester',
+          where: {
+            name: { [Op.iLike]: `%${query.typeOfSemesterQuery}%` }
+          },
+          required: true
+        });
+      } else {
+        include.push({
+          model: TypeOfSemester,
+          as: 'typeOfSemester',
+        });
+      }
+
+      const { count, rows } = await Schedule.findAndCountAll({
+        where,
+        include,
+        order: [[sortBy, sortOrder]],
+        limit,
+        offset,
+      });
+
+      return {
+        data: rows,
+        meta: {
+          currentPage: page,
+          perPage: limit,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+          hasNextPage: page * limit < count,
+          hasPreviousPage: page > 1,
+        },
+      };
+    } catch (error) {
+      throw ApiError.internal(
+        "Error fetching schedules: " + error.message
+      );
+    }
+  }
+
+  async delete(scheduleId) {
+    try {
+      const schedule = await Schedule.findByPk(scheduleId);
+      if (!schedule) {
+        return null;
+      }
+      await schedule.destroy();
+      return schedule;
+    } catch (error) {
+      throw ApiError.internal(
+        "Error deleting schedule: " + error.message
+      );
+    }
+  }
+
+  async getById(scheduleId) {
+    try {
+      const schedule = await Schedule.findByPk(scheduleId, {
+        include: [{
+          model: TypeOfSemester,
+          as: 'typeOfSemester'
+        }]
+      });
+
+      if (!schedule) {
+        throw ApiError.notFound(
+          `Schedule with ID ${scheduleId} not found`
+        );
+      }
+
+      return schedule;
+    } catch (error) {
+      throw ApiError.internal(
+        "Error fetching schedule: " + error.message
+      );
+    }
+  }
   static WEEK_TYPES = {
     UPPER: "Верхняя неделя",
     LOWER: "Нижняя неделя",

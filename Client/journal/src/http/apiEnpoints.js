@@ -159,4 +159,11 @@ export const API_ENDPOINTS = {
   SUBJECT_TYPE: {
     GETALL: "/subjectType/getAll",
   },
+  TYPE_OF_SEMESTER: {
+    GETALL: "/typeOfSemester/getAll",
+    CREATE: "/typeOfSemester/create",
+    UPDATE: "/typeOfSemester/update/:typeOfSemesterId",
+    GETBYID: "/typeOfSemester/getById/:typeOfSemesterId",
+    DELETE: "/typeOfSemester/delete/:typeOfSemesterId",
+  },
 };

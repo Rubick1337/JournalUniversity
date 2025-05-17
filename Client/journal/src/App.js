@@ -40,6 +40,7 @@ import GradeStudentPage from "./pages/GradeStudentPage/GradeStudentPage";
 import LessonInformationPage from "./pages/LessonInformationPage/LessonInformationPage";
 import AcademicBuildingPage from "./pages/AcademicBuildingPage/AcademicBuildingPage";
 import AudiencesPage from "./pages/AudiencesPage/AudiencesPage";
+import TypeOfSemesterPage from "./pages/TypeOfSemesterPage/TypeOfSemesterPage";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -90,6 +91,7 @@ function App() {
           <Route path={"/grades"} element={<GradeStudentPage />} />
           <Route path={"/academicBuildings"} element={<AcademicBuildingPage/>} />
           <Route path={"/audiences"} element={<AudiencesPage/>} />
+          <Route path={"/typeOfSemester"} element={<TypeOfSemesterPage/>} />
         </Routes>
       </div>
     </Provider>

@@ -25,6 +25,7 @@ import lessonSlice from "./slices/lessonSlice";
 import academicBuildingSlice from "./slices/academicBuildingSlice";
 import audienceSlice from "./slices/audienceSlice";
 import subjectTypeSlice from "./slices/subjectTypeSlice";
+import typeOfSemesterSlice from "./slices/typeOfSemesterSlice";
 
 
 const store = configureStore({
@@ -54,7 +55,9 @@ const store = configureStore({
     lesson: lessonSlice,
     academicBuildings: academicBuildingSlice,
     audiences: audienceSlice,
-    subjectType: subjectTypeSlice
+    subjectType: subjectTypeSlice,
+    typeOfSemesters: typeOfSemesterSlice,
+    
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),
