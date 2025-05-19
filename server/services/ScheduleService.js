@@ -426,21 +426,16 @@ class ScheduleService {
       if (!student) {
         throw ApiError.badRequest("Student not found");
       }
-      const [day, month, year] = date.split(".");
-      // Месяцы в JavaScript Date начинаются с 0 (январь = 0)
-      const targetDate = new Date(year, month - 1, day);
-      console.log("day",targetDate)
-      console.log("targetDate",targetDate)
-      console.log("targetDate",targetDate)
-      console.log("targetDate",targetDate)
-      console.log("targetDate",targetDate)
-      //TODO добавить обработчик на будущее даты
 
+      const [year, month, day] = date.split("-");
+      const formattedDate = `${year}-${month}-${day}`;
+      console.log("formattedDate", formattedDate)
+      //TODO добавить обработчик на будущее даты
       const result = await Lesson.findAll({
         where: {
           group_id: student.group.id,
-          subgroup_id: student.subgroup.id,
-          date: targetDate,
+          [Op.or]: [{ subgroup_id: student.subgroup.id }, { subgroup_id: null }],
+          date: formattedDate
         },
         include: [
           {

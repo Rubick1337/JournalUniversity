@@ -5,56 +5,23 @@ import {
   fetchScheduleForStudent,
   clearStudentSchedule,
   fetchLessonsForStudent,
-  clearStudentLessonks,
+  clearStudentLessons,
 } from "../../store/slices/scheduleSlice";
 import "./ScheduleStyle.css";
+
 function parseFormattedDate(formattedDate) {
   const [day, month, year] = formattedDate.split(".");
-  // Месяцы в JavaScript Date начинаются с 0 (январь = 0)
   return new Date(year, month - 1, day);
 }
 
 const Schedule = ({ selectedDay, formattedDate, weekType }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
-  // Получаем данные из Redux store
   const { user } = useSelector((state) => state.user);
-  const { studentSchedule, isLoading } = useSelector((state) => state.schedule);
+  const { studentSchedule, studentLessons, isLoading } = useSelector(
+    (state) => state.schedule
+  );
   const role = user?.role || "student";
-
-  useEffect(() => {
-    if (selectedDay && weekType && user?.student_id) {
-      const date = getDateForDayOfWeek(selectedDay, weekType === "upper");
-      const today = new Date();
-      const selectedDate = parseFormattedDate(formattedDate);
-      const year = selectedDate.getFullYear();
-      const month = selectedDate.getMonth() + 1; // Месяцы начинаются с 0
-      const day = selectedDate.getDate(); // Используйте getDate() для получения дня
-      const formattedDateToRespons = `${year}-${month}-${
-        day < 10 ? "0" : ""
-      }${day}`; // Добавляем 0 перед днем, если он однозначный
-      today.setHours(0, 0, 0, 0); // Обнуляем время для корректного сравнения
-      dispatch(clearStudentSchedule());
-      if (selectedDate <= today) {
-        dispatch(
-          fetchLessonsForStudent({
-            studentId: user.student_id,
-            date: formattedDateToRespons,
-          })
-        );
-      }
-      if (selectedDate >= today) {
-        dispatch(
-          fetchScheduleForStudent({
-            studentId: user.student_id,
-            date: formattedDateToRespons,
-          })
-        );
-      }
-    }
-  }, [selectedDay, weekType, user?.student_id, dispatch]);
-
   const getDateForDayOfWeek = (dayName, isUpperWeek) => {
     const days = [
       "Понедельник",
@@ -80,42 +47,157 @@ const Schedule = ({ selectedDay, formattedDate, weekType }) => {
     if (isUpperWeek !== targetIsUpperWeek) {
       targetDate.setDate(targetDate.getDate() + 7);
     }
-
-    return targetDate;
   };
+  useEffect(() => {
+    if (selectedDay && weekType && user?.student_id) {
+      const date = getDateForDayOfWeek(selectedDay, weekType === "upper");
+      const today = new Date();
+      const selectedDate = parseFormattedDate(formattedDate);
+      const year = selectedDate.getFullYear();
+      const month = selectedDate.getMonth() + 1;
+      const day = selectedDate.getDate();
+      const formattedDateToRespons = `${year}-${month}-${
+        day < 10 ? "0" : ""
+      }${day}`;
+
+      today.setHours(0, 0, 0, 0);
+      dispatch(clearStudentSchedule());
+      dispatch(clearStudentLessons());
+
+      // 1. Если дата в прошлом - только проведенные занятия
+      if (selectedDate < today) {
+        dispatch(
+          fetchLessonsForStudent({
+            studentId: user.student_id,
+            date: formattedDateToRespons,
+          })
+        );
+      }
+      // 2. Если дата в будущем - только расписание
+      else if (selectedDate > today) {
+        dispatch(
+          fetchScheduleForStudent({
+            studentId: user.student_id,
+            date: formattedDateToRespons,
+          })
+        );
+      }
+      // 3. Если сегодня - оба запроса
+      else {
+        dispatch(
+          fetchLessonsForStudent({
+            studentId: user.student_id,
+            date: formattedDateToRespons,
+          })
+        );
+        dispatch(
+          fetchScheduleForStudent({
+            studentId: user.student_id,
+            date: formattedDateToRespons,
+          })
+        );
+      }
+    }
+  }, [selectedDay, weekType, user?.student_id, dispatch]);
+
+  // Проверяем, совпадает ли занятие из расписания с проведенным
+  const isLessonMatch = (scheduled, completed) => {
+    return (
+      scheduled.PairInSchedule?.id === completed.pair_id &&
+      scheduled.group_id === completed.group_id &&
+      (scheduled.subgroup_id === completed.subgroup_id ||
+        (!scheduled.subgroup_id && !completed.subgroup_id)) &&
+      scheduled.subject?.id === completed.subject_id &&
+      scheduled.subjectType?.id === completed.subject_type_id
+    );
+  };
+
+  // Формируем объединенный список занятий
+  const getCombinedLessons = () => {
+    const scheduledLessons = studentSchedule?.scheduleDetails || [];
+    const completedLessons = studentLessons || [];
+
+    // Сначала обрабатываем проведенные занятия
+    const result = completedLessons.map((lesson) => ({
+      ...formatCompletedLesson(lesson),
+      isCompleted: true,
+      isScheduled: scheduledLessons.some((s) => isLessonMatch(s, lesson)),
+      isExtra: !scheduledLessons.some((s) => isLessonMatch(s, lesson)),
+    }));
+
+    // Добавляем незавершенные занятия из расписания
+    scheduledLessons.forEach((scheduled) => {
+      const wasCompleted = completedLessons.some((completed) =>
+        isLessonMatch(scheduled, completed)
+      );
+      if (!wasCompleted) {
+        result.push({
+          ...formatScheduledLesson(scheduled),
+          isCompleted: false,
+          isScheduled: true,
+          isExtra: false,
+        });
+      }
+    });
+
+    return result.sort((a, b) => a.time.localeCompare(b.time));
+  };
+
+  const formatScheduledLesson = (lesson) => ({
+    id: lesson.id,
+    time: `${lesson.PairInSchedule?.start} - ${lesson.PairInSchedule?.end}`,
+    subject: lesson.subject?.name,
+    teacher: `${lesson.teacher?.person?.surname} ${lesson.teacher?.person?.name}`,
+    room: `${lesson.audience?.academicBuilding?.name || ""} ${
+      lesson.audience?.number || ""
+    }`.trim(),
+    type: lesson.subjectType?.name,
+    pairId: lesson.PairInSchedule?.id,
+    groupId: lesson.group_id,
+    subgroupId: lesson.subgroup_id,
+    subjectId: lesson.subject?.id,
+    subjectTypeId: lesson.subjectType?.id,
+  });
+
+  const formatCompletedLesson = (lesson) => ({
+    id: lesson.id,
+    time: `${lesson.PairForLesson?.start} - ${lesson.PairForLesson?.end}`,
+    subject: lesson.SubjectForLesson?.name,
+    teacher: `${lesson.TeacherForLesson?.person?.surname} ${lesson.TeacherForLesson?.person?.name}`,
+    room: `${lesson.AudienceForLesson?.academicBuilding?.name || ""} ${
+      lesson.AudienceForLesson?.number || ""
+    }`.trim(),
+    type: lesson.SubjectTypeForLesson?.name,
+    pairId: lesson.pair_id,
+    groupId: lesson.group_id,
+    subgroupId: lesson.subgroup_id,
+    subjectId: lesson.subject_id,
+    subjectTypeId: lesson.subject_type_id,
+    hasMarkedAbsences: lesson.has_marked_absences,
+    topic: lesson.TopicForLesson?.name,
+  });
 
   const handleLessonAction = (lesson) => {
     navigate(`/infolesson/${lesson.id}`, {
       state: {
         lessonData: {
           ...lesson,
-          date: formattedDate, // Используем переданную отформатированную дату
+          date: formattedDate,
           building: lesson.room.split(",")[0],
           classroom: lesson.room.split(",")[1]?.trim(),
           discipline: lesson.subject,
-          pair: `${lesson.time}`,
-          topic: "Не указана",
+          pair: lesson.time,
+          topic: lesson.topic || "Не указана",
+          isCompleted: lesson.isCompleted,
         },
       },
     });
   };
 
-  const formatScheduleData = () => {
-    if (!studentSchedule?.scheduleDetails) return [];
-
-    return studentSchedule.scheduleDetails.map((item) => ({
-      id: item.id,
-      time: `${item.PairInSchedule?.start} - ${item.PairInSchedule?.end}`,
-      subject: item.subject?.name,
-      teacher: `${item.teacher?.person?.surname} ${item.teacher?.person?.name}`,
-      room: `${item.audience?.academicBuilding?.name || ""} ${
-        item.audience?.number || ""
-      }`.trim(),
-      type: item.subjectType?.name,
-    }));
-  };
-
-  const scheduleData = formatScheduleData();
+  const combinedLessons = getCombinedLessons();
+  const today = new Date();
+  const selectedDate = parseFormattedDate(formattedDate);
+  today.setHours(0, 0, 0, 0);
 
   return (
     <div className="schedule-container">
@@ -126,10 +208,15 @@ const Schedule = ({ selectedDay, formattedDate, weekType }) => {
 
       {isLoading ? (
         <p>Загрузка расписания...</p>
-      ) : scheduleData.length > 0 ? (
+      ) : combinedLessons.length > 0 ? (
         <div className="day-schedule">
-          {scheduleData.map((lesson, index) => (
-            <div key={index} className="lesson">
+          {combinedLessons.map((lesson, index) => (
+            <div
+              key={index}
+              className={`lesson ${lesson.isCompleted ? "completed" : ""} ${
+                lesson.isExtra ? "extra" : ""
+              }`}
+            >
               <div className="dot"></div>
               <div className="information__lesson">
                 <div className="lesson-main-info">
@@ -138,14 +225,24 @@ const Schedule = ({ selectedDay, formattedDate, weekType }) => {
                   <div className="teacher">{lesson.teacher}</div>
                   <div className="room">Аудитория: {lesson.room}</div>
                   <div className="type">Тип: {lesson.type}</div>
+
                 </div>
                 <button
                   className={`action-button ${
-                    role === "teacher" ? "conduct" : "details"
+                    lesson.isCompleted ? "conduct" : "disabled"
                   }`}
-                  onClick={() => handleLessonAction(lesson)}
+                  onClick={() =>
+                    lesson.isCompleted && handleLessonAction(lesson)
+                  }
+                  disabled={!lesson.isCompleted}
                 >
-                  {role === "teacher" ? "Провести" : "Подробнее"}
+                  {lesson.isCompleted
+                    ? lesson.hasMarkedAbsences
+                      ? "Посмотреть"
+                      : "К занятию"
+                    : selectedDate <= today
+                    ? "Не проводилось"
+                    : "Запланировано"}
                 </button>
               </div>
             </div>
