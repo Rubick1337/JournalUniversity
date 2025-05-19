@@ -1,10 +1,9 @@
-// AudienceController.js
-const AudienceService = require("../services/AudienceService");
+const TypeOfSemesterService = require("../services/TypeOfSemesterService");
 
-class AudienceController {
+class TypeOfSemesterController {
   create = async (req, res, next) => {
     try {
-      const result = await AudienceService.create(req.body);
+      const result = await TypeOfSemesterService.create(req.body);
       return res.status(200).json({ message: "created", data: result });
     } catch (err) {
       console.error(err);
@@ -17,26 +16,24 @@ class AudienceController {
       const {
         limit = 10,
         page = 1,
-        sortBy = "number",
+        sortBy = "name",
         sortOrder = "ASC",
         idQuery = "",
-        numberQuery = "",
-        capacityQuery = "",
-        buildingIdQuery = "",
-        buildingNameQuery = "",
+        nameQuery = "",
+        startDateQuery = "",
+        endDateQuery = "",
       } = req.query;
 
-      const { data, meta } = await AudienceService.getAll({
+      const { data, meta } = await TypeOfSemesterService.getAll({
         page: parseInt(page),
         limit: parseInt(limit),
         sortBy,
         sortOrder,
         query: {
           idQuery,
-          numberQuery,
-          capacityQuery,
-          buildingIdQuery,
-          buildingNameQuery,
+          nameQuery,
+          startDateQuery,
+          endDateQuery
         },
       });
       
@@ -52,8 +49,8 @@ class AudienceController {
 
   getById = async (req, res, next) => {
     try {
-      const { audienceId } = req.params;
-      const data = await AudienceService.getById(audienceId);
+      const { typeOfSemesterId } = req.params;
+      const data = await TypeOfSemesterService.getById(typeOfSemesterId);
       return res.status(200).json({
         data,
       });
@@ -65,8 +62,8 @@ class AudienceController {
 
   update = async (req, res, next) => {
     try {
-      const { audienceId } = req.params;
-      const result = await AudienceService.update(audienceId, req.body);
+      const { typeOfSemesterId } = req.params;
+      const result = await TypeOfSemesterService.update(typeOfSemesterId, req.body);
       return res.status(200).json({ message: "updated", data: result });
     } catch (err) {
       console.error(err);
@@ -76,12 +73,12 @@ class AudienceController {
 
   delete = async (req, res, next) => {
     try {
-      const { audienceId } = req.params;
-      const result = await AudienceService.delete(audienceId);
+      const { typeOfSemesterId } = req.params;
+      const result = await TypeOfSemesterService.delete(typeOfSemesterId);
       if (!result) {
         return res
           .status(404)
-          .json({ message: `Not found audience by id ${audienceId}` });
+          .json({ message: `Not found type of semester by id ${typeOfSemesterId}` });
       }
       return res.status(204).send();
     } catch (err) {
@@ -91,4 +88,4 @@ class AudienceController {
   };
 }
 
-module.exports = new AudienceController();
+module.exports = new TypeOfSemesterController();

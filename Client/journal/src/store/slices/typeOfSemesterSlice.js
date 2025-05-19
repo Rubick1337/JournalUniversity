@@ -1,11 +1,11 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import AcademicBuildingService from "../../services/AcademicBuildingService";
+import TypeOfSemesterService from "../../services/TypeOfSemesterService";
 
-export const fetchAcademicBuildings = createAsyncThunk(
-  "academicBuildings/fetchAcademicBuildings",
+export const fetchTypeOfSemesters = createAsyncThunk(
+  "typeOfSemesters/fetchTypeOfSemesters",
   async (params, { rejectWithValue }) => {
     try {
-      const response = await AcademicBuildingService.getAll(params);
+      const response = await TypeOfSemesterService.getAll(params);
       return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -13,35 +13,35 @@ export const fetchAcademicBuildings = createAsyncThunk(
   }
 );
 
-export const createAcademicBuilding = createAsyncThunk(
-  "academicBuildings/createAcademicBuilding",
-  async (buildingData, { rejectWithValue }) => {
+export const createTypeOfSemester = createAsyncThunk(
+  "typeOfSemesters/createTypeOfSemester",
+  async (semesterData, { rejectWithValue }) => {
     try {
-      const response = await AcademicBuildingService.create(buildingData);
-      return response.data;
+      const response = await TypeOfSemesterService.create(semesterData);
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-export const updateAcademicBuilding = createAsyncThunk(
-  "academicBuildings/updateAcademicBuilding",
-  async ({ id, buildingData }, { rejectWithValue }) => {
+export const updateTypeOfSemester = createAsyncThunk(
+  "typeOfSemesters/updateTypeOfSemester",
+  async ({ id, semesterData }, { rejectWithValue }) => {
     try {
-      const response = await AcademicBuildingService.update(id, buildingData);
-      return response.data;
+      const response = await TypeOfSemesterService.update(id, semesterData);
+      return response;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
     }
   }
 );
 
-export const deleteAcademicBuilding = createAsyncThunk(
-  "academicBuildings/deleteAcademicBuilding",
+export const deleteTypeOfSemester = createAsyncThunk(
+  "typeOfSemesters/deleteTypeOfSemester",
   async (id, { rejectWithValue }) => {
     try {
-      await AcademicBuildingService.delete(id);
+      await TypeOfSemesterService.delete(id);
       return id;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -49,13 +49,13 @@ export const deleteAcademicBuilding = createAsyncThunk(
   }
 );
 
-const academicBuildingSlice = createSlice({
-  name: "academicBuildings",
+const typeOfSemesterSlice = createSlice({
+  name: "typeOfSemesters",
   initialState: {
     data: [],
     isLoading: false,
     errors: [],
-    currentBuilding: null,
+    currentSemester: null,
     meta: {
       total: 0,
       page: 1,
@@ -63,15 +63,16 @@ const academicBuildingSlice = createSlice({
     },
     searchParams: {
       nameQuery: '',
-      addressQuery: ''
+      startDateQuery: '',
+      endDateQuery: ''
     }
   },
   reducers: {
     clearErrors: (state) => {
       state.errors = [];
     },
-    clearCurrentBuilding: (state) => {
-      state.currentBuilding = null;
+    clearCurrentSemester: (state) => {
+      state.currentSemester = null;
     },
     setPage: (state, action) => {
       state.meta.page = action.payload;
@@ -82,68 +83,71 @@ const academicBuildingSlice = createSlice({
     setSearchParams: (state, action) => {
       state.searchParams = { ...state.searchParams, ...action.payload };
       state.meta.page = 1; // Reset to first page when search changes
+    },
+    setCurrentSemester: (state, action) => {
+      state.currentSemester = action.payload;
     }
   },
   extraReducers: (builder) => {
     builder
-      // Fetch all buildings
-      .addCase(fetchAcademicBuildings.pending, (state) => {
+      // Fetch all semesters
+      .addCase(fetchTypeOfSemesters.pending, (state) => {
         state.isLoading = true;
         state.errors = [];
       })
-      .addCase(fetchAcademicBuildings.fulfilled, (state, action) => {
+      .addCase(fetchTypeOfSemesters.fulfilled, (state, action) => {
         state.isLoading = false;
         state.data = action.payload.data || action.payload;
-        console.log(action.payload)
-        state.meta.total = action.payload.meta.totalItems || action.payload.length;
+        state.meta.total = action.payload.meta?.totalItems || action.payload.length;
       })
-      .addCase(fetchAcademicBuildings.rejected, (state, action) => {
+      .addCase(fetchTypeOfSemesters.rejected, (state, action) => {
         state.isLoading = false;
         state.errors = action.payload ? [action.payload] : [{ message: "Unknown error" }];
       })
       
-      // Create building
-      .addCase(createAcademicBuilding.pending, (state) => {
+      // Create semester
+      .addCase(createTypeOfSemester.pending, (state) => {
         state.isLoading = true;
         state.errors = [];
       })
-      .addCase(createAcademicBuilding.fulfilled, (state, action) => {
+      .addCase(createTypeOfSemester.fulfilled, (state, action) => {
         state.isLoading = false;
         state.data = [action.payload, ...state.data];
         state.meta.total += 1;
       })
-      .addCase(createAcademicBuilding.rejected, (state, action) => {
+      .addCase(createTypeOfSemester.rejected, (state, action) => {
         state.isLoading = false;
         state.errors = action.payload ? [action.payload] : [{ message: "Unknown error" }];
       })
       
-      // Update building
-      .addCase(updateAcademicBuilding.pending, (state) => {
+      // Update semester
+      .addCase(updateTypeOfSemester.pending, (state) => {
         state.isLoading = true;
         state.errors = [];
       })
-      .addCase(updateAcademicBuilding.fulfilled, (state, action) => {
+      .addCase(updateTypeOfSemester.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.data = state.data.map(building => 
-          building.id === action.payload.id ? action.payload : building
+        state.data = state.data.map(semester => 
+          semester.id === action.payload.id ? action.payload : semester
         );
+        state.currentSemester = null;
       })
-      .addCase(updateAcademicBuilding.rejected, (state, action) => {
+      .addCase(updateTypeOfSemester.rejected, (state, action) => {
         state.isLoading = false;
         state.errors = action.payload ? [action.payload] : [{ message: "Unknown error" }];
       })
       
-      // Delete building
-      .addCase(deleteAcademicBuilding.pending, (state) => {
+      // Delete semester
+      .addCase(deleteTypeOfSemester.pending, (state) => {
         state.isLoading = true;
         state.errors = [];
       })
-      .addCase(deleteAcademicBuilding.fulfilled, (state, action) => {
+      .addCase(deleteTypeOfSemester.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.data = state.data.filter(building => building.id !== action.payload);
+        state.data = state.data.filter(semester => semester.id !== action.payload);
         state.meta.total -= 1;
       })
-      .addCase(deleteAcademicBuilding.rejected, (state, action) => {
+      .addCase(deleteTypeOfSemester.rejected, (state, action) => {
         state.isLoading = false;
         state.errors = action.payload ? [action.payload] : [{ message: "Unknown error" }];
       });
@@ -152,10 +156,11 @@ const academicBuildingSlice = createSlice({
 
 export const { 
   clearErrors, 
-  clearCurrentBuilding, 
+  clearCurrentSemester,
+  setCurrentSemester,
   setPage, 
   setLimit, 
   setSearchParams 
-} = academicBuildingSlice.actions;
+} = typeOfSemesterSlice.actions;
 
-export default academicBuildingSlice.reducer;
+export default typeOfSemesterSlice.reducer;

@@ -120,9 +120,17 @@ export const API_ENDPOINTS = {
     REFRESH: "/user/refresh",
   },
   SCHEDULE: {
+    GETALL: "/schedule/getAll",
+    CREATE: "/schedule/create",
+    UPDATE: "/schedule/update/:scheduleId",
+    GETBYID: "/schedule/getById/:scheduleId",
+    DELETE: "/schedule/delete/:scheduleId",
+
+    GET_LESSONS_FOR_STUDENT: "/schedule/getLessonsForStudent",
     GET_FOR_STUDENT: "/schedule/getScheduleForStudent",
     GET_SEMESTER_BY_DATE: "/schedule/getSemesterByDate",
     GET_SCHEDULE_BY_DATE: "/schedule/getScheduleByDate",
+    GET_FOR_TEACHER: "/schedule/getScheduleForTeacher",
   },
   ABSENTEEISM: {
     CREATE: "/absenteeism/create",
@@ -140,16 +148,29 @@ export const API_ENDPOINTS = {
     CREATE: "/lesson/create",
     GET_PAIRS_ON_DATE: "/lesson/getPairsOnDate",
     GETBYID: "/lesson/getById/:lessonId",
-    GET_LESSONS_FOR_STUDENT: "/lesson/getLessonsForStudent",
-    
   },
   ACADEMIC_BUILDING: {
     GETALL: "/academicBuilding/getAll",
+    CREATE: "/academicBuilding/create",
+    UPDATE: "/academicBuilding/update/:academicBuildingId",
+    GETBYID: "/academicBuilding/getById/:academicBuildingId",
+    DELETE: "/academicBuilding/delete/:academicBuildingId",
   },
   AUDIENCE: {
     GETALL: "/audience/getAll",
+    CREATE: "/audience/create",
+    UPDATE: "/audience/update/:audienceId",
+    GETBYID: "/audience/getById/:audienceId",
+    DELETE: "/audience/delete/:audienceId",
   },
   SUBJECT_TYPE: {
     GETALL: "/subjectType/getAll",
+  },
+  TYPE_OF_SEMESTER: {
+    GETALL: "/typeOfSemester/getAll",
+    CREATE: "/typeOfSemester/create",
+    UPDATE: "/typeOfSemester/update/:typeOfSemesterId",
+    GETBYID: "/typeOfSemester/getById/:typeOfSemesterId",
+    DELETE: "/typeOfSemester/delete/:typeOfSemesterId",
   },
 };

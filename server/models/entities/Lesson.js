@@ -41,7 +41,7 @@ const Lesson = sequelize.define("Lesson", {
     },
     allowNull: false
   },
-  date: { type: DataTypes.DATE, allowNull: false },
+  date: { type: DataTypes.DATEONLY, allowNull: false },
 
 
   subject_id: {

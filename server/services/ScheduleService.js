@@ -22,7 +22,168 @@ const {
 const START_WITH_UPPER = false;
 
 const StudentService = require("./StudentService");
+const TeacherService = require("./TeacherService");
 class ScheduleService {
+  async create(data) {
+    try {
+      const schedule = await Schedule.create({
+        name: data.name,
+        start_date: data.start_date,
+        type_of_semester_id: data.type_of_semester_id,
+      });
+
+      return schedule;
+    } catch (error) {
+      throw ApiError.badRequest("Error creating schedule", error);
+    }
+  }
+
+  async update(scheduleId, updateData) {
+    try {
+      const schedule = await Schedule.findByPk(scheduleId);
+      if (!schedule) {
+        throw ApiError.notFound(`Schedule with ID ${scheduleId} not found`);
+      }
+
+      await schedule.update({
+        name: updateData.name,
+        start_date: updateData.start_date,
+        type_of_semester_id: updateData.type_of_semester_id,
+      });
+
+      return schedule;
+    } catch (error) {
+      throw ApiError.badRequest("Error updating schedule", error);
+    }
+  }
+
+  async getAll({
+    page = 1,
+    limit = 10,
+    sortBy = "name",
+    sortOrder = "ASC",
+    query = {
+      idQuery: "",
+      nameQuery: "",
+      dateQuery: "",
+      typeOfSemesterIdQuery: "",
+      typeOfSemesterNameQuery: "",
+    },
+  }) {
+    try {
+      const offset = (page - 1) * limit;
+
+      const where = {};
+
+      if (query.nameQuery) {
+        where.name = { [Op.iLike]: `%${query.nameQuery}%` };
+      }
+
+      if (query.dateQuery) {
+        where.start_date = { [Op.gte]: new Date(query.dateQuery) };
+      }
+
+      // idQuery с явным приведением типа
+      if (query.idQuery) {
+        where[Op.and] = [
+          Sequelize.where(
+            Sequelize.cast(Sequelize.col("Schedule.id"), "TEXT"),
+            {
+              [Op.iLike]: `%${query.idQuery}%`,
+            }
+          ),
+        ];
+      }
+
+      const include = [];
+      if (query.typeOfSemesterIdQuery) {
+        include.push({
+          model: TypeOfSemester,
+          as: "typeOfSemester",
+          where: {
+            id: query.typeOfSemesterIdQuery,
+          },
+          required: true,
+        });
+      } else {
+        include.push({
+          model: TypeOfSemester,
+          as: "typeOfSemester",
+        });
+      }
+      if (query.typeOfSemesterNameQuery) {
+        include.push({
+          model: TypeOfSemester,
+          as: "typeOfSemester",
+          where: {
+            name: { [Op.iLike]: `%${query.typeOfSemesterNameQuery}%` },
+          },
+          required: true,
+        });
+      } else {
+        include.push({
+          model: TypeOfSemester,
+          as: "typeOfSemester",
+        });
+      }
+
+      const { count, rows } = await Schedule.findAndCountAll({
+        where,
+        include,
+        order: [[sortBy, sortOrder]],
+        limit,
+        offset,
+      });
+
+      return {
+        data: rows,
+        meta: {
+          currentPage: page,
+          perPage: limit,
+          totalItems: count,
+          totalPages: Math.ceil(count / limit),
+          hasNextPage: page * limit < count,
+          hasPreviousPage: page > 1,
+        },
+      };
+    } catch (error) {
+      throw ApiError.internal("Error fetching schedules: " + error.message);
+    }
+  }
+
+  async delete(scheduleId) {
+    try {
+      const schedule = await Schedule.findByPk(scheduleId);
+      if (!schedule) {
+        return null;
+      }
+      await schedule.destroy();
+      return schedule;
+    } catch (error) {
+      throw ApiError.internal("Error deleting schedule: " + error.message);
+    }
+  }
+
+  async getById(scheduleId) {
+    try {
+      const schedule = await Schedule.findByPk(scheduleId, {
+        include: [
+          {
+            model: TypeOfSemester,
+            as: "typeOfSemester",
+          },
+        ],
+      });
+
+      if (!schedule) {
+        throw ApiError.notFound(`Schedule with ID ${scheduleId} not found`);
+      }
+
+      return schedule;
+    } catch (error) {
+      throw ApiError.internal("Error fetching schedule: " + error.message);
+    }
+  }
   static WEEK_TYPES = {
     UPPER: "Верхняя неделя",
     LOWER: "Нижняя неделя",
@@ -266,16 +427,15 @@ class ScheduleService {
         throw ApiError.badRequest("Student not found");
       }
 
-      // Определяем переданную дату или текущую дату
-      const targetDate = date ? new Date(date) : new Date();
-
+      const [year, month, day] = date.split("-");
+      const formattedDate = `${year}-${month}-${day}`;
+      console.log("formattedDate", formattedDate)
       //TODO добавить обработчик на будущее даты
-
       const result = await Lesson.findAll({
         where: {
           group_id: student.group.id,
-          subgroup_id: student.subgroup.id,
-          date: targetDate,
+          [Op.or]: [{ subgroup_id: student.subgroup.id }, { subgroup_id: null }],
+          date: formattedDate
         },
         include: [
           {
@@ -349,10 +509,148 @@ class ScheduleService {
     weekType,
   }) => {
     try {
+      const teacher = await TeacherService.getById(teacherId);
+      if (!teacher) {
+        throw ApiError.badRequest("Преподаватель не найден");
+      }
+
+      const targetDate = date ? new Date(date) : new Date();
+      const calculatedWeekdayNumber =
+        weekdayNumber !== null ? weekdayNumber : this.getDayOfWeek(targetDate);
+      const calculatedWeekType =
+        weekType !== null ? weekType : this.getWeekType(targetDate);
+      const currentSchedule = await this.getCurrentSchedule(targetDate);
+
+      const pairConditions = {
+        weekday_number: calculatedWeekdayNumber,
+      };
+
+      if (calculatedWeekType) {
+        pairConditions.week_type_name = calculatedWeekType;
+      }
+
+      // Находим все занятия преподавателя
+      const scheduleDetails = await ScheduleDetails.findAll({
+        where: {
+          schedule_id: currentSchedule.id,
+          teacher_id: teacherId,
+        },
+        include: [
+          {
+            model: Pair,
+            as: "PairInSchedule",
+            where: pairConditions,
+          },
+          { model: Subject, as: "subject" },
+          {
+            model: Audience,
+            as: "audience",
+            include: [{ model: AcademicBuilding, as: "academicBuilding" }],
+          },
+          {
+            model: Group,
+            as: "GroupInSchedule",
+          },
+          {
+            model: Subgroup,
+            as: "SubroupInSchedule",
+          },
+          { model: SubjectType, as: "subjectType" },
+        ],
+        order: [
+          ["pair_id", "ASC"],
+          ["group_id", "ASC"],
+        ],
+      });
+
+      // Группируем занятия по парам
+      const groupedByPair = scheduleDetails.reduce((acc, detail) => {
+        const pairId = detail.pair_id;
+        if (!acc[pairId]) {
+          acc[pairId] = {
+            pairInfo: {
+              id: detail.PairInSchedule.id,
+              name: detail.PairInSchedule.name,
+              start: detail.PairInSchedule.start,
+              end: detail.PairInSchedule.end,
+              break_start: detail.PairInSchedule.break_start,
+              break_end: detail.PairInSchedule.break_end,
+            },
+            subject: {
+              id: detail.subject.id,
+              name: detail.subject.name,
+            },
+            subjectType: {
+              id: detail.subjectType.id,
+              name: detail.subjectType.name,
+            },
+            audience: {
+              id: detail.audience.id,
+              number: detail.audience.number,
+              academicBuilding: detail.audience.academicBuilding,
+            },
+            teacher: {
+              id: teacher.id,
+              name: `${teacher.person.surname} ${teacher.person.name} ${
+                teacher.person.middlename || ""
+              }`.trim(),
+            },
+            groups: [],
+            subgroups: [],
+          };
+        }
+
+        if (detail.group_id) {
+          acc[pairId].groups.push({
+            id: detail.GroupInSchedule.id,
+            name: detail.GroupInSchedule.name,
+          });
+        }
+
+        if (detail.subgroup_id) {
+          acc[pairId].subgroups.push({
+            id: detail.SubroupInSchedule.id,
+            name: detail.SubroupInSchedule.name,
+          });
+        }
+
+        return acc;
+      }, {});
+
+      // Преобразуем объект в массив
+      const result = Object.values(groupedByPair).map((item) => ({
+        ...item,
+        groups: this.uniqueBy(item.groups, "id"),
+        subgroups: this.uniqueBy(item.subgroups, "id"),
+      }));
+
+      return {
+        teacher,
+        schedule: {
+          id: currentSchedule.id,
+          name: currentSchedule.name,
+          start_date: currentSchedule.start_date,
+          semester: currentSchedule.typeOfSemester.name,
+        },
+        dateInfo: {
+          date: targetDate,
+          weekdayNumber: calculatedWeekdayNumber,
+          weekType: calculatedWeekType,
+          isUpperWeek: calculatedWeekType === ScheduleService.WEEK_TYPES.UPPER,
+        },
+        scheduleDetails: result,
+      };
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Ошибка в getScheduleForTeacher:", error);
       throw error;
     }
+  };
+
+  // Вспомогательная функция для удаления дубликатов
+  uniqueBy = (arr, key) => {
+    return [...new Map(arr.map((item) => [item[key], item]))].map(
+      ([_, item]) => item
+    );
   };
 }
 

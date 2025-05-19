@@ -30,9 +30,9 @@ import {
   getPairsOnDate,
   clearCreateLessonState,
 } from "../../store/slices/lessonSlice";
-import { getAllAcademicBuilding } from "../../store/slices/academicBuildingSlice";
+import { fetchAcademicBuildings } from "../../store/slices/academicBuildingSlice";
 import { getAllSubjectTypes } from "../../store/slices/subjectTypeSlice";
-import { getAllAudience } from "../../store/slices/audienceSlice";
+import { fetchAudiences } from "../../store/slices/audienceSlice";
 import { fetchSubjects } from "../../store/slices/subjectSlice";
 import { fetchTeachers } from "../../store/slices/teacherSlice";
 import { fetchGroups } from "../../store/slices/groupSlice";
@@ -48,13 +48,13 @@ const LessonCreateForm = () => {
     (state) => state.lesson
   );
   const { data: academicBuildings, isLoading: buildingsLoading } = useSelector(
-    (state) => state.academicBuilding
+    (state) => state.academicBuildings
   );
   const { data: subjectTypes, isLoading: subjectTypeLoading } = useSelector(
     (state) => state.subjectType
   );
   const { data: audiences, isLoading: audiencesLoading } = useSelector(
-    (state) => state.audience
+    (state) => state.audiences
   );
   const { data: subjects, isLoading: subjectsLoading } = useSelector(
     (state) => state.subjects || {}
@@ -115,7 +115,7 @@ const LessonCreateForm = () => {
 
   // Эффекты для загрузки данных
   useEffect(() => {
-    dispatch(getAllAcademicBuilding());
+    dispatch(fetchAcademicBuildings());
     dispatch(getAllSubjectTypes());
   }, [dispatch]);
 
@@ -126,7 +126,7 @@ const LessonCreateForm = () => {
   useEffect(() => {
     if (academicBuildingId) {
       dispatch(
-        getAllAudience({
+        fetchAudiences({
           numberAudienceQuery: audienceSearch,
           academicBuildingIdQuery: academicBuildingId,
         })
