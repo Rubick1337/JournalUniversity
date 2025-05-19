@@ -1,8 +1,7 @@
 const ScheduleService = require("../services/ScheduleService");
 
 class ScheduleController {
-
-    create = async (req, res, next) => {
+  create = async (req, res, next) => {
     try {
       const result = await ScheduleService.create(req.body);
       return res.status(200).json({ message: "created", data: result });
@@ -22,7 +21,8 @@ class ScheduleController {
         idQuery = "",
         nameQuery = "",
         dateQuery = "",
-        typeOfSemesterQuery = "",
+        typeOfSemesterIdQuery = "",
+        typeOfSemesterNameQuery = "",
       } = req.query;
 
       const { data, meta } = await ScheduleService.getAll({
@@ -34,10 +34,11 @@ class ScheduleController {
           idQuery,
           nameQuery,
           dateQuery,
-          typeOfSemesterQuery
+          typeOfSemesterIdQuery,
+          typeOfSemesterNameQuery,
         },
       });
-      
+
       return res.status(200).json({
         data: data,
         meta: meta,
@@ -112,12 +113,11 @@ class ScheduleController {
   };
   getScheduleForTeacher = async (req, res, next) => {
     try {
-      //TODO after JWT
-      //   const studentId = req.studentIdFromJWT;
+
       const teacherId = req.query.teacherId;
       const date = req.query.date;
-      const weekdayNumber = req.query.weekdayNumber;
-      const weekType = req.query.weekType;
+      const weekdayNumber = req.query.weekdayNumber || null;
+      const weekType = req.query.weekType|| null;
       const result = await ScheduleService.getScheduleForTeacher({
         teacherId,
         date,

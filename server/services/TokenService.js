@@ -53,12 +53,9 @@ class TokenService {
       student_id: user.student_id,
       teacher_id: user.teacher_id,
       isClassRepresentative:
-      user.student?.group.class_representative_person_id === user.student.person_id,
-      isSubgroupLeader: user.student?.subgroup.leader_id === user.student.person_id,
+      user.student?.group.class_representative_person_id === user.student?.person_id,
+      isSubgroupLeader: user.student?.subgroup.leader_id === user.student?.person_id,
     };
-    console.log("Id персоны ", user.student.person_id);
-    console.log("Id персоны старосты ", user.student?.group.class_representative_person_id);
-    console.log("Id персоны подгруппы ", user.student?.subgroup.leader_id);
     // console.log(
     //   "=========1111======",
     //   user.person_id

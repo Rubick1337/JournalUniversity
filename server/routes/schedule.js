@@ -13,6 +13,7 @@ scheduleRouter.post(`/create`, scheduleController.create);
 scheduleRouter.put(`/update/:${ID_FIELD_NAME}`, scheduleController.update);
     
 
+scheduleRouter.get(`/getScheduleForTeacher`, scheduleController.getScheduleForTeacher);
 scheduleRouter.get(`/getScheduleForStudent`, scheduleController.getScheduleForStudent);
 scheduleRouter.get(`/getLessonsForStudent`, scheduleController.getLessonsForStudent);
 scheduleRouter.get(`/getSemesterByDate`, scheduleController.getSemesterByDate);

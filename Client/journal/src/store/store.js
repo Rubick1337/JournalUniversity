@@ -57,7 +57,7 @@ const store = configureStore({
     audiences: audienceSlice,
     subjectType: subjectTypeSlice,
     typeOfSemesters: typeOfSemesterSlice,
-    
+
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({ serializableCheck: false }),

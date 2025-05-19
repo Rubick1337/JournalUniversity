@@ -14,7 +14,7 @@ const MainPage = () => {
   const [selectedDay, setSelectedDay] = useState(null);
   const [weekType, setWeekType] = useState("");
   const [formattedDate, setFormattedDate] = useState("");
-
+  console.log("dateMain", selectedDate);
   const handleDaySelect = (date, dayOfWeek) => {
     setSelectedDate(date);
     setSelectedDay(dayOfWeek);
@@ -25,7 +25,7 @@ const MainPage = () => {
     const year = date.getFullYear();
     setFormattedDate(`${day}.${month}.${year}`);
   };
-  const userData= useSelector((state) => state.user.user);
+  const userData = useSelector((state) => state.user.user);
   const teacher_id = userData?.teacher_id;
   const isTeacher = teacher_id !== null;
   return (
@@ -42,7 +42,7 @@ const MainPage = () => {
         <div className="container__student__schedule">
           <StudentList group="АСОИР-221" />
           {isTeacher ? (
-            <TeacherSchedule/>
+            <TeacherSchedule date={formattedDate} teacherId={teacher_id}/>
           ) : (
             selectedDay && (
               <Schedule

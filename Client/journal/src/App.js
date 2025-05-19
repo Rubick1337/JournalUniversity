@@ -41,6 +41,7 @@ import LessonInformationPage from "./pages/LessonInformationPage/LessonInformati
 import AcademicBuildingPage from "./pages/AcademicBuildingPage/AcademicBuildingPage";
 import AudiencesPage from "./pages/AudiencesPage/AudiencesPage";
 import TypeOfSemesterPage from "./pages/TypeOfSemesterPage/TypeOfSemesterPage";
+import SchedulesPage from "./pages/SchedulesPage/SchedulesPage";
 function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -92,6 +93,7 @@ function App() {
           <Route path={"/academicBuildings"} element={<AcademicBuildingPage/>} />
           <Route path={"/audiences"} element={<AudiencesPage/>} />
           <Route path={"/typeOfSemester"} element={<TypeOfSemesterPage/>} />
+          <Route path={"/schedules"} element={<SchedulesPage/>} />
         </Routes>
       </div>
     </Provider>
