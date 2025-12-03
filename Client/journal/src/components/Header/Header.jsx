@@ -36,10 +36,13 @@ function Header() {
         { name: "учеб план", icon: curriculumIcon, path: "/curriculum" },
     ];
     const getRoleSpecificMenuItem = () => {
-        if ([3, 4, 5].includes(user?.role_id)) {
+        if ([4, 5].includes(user?.role_id)) {
             return { name: "учеб отдел", icon: groupIcon, path: "/router" };
         }
-        return { name: "Группа", icon: groupIcon, path: "/group" };
+        if ([3].includes(user?.role_id)) {
+            return { name: "Занятия", icon: groupIcon, path: "/router" };
+        }
+        return { name: "Группа", icon: groupIcon, path: "/grades" };
     };
 
     // Формируем полный список пунктов меню
